@@ -4,10 +4,11 @@ plugins {
     id 'cpp'
     id("dev.welbyseely.gradle-cmake-plugin") version "0.1.0"
 
-
+    id 'maven-publish'
+    id 'jacoco'
+    id 'signing'
 }
 
-group 'org.dash.sdk'
 version '1.0-SNAPSHOT'
 
 repositories {
@@ -21,8 +22,8 @@ dependencies {
 
 cmake {
     // optional source folder. This is where the main CMakeLists.txt file resides. Default is ./src/main/cpp
-    sourceFolder=file("$projectDir/src/main/c")
-    println("here it is: $projectDir/src/main/c")
+    sourceFolder=file("$projectDir/src/main/cpp")
+    println("here it is: $projectDir/src/main/cpp")
 }
 
 //assemble.dependsOn cmakeBuild
@@ -78,3 +79,87 @@ configurations {
 //}
 //
 //assemble.dependsOn createSharedLibrary
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'dashj-platform-bindings'
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            pom {
+                name = 'DashJ'
+                description = 'Dash Java Library for Platform'
+                url = 'httsp://dashj.org'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'hashengineering'
+                        name = 'HashEngineering'
+                        email = 'hashengineeringsolutions@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/HashEngineering/kotlin-platform.git'
+                    developerConnection = 'scm:git:ssh://github.com/HashEngineering/kotlin-platform.git'
+                    url = 'http://github.com/HashEngineering/kotlin-platform.git'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            // change URLs to point to your repos, e.g. http://my.org/repo
+            def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = project.hasProperty('ossrhUsername')?project.findProperty('ossrhUsername'):''
+                password = project.hasProperty('ossrhPassword')?project.findProperty('ossrhPassword'):''
+            }
+        }
+    }
+}
+
+signing {
+    required { gradle.taskGraph.hasTask("publish") }
+    sign publishing.publications.mavenJava
+}
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
+
+assemble.dependsOn(publishToMavenLocal)
+assemble.dependsOn(sourcesJar)
+
+// jacocoTestReport {
+//     dependsOn test // tests are required to run before generating the report
+//     reports {
+//         xml.enabled true
+//         xml.destination file("${project.projectDir}/build/reports/jacoco/jacoco.xml")
+//     }
+// }

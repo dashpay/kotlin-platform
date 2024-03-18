@@ -1,0 +1,20 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.6'
+    }
+}
+
+
+allprojects {
+    repositories {
+        mavenLocal() // temporary
+        mavenCentral()
+        maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+    }
+
+    group = 'org.dashj.platform'
+}
