@@ -47,7 +47,7 @@
 
 %newobject get_identity2(struct platform_value_types_identifier_Identifier *);
 %newobject get_an_identity(void);
-%newobject create_basic_identity_v0(uint8_t (*)[32]);
+%newobject create_basic_identity(uint8_t (*)[32]);
 %newobject get_identity_contract_bounds(struct platform_value_types_identifier_Identifier *identifier, struct platform_value_types_identifier_Identifier *contract_identifier);
 %newobject fetch_identity3(struct platform_value_types_identifier_Identifier *identifier);
 %newobject fetch_identity(struct platform_value_types_identifier_Identifier *identifier);
