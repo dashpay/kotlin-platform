@@ -179,4 +179,4 @@ extern "C" {
 %include "../../../../rs-sdk/target/rs_sdk_bindings.h"
 
 }
-%include "src/main/c/dpp.h"
+%include "src/main/cpp/dpp.h"
