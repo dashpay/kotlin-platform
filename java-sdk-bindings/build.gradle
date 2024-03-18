@@ -1,0 +1,80 @@
+plugins {
+    id 'java'
+//    id 'org.gradle.model' version '0.5'
+    id 'cpp'
+    id("dev.welbyseely.gradle-cmake-plugin") version "0.1.0"
+
+
+}
+
+group 'org.dash.sdk'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+cmake {
+    // optional source folder. This is where the main CMakeLists.txt file resides. Default is ./src/main/cpp
+    sourceFolder=file("$projectDir/src/main/c")
+    println("here it is: $projectDir/src/main/c")
+}
+
+//assemble.dependsOn cmakeBuild
+//cmakeBuild.dependsOn cmakeConfigure
+//clean.dependsOn cmakeClean
+
+//model {
+//    externalNativeBuild {
+//        cmake {
+//            path '../cpp/CMakeLists.txt'
+//        }
+//    }
+//    components {
+//        main(NativeLibrarySpec) {
+//            targetPlatform "osx_x86-64"
+//
+//            sources {
+//                cpp {
+//                    source {
+//                        srcDir "src/main/c" // Adjust the source directory as needed
+//                        include "**/*.c"    // Adjust the file patterns as needed
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+
+test {
+    useJUnitPlatform()
+    systemProperty "java.library.path", "build/cmake"
+    println(systemProperties["java.library.path"])
+}
+
+// Define a custom configuration to specify the location of the pre-built Rust library
+configurations {
+    rustLib
+}
+
+//dependencies {
+//    // Specify the pre-built Rust library as a dependency
+//    rustLib fileTree(dir: '../target/debug', include: ['libferment_example.rlib'])
+//}
+//
+//task compileC(type: Exec) {
+//    workingDir 'src/main/c'
+//    commandLine 'gcc', 'sdk.c', '-o', 'sdk.o', '-I.', "-L${configurations.rustLib.singleFile.parent}", "-l:libferment_example.rlib"
+//}
+//
+//task createSharedLibrary(type: Exec, dependsOn: compileC) {
+//    workingDir 'src/main/c'
+//    commandLine 'gcc', '-shared', '-o', 'libcombined.so', 'sdk.o', '-I.', "-L${configurations.rustLib.singleFile.parent}", "-l:libferment_example.rlib"
+//}
+//
+//assemble.dependsOn createSharedLibrary
