@@ -6,9 +6,9 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package org.dash.sdk;
+package org.dashj.platform.sdk;
 
-import org.dash.sdk.base.BaseObject;
+import org.dashj.platform.sdk.base.BaseObject;
 
 public class dpp_identity_identity_public_key_KeyCount extends BaseObject {
   private transient long swigCPtr;

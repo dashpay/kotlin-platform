@@ -6,7 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package org.dash.sdk;
+package org.dashj.platform.sdk;
 
 public final class Identity_Tag {
   public final static Identity_Tag IdentityV0Type = new Identity_Tag("IdentityV0Type");

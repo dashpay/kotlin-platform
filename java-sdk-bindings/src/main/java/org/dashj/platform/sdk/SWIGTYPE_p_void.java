@@ -6,9 +6,9 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package org.dash.sdk;
+package org.dashj.platform.sdk;
 
-import org.dash.sdk.base.BaseObject;
+import org.dashj.platform.sdk.base.BaseObject;
 
 public class SWIGTYPE_p_void extends BaseObject {
   private transient long swigCPtr;

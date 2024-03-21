@@ -53,7 +53,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 
 // Java Classes
 %typemap(javaimports) SWIGTYPE, SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*) %{
-import org.dash.sdk.base.BaseObject;
+import org.dashj.platform.sdk.base.BaseObject;
 %}
 %typemap(javabase) SWIGTYPE, SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*) "BaseObject"
 

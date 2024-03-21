@@ -6,7 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package org.dash.sdk;
+package org.dashj.platform.sdk;
 
 public final class ContractBounds_Tag {
   public final static ContractBounds_Tag SingleContract = new ContractBounds_Tag("SingleContract");

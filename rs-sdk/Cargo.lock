@@ -2522,7 +2522,9 @@ name = "platform-mobile"
 version = "0.1.0"
 dependencies = [
  "data-contracts",
+ "dotenvy",
  "dpp",
+ "envy",
  "ferment-interfaces",
  "ferment-macro",
  "http",
@@ -2530,6 +2532,7 @@ dependencies = [
  "platform-version",
  "rs-dapi-client",
  "rs-sdk",
+ "serde",
  "tokio",
  "tracing",
  "tracing-subscriber",

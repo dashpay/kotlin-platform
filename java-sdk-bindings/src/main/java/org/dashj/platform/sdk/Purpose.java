@@ -6,7 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package org.dash.sdk;
+package org.dashj.platform.sdk;
 
 public final class Purpose {
   public final static Purpose AUTHENTICATION = new Purpose("AUTHENTICATION", exampleJNI.AUTHENTICATION_get());

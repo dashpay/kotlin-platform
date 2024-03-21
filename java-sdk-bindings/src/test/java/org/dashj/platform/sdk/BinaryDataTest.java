@@ -1,4 +1,4 @@
-package org.dash.sdk;
+package org.dashj.platform.sdk;
 
 import org.junit.jupiter.api.Test;
 

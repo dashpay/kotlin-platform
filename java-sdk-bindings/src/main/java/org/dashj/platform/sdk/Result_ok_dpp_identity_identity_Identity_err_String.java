@@ -6,9 +6,9 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package org.dash.sdk;
+package org.dashj.platform.sdk;
 
-import org.dash.sdk.base.BaseObject;
+import org.dashj.platform.sdk.base.BaseObject;
 
 public class Result_ok_dpp_identity_identity_Identity_err_String extends BaseObject {
   private transient long swigCPtr;

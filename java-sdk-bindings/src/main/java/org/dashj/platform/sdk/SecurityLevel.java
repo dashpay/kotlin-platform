@@ -6,7 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package org.dash.sdk;
+package org.dashj.platform.sdk;
 
 public final class SecurityLevel {
   public final static SecurityLevel MASTER = new SecurityLevel("MASTER", exampleJNI.MASTER_get());

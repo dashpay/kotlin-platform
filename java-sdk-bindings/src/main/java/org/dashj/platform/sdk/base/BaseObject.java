@@ -1,4 +1,4 @@
-package org.dash.sdk.base;
+package org.dashj.platform.sdk.base;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

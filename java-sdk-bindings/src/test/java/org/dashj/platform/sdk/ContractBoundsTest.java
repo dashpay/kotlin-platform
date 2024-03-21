@@ -1,5 +1,6 @@
-package org.dash.sdk;
+package org.dashj.platform.sdk;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -47,7 +48,7 @@ public class ContractBoundsTest extends BaseTest {
     public void createSingleContractInJavaAndDestroy2() {
         Identifier id = new Identifier(identifier);
         ContractBounds singleContract = new ContractBounds(id);
-        assertEquals(ContractBounds_Tag.SingleContract, singleContract.getTag());
+        Assertions.assertEquals(ContractBounds_Tag.SingleContract, singleContract.getTag());
         assertArrayEquals(identifier, singleContract.getSingle_contract_document_type().getId().get_0().get_0());
         singleContract.delete();
         id.delete();

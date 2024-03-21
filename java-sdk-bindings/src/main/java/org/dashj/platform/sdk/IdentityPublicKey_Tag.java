@@ -6,7 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package org.dash.sdk;
+package org.dashj.platform.sdk;
 
 public final class IdentityPublicKey_Tag {
   public final static IdentityPublicKey_Tag dpp_identity_identity_public_key_IdentityPublicKey_V0 = new IdentityPublicKey_Tag("dpp_identity_identity_public_key_IdentityPublicKey_V0");

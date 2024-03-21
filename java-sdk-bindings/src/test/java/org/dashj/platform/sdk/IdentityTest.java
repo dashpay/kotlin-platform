@@ -1,5 +1,6 @@
-package org.dash.sdk;
+package org.dashj.platform.sdk;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
@@ -15,7 +16,7 @@ public class IdentityTest extends BaseTest {
     public void basicIdentityInRustAndDestroy() {
         Identifier identifier1 = new Identifier(identifier);
         Identity identity = example.fetchIdentity(identifier1);
-        assertEquals(Identity_Tag.IdentityV0Type, identity.getTag());
+        Assertions.assertEquals(Identity_Tag.IdentityV0Type, identity.getTag());
         IdentityV0 identityV0 = identity.getV0();
         assertNotNull(identityV0);
         assertArrayEquals(identifier, identityV0.getId().get_0().get_0());
@@ -95,9 +96,9 @@ public class IdentityTest extends BaseTest {
             IdentityPublicKeyV0 ipkv0 = identityV0.getPublicKey(i);
             assertEquals(1, ipkv0.getId().toInt());
             assertFalse(ipkv0.getRead_only());
-            assertEquals(Purpose.AUTHENTICATION, ipkv0.getPurpose());
-            assertEquals(SecurityLevel.MASTER, ipkv0.getSecurityLevel());
-            assertEquals(KeyType.ECDSA_SECP256K1, ipkv0.getKeyType());
+            Assertions.assertEquals(Purpose.AUTHENTICATION, ipkv0.getPurpose());
+            Assertions.assertEquals(SecurityLevel.MASTER, ipkv0.getSecurityLevel());
+            Assertions.assertEquals(KeyType.ECDSA_SECP256K1, ipkv0.getKeyType());
             assertNull(ipkv0.getDisabled_at());
             assertEquals(33, ipkv0.getData().get_0().length);
             assertNull(ipkv0.getContract_bounds());
@@ -137,7 +138,7 @@ public class IdentityTest extends BaseTest {
             assertNotNull(ipkv0.getDisabled_at());
             assertEquals(33, ipkv0.getData().get_0().length);
             assertNotNull(ipkv0.getContract_bounds());
-            assertEquals(ContractBounds_Tag.SingleContract, ipkv0.getContract_bounds().getTag());
+            Assertions.assertEquals(ContractBounds_Tag.SingleContract, ipkv0.getContract_bounds().getTag());
             assertArrayEquals(contractIdentifier, ipkv0.getContract_bounds().getSingle_contract_document_type().getId().get_0().get_0());
         }
 

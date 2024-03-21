@@ -6,7 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package org.dash.sdk;
+package org.dashj.platform.sdk;
 
 public final class KeyType {
   public final static KeyType ECDSA_SECP256K1 = new KeyType("ECDSA_SECP256K1", exampleJNI.ECDSA_SECP256K1_get());
