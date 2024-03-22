@@ -9,11 +9,11 @@
 package org.dashj.platform.sdk;
 
 public final class KeyType {
-  public final static KeyType ECDSA_SECP256K1 = new KeyType("ECDSA_SECP256K1", exampleJNI.ECDSA_SECP256K1_get());
-  public final static KeyType BLS12_381 = new KeyType("BLS12_381", exampleJNI.BLS12_381_get());
-  public final static KeyType ECDSA_HASH160 = new KeyType("ECDSA_HASH160", exampleJNI.ECDSA_HASH160_get());
-  public final static KeyType BIP13_SCRIPT_HASH = new KeyType("BIP13_SCRIPT_HASH", exampleJNI.BIP13_SCRIPT_HASH_get());
-  public final static KeyType EDDSA_25519_HASH160 = new KeyType("EDDSA_25519_HASH160", exampleJNI.EDDSA_25519_HASH160_get());
+  public final static KeyType ECDSA_SECP256K1 = new KeyType("ECDSA_SECP256K1", exampleJNI.KeyType_ECDSA_SECP256K1_get());
+  public final static KeyType BLS12_381 = new KeyType("BLS12_381", exampleJNI.KeyType_BLS12_381_get());
+  public final static KeyType ECDSA_HASH160 = new KeyType("ECDSA_HASH160", exampleJNI.KeyType_ECDSA_HASH160_get());
+  public final static KeyType BIP13_SCRIPT_HASH = new KeyType("BIP13_SCRIPT_HASH", exampleJNI.KeyType_BIP13_SCRIPT_HASH_get());
+  public final static KeyType EDDSA_25519_HASH160 = new KeyType("EDDSA_25519_HASH160", exampleJNI.KeyType_EDDSA_25519_HASH160_get());
 
   public final int swigValue() {
     return swigValue;

@@ -48,7 +48,7 @@ public class ContractBoundsTest extends BaseTest {
     public void createSingleContractInJavaAndDestroy2() {
         Identifier id = new Identifier(identifier);
         ContractBounds singleContract = new ContractBounds(id);
-        Assertions.assertEquals(ContractBounds_Tag.SingleContract, singleContract.getTag());
+        Assertions.assertEquals(ContractBounds.Tag.SingleContract, singleContract.getTag());
         assertArrayEquals(identifier, singleContract.getSingle_contract_document_type().getId().get_0().get_0());
         singleContract.delete();
         id.delete();
@@ -69,7 +69,7 @@ public class ContractBoundsTest extends BaseTest {
     public void createSingleContractDocumentTypeInJavaAndDestroy2() {
         Identifier id = new Identifier(identifier);
         ContractBounds singleContract = new ContractBounds(id, "type");
-        assertEquals(ContractBounds_Tag.SingleContractDocumentType, singleContract.getTag());
+        assertEquals(ContractBounds.Tag.SingleContractDocumentType, singleContract.getTag());
         assertArrayEquals(identifier, singleContract.getSingle_contract_document_type().getId().get_0().get_0());
         assertEquals("type", singleContract.getSingle_contract_document_type().getDocument_type_name());
         singleContract.delete(); // doesn't delete the rust object because singleContract does not own it

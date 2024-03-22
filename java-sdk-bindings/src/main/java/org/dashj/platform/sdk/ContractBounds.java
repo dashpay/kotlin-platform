@@ -42,30 +42,124 @@ public class ContractBounds extends BaseObject {
     return swigCPtr;
   }
 
-  public void setTag(ContractBounds_Tag value) {
+  static public class SingleContractStruct extends BaseObject {
+    private transient long swigCPtr;
+    protected transient boolean swigCMemOwn;
+  
+    protected SingleContractStruct(long cPtr, boolean cMemoryOwn) {
+      swigCMemOwn = cMemoryOwn;
+      swigCPtr = cPtr;
+    }
+  
+    protected static long getCPtr(SingleContractStruct obj) {
+      return (obj == null) ? 0 : obj.swigCPtr;
+    }
+  
+    @SuppressWarnings("deprecation")
+    protected void finalize() {
+      delete();
+    }
+  
+    public synchronized void delete() {
+      if (swigCPtr != 0) {
+        if (swigCMemOwn) {
+          swigCMemOwn = false;
+          exampleJNI.delete_ContractBounds_SingleContractStruct(swigCPtr);
+        }
+        swigCPtr = 0;
+      }
+    }
+  
+    protected long getCPointer() {
+      return swigCPtr;
+    }
+  
+    public void setId(Identifier value) {
+      exampleJNI.ContractBounds_SingleContractStruct_id_set(swigCPtr, this, Identifier.getCPtr(value), value);
+    }
+  
+    public Identifier getId() {
+      long cPtr = exampleJNI.ContractBounds_SingleContractStruct_id_get(swigCPtr, this);
+      return (cPtr == 0) ? null : new Identifier(cPtr, false);
+    }
+  
+  }
+
+  static public class SingleContractDocumentTypeStruct extends BaseObject {
+    private transient long swigCPtr;
+    protected transient boolean swigCMemOwn;
+  
+    protected SingleContractDocumentTypeStruct(long cPtr, boolean cMemoryOwn) {
+      swigCMemOwn = cMemoryOwn;
+      swigCPtr = cPtr;
+    }
+  
+    protected static long getCPtr(SingleContractDocumentTypeStruct obj) {
+      return (obj == null) ? 0 : obj.swigCPtr;
+    }
+  
+    @SuppressWarnings("deprecation")
+    protected void finalize() {
+      delete();
+    }
+  
+    public synchronized void delete() {
+      if (swigCPtr != 0) {
+        if (swigCMemOwn) {
+          swigCMemOwn = false;
+          exampleJNI.delete_ContractBounds_SingleContractDocumentTypeStruct(swigCPtr);
+        }
+        swigCPtr = 0;
+      }
+    }
+  
+    protected long getCPointer() {
+      return swigCPtr;
+    }
+  
+    public void setId(Identifier value) {
+      exampleJNI.ContractBounds_SingleContractDocumentTypeStruct_id_set(swigCPtr, this, Identifier.getCPtr(value), value);
+    }
+  
+    public Identifier getId() {
+      long cPtr = exampleJNI.ContractBounds_SingleContractDocumentTypeStruct_id_get(swigCPtr, this);
+      return (cPtr == 0) ? null : new Identifier(cPtr, false);
+    }
+  
+    public void setDocument_type_name(String value) {
+      exampleJNI.ContractBounds_SingleContractDocumentTypeStruct_document_type_name_set(swigCPtr, this, value);
+    }
+  
+    public String getDocument_type_name() {
+      return exampleJNI.ContractBounds_SingleContractDocumentTypeStruct_document_type_name_get(swigCPtr, this);
+    }
+  
+  }
+
+  public void setTag(ContractBounds.Tag value) {
     exampleJNI.ContractBounds_tag_set(swigCPtr, this, value.swigValue());
   }
 
-  public ContractBounds_Tag getTag() {
-    return ContractBounds_Tag.swigToEnum(exampleJNI.ContractBounds_tag_get(swigCPtr, this));
+  public ContractBounds.Tag getTag() {
+    return ContractBounds.Tag.swigToEnum(exampleJNI.ContractBounds_tag_get(swigCPtr, this));
   }
 
-  public void setSingle_contract(SingleContractStruct value) {
-    exampleJNI.ContractBounds_single_contract_set(swigCPtr, this, SingleContractStruct.getCPtr(value), value);
+  public void setSingle_contract(ContractBounds.SingleContractStruct value) {
+    exampleJNI.ContractBounds_single_contract_set(swigCPtr, this, ContractBounds.SingleContractStruct.getCPtr(value), value);
   }
 
-  public SingleContractStruct getSingle_contract() {
+  public ContractBounds.SingleContractStruct getSingle_contract() {
     long cPtr = exampleJNI.ContractBounds_single_contract_get(swigCPtr, this);
-    return (cPtr == 0) ? null : new SingleContractStruct(cPtr, false);
+    return (cPtr == 0) ? null : new ContractBounds.SingleContractStruct(cPtr, false);
   }
 
-  public void setSingle_contract_document_type(SingleContractDocumentTypeStruct value) {
-    exampleJNI.ContractBounds_single_contract_document_type_set(swigCPtr, this, SingleContractDocumentTypeStruct.getCPtr(value), value);
+  public void setSingle_contract_document_type(ContractBounds.SingleContractDocumentTypeStruct value) {
+    exampleJNI.ContractBounds_single_contract_document_type_set(swigCPtr, this, ContractBounds.SingleContractDocumentTypeStruct.getCPtr(value), value);
   }
 
-  public SingleContractDocumentTypeStruct getSingle_contract_document_type() {
+  public ContractBounds.SingleContractDocumentTypeStruct getSingle_contract_document_type() {
     long cPtr = exampleJNI.ContractBounds_single_contract_document_type_get(swigCPtr, this);
-    return (cPtr == 0) ? null : new SingleContractDocumentTypeStruct(cPtr, false);
+    return (cPtr == 0) ? null : new ContractBounds.SingleContractDocumentTypeStruct(cPtr, false);
   }
 
   public ContractBounds(Identifier id) {
@@ -74,6 +168,50 @@ public class ContractBounds extends BaseObject {
 
   public ContractBounds(Identifier id, String document_type) {
     this(exampleJNI.new_ContractBounds__SWIG_1(Identifier.getCPtr(id), id, document_type), true);
+  }
+
+  public final static class Tag {
+    public final static ContractBounds.Tag SingleContract = new ContractBounds.Tag("SingleContract");
+    public final static ContractBounds.Tag SingleContractDocumentType = new ContractBounds.Tag("SingleContractDocumentType");
+
+    public final int swigValue() {
+      return swigValue;
+    }
+
+    public String toString() {
+      return swigName;
+    }
+
+    public static Tag swigToEnum(int swigValue) {
+      if (swigValue < swigValues.length && swigValue >= 0 && swigValues[swigValue].swigValue == swigValue)
+        return swigValues[swigValue];
+      for (int i = 0; i < swigValues.length; i++)
+        if (swigValues[i].swigValue == swigValue)
+          return swigValues[i];
+      throw new IllegalArgumentException("No enum " + Tag.class + " with value " + swigValue);
+    }
+
+    private Tag(String swigName) {
+      this.swigName = swigName;
+      this.swigValue = swigNext++;
+    }
+
+    private Tag(String swigName, int swigValue) {
+      this.swigName = swigName;
+      this.swigValue = swigValue;
+      swigNext = swigValue+1;
+    }
+
+    private Tag(String swigName, Tag swigEnum) {
+      this.swigName = swigName;
+      this.swigValue = swigEnum.swigValue;
+      swigNext = this.swigValue+1;
+    }
+
+    private static Tag[] swigValues = { SingleContract, SingleContractDocumentType };
+    private static int swigNext = 0;
+    private final int swigValue;
+    private final String swigName;
   }
 
 }

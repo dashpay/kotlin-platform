@@ -1,9 +1,9 @@
 %module example
 
 %{
-extern "C" {
+//extern "C" {
 #include "../../../../rs-sdk/target/rs_sdk_bindings.h"
-}
+//}
 #include <stdlib.h>
 #include "dpp.h"
 #include <ctime>
@@ -63,7 +63,7 @@ import org.dashj.platform.sdk.base.BaseObject;
   }
 %}
 
-extern "C" {
+//extern "C" {
 %include "../../../../rs-sdk/target/rs_sdk_bindings.h"
-}
+//}
 %include "src/main/cpp/dpp.h"

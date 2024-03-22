@@ -24,14 +24,14 @@
         printf("  ->data->_0->values(%lx)\n", (long)binaryData->_0->values);
         dpp_identity_identity_public_key_contract_bounds_ContractBounds * contract_bounds_copy = nullptr;
         if (contract_bounds != nullptr) {
-            if (contract_bounds->tag == dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContract) {
+            if (contract_bounds->tag == dpp_identity_identity_public_key_contract_bounds_ContractBounds::Tag::dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContract) {
                 contract_bounds_copy = dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContract_ctor(Identifier_clone(contract_bounds->single_contract.id));
-            } else if (contract_bounds->tag == dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContractDocumentType) {
+            } else if (contract_bounds->tag == dpp_identity_identity_public_key_contract_bounds_ContractBounds::Tag::dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContractDocumentType) {
                 char * typeCopy = memoryFactory.clone(contract_bounds->single_contract_document_type.document_type_name);
                 contract_bounds_copy = dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContractDocumentType_ctor(Identifier_clone(contract_bounds->single_contract_document_type.id), typeCopy);
             }
         }
-        printf("  ->contract_bounds(%lx): %d\n", (long)contract_bounds, contract_bounds != nullptr ? contract_bounds->tag : -1);
+        //printf("  ->contract_bounds(%lx): %d\n", (long)contract_bounds, contract_bounds != nullptr ? contract_bounds->tag : -1);
         printf("  ->contract_bounds_copy(%lx)\n", (long)contract_bounds_copy);
         dpp_identity_identity_public_key_KeyID * keyIdObject = dpp_identity_identity_public_key_KeyID_ctor(keyId->_0);
         dpp_identity_identity_public_key_TimestampMillis * disabled_at_copy = disabled_at != nullptr ? dpp_identity_identity_public_key_TimestampMillis_ctor(disabled_at->_0) : nullptr;

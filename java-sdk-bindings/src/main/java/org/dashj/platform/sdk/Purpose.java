@@ -9,12 +9,12 @@
 package org.dashj.platform.sdk;
 
 public final class Purpose {
-  public final static Purpose AUTHENTICATION = new Purpose("AUTHENTICATION", exampleJNI.AUTHENTICATION_get());
-  public final static Purpose ENCRYPTION = new Purpose("ENCRYPTION", exampleJNI.ENCRYPTION_get());
-  public final static Purpose DECRYPTION = new Purpose("DECRYPTION", exampleJNI.DECRYPTION_get());
-  public final static Purpose TRANSFER = new Purpose("TRANSFER", exampleJNI.TRANSFER_get());
-  public final static Purpose SYSTEM = new Purpose("SYSTEM", exampleJNI.SYSTEM_get());
-  public final static Purpose VOTING = new Purpose("VOTING", exampleJNI.VOTING_get());
+  public final static Purpose AUTHENTICATION = new Purpose("AUTHENTICATION", exampleJNI.Purpose_AUTHENTICATION_get());
+  public final static Purpose ENCRYPTION = new Purpose("ENCRYPTION", exampleJNI.Purpose_ENCRYPTION_get());
+  public final static Purpose DECRYPTION = new Purpose("DECRYPTION", exampleJNI.Purpose_DECRYPTION_get());
+  public final static Purpose TRANSFER = new Purpose("TRANSFER", exampleJNI.Purpose_TRANSFER_get());
+  public final static Purpose SYSTEM = new Purpose("SYSTEM", exampleJNI.Purpose_SYSTEM_get());
+  public final static Purpose VOTING = new Purpose("VOTING", exampleJNI.Purpose_VOTING_get());
 
   public final int swigValue() {
     return swigValue;

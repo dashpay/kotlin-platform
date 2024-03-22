@@ -9,10 +9,10 @@
 package org.dashj.platform.sdk;
 
 public final class SecurityLevel {
-  public final static SecurityLevel MASTER = new SecurityLevel("MASTER", exampleJNI.MASTER_get());
-  public final static SecurityLevel CRITICAL = new SecurityLevel("CRITICAL", exampleJNI.CRITICAL_get());
-  public final static SecurityLevel HIGH = new SecurityLevel("HIGH", exampleJNI.HIGH_get());
-  public final static SecurityLevel MEDIUM = new SecurityLevel("MEDIUM", exampleJNI.MEDIUM_get());
+  public final static SecurityLevel MASTER = new SecurityLevel("MASTER", exampleJNI.SecurityLevel_MASTER_get());
+  public final static SecurityLevel CRITICAL = new SecurityLevel("CRITICAL", exampleJNI.SecurityLevel_CRITICAL_get());
+  public final static SecurityLevel HIGH = new SecurityLevel("HIGH", exampleJNI.SecurityLevel_HIGH_get());
+  public final static SecurityLevel MEDIUM = new SecurityLevel("MEDIUM", exampleJNI.SecurityLevel_MEDIUM_get());
 
   public final int swigValue() {
     return swigValue;

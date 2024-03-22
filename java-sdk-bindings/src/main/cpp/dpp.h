@@ -137,11 +137,21 @@ public:
 
 extern MemoryFactory & memoryFactory;
 
+//dpp_identity_identity_public_key_key_type_KeyType * intToKeyType2(int value) {
+//    switch(value) {
+//        case dpp_identity_identity_public_key_key_type_KeyType::dpp_identity_identity_public_key_key_type_KeyType_ECDSA_SECP256K1: return dpp_identity_identity_public_key_key_type_KeyType_ECDSA_SECP256K1_ctor();
+//        case dpp_identity_identity_public_key_key_type_KeyType::dpp_identity_identity_public_key_key_type_KeyType_BLS12_381: return dpp_identity_identity_public_key_key_type_KeyType_BLS12_381_ctor();
+//        case dpp_identity_identity_public_key_key_type_KeyType::dpp_identity_identity_public_key_key_type_KeyType_ECDSA_HASH160: return dpp_identity_identity_public_key_key_type_KeyType_ECDSA_HASH160_ctor();
+//        case dpp_identity_identity_public_key_key_type_KeyType::dpp_identity_identity_public_key_key_type_KeyType_BIP13_SCRIPT_HASH: return dpp_identity_identity_public_key_key_type_KeyType_BIP13_SCRIPT_HASH_ctor();
+//        case dpp_identity_identity_public_key_key_type_KeyType::dpp_identity_identity_public_key_key_type_KeyType_EDDSA_25519_HASH160: return dpp_identity_identity_public_key_key_type_KeyType_EDDSA_25519_HASH160_ctor();
+//    }
+//}
+
 #define ENUM_CASE(crate, enum_class, value) \
-    case crate##_##enum_class##_##value: \
+    case crate##_##enum_class::crate##_##enum_class##_##value: \
         return crate##_##enum_class##_##value##_ctor();
 
-dpp_identity_identity_public_key_key_type_KeyType * intToKeyType(int value) {
+dpp_identity_identity_public_key_key_type_KeyType * intToKeyType(dpp_identity_identity_public_key_key_type_KeyType value) {
     switch(value) {
         ENUM_CASE(dpp_identity_identity_public_key_key_type, KeyType, ECDSA_SECP256K1)
         ENUM_CASE(dpp_identity_identity_public_key_key_type, KeyType, BLS12_381)
@@ -151,7 +161,7 @@ dpp_identity_identity_public_key_key_type_KeyType * intToKeyType(int value) {
     }
 }
 
-dpp_identity_identity_public_key_security_level_SecurityLevel * intToSecurityLevel(int value) {
+dpp_identity_identity_public_key_security_level_SecurityLevel * intToSecurityLevel(dpp_identity_identity_public_key_security_level_SecurityLevel value) {
     switch(value) {
         ENUM_CASE(dpp_identity_identity_public_key_security_level, SecurityLevel, MASTER)
         ENUM_CASE(dpp_identity_identity_public_key_security_level, SecurityLevel, CRITICAL)
@@ -159,7 +169,7 @@ dpp_identity_identity_public_key_security_level_SecurityLevel * intToSecurityLev
         ENUM_CASE(dpp_identity_identity_public_key_security_level, SecurityLevel, MEDIUM)
     }
 }
-dpp_identity_identity_public_key_purpose_Purpose * intToPurpose(int value) {
+dpp_identity_identity_public_key_purpose_Purpose * intToPurpose(dpp_identity_identity_public_key_purpose_Purpose value) {
      switch(value) {
         ENUM_CASE(dpp_identity_identity_public_key_purpose, Purpose, AUTHENTICATION)
         ENUM_CASE(dpp_identity_identity_public_key_purpose, Purpose, DECRYPTION)

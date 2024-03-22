@@ -42,21 +42,107 @@ public class IdentityPublicKey extends BaseObject {
     return swigCPtr;
   }
 
-  public void setTag(IdentityPublicKey_Tag value) {
+  static public class dpp_identity_identity_public_key_IdentityPublicKey_V0_Body extends BaseObject {
+    private transient long swigCPtr;
+    protected transient boolean swigCMemOwn;
+  
+    protected dpp_identity_identity_public_key_IdentityPublicKey_V0_Body(long cPtr, boolean cMemoryOwn) {
+      swigCMemOwn = cMemoryOwn;
+      swigCPtr = cPtr;
+    }
+  
+    protected static long getCPtr(dpp_identity_identity_public_key_IdentityPublicKey_V0_Body obj) {
+      return (obj == null) ? 0 : obj.swigCPtr;
+    }
+  
+    @SuppressWarnings("deprecation")
+    protected void finalize() {
+      delete();
+    }
+  
+    public synchronized void delete() {
+      if (swigCPtr != 0) {
+        if (swigCMemOwn) {
+          swigCMemOwn = false;
+          exampleJNI.delete_IdentityPublicKey_dpp_identity_identity_public_key_IdentityPublicKey_V0_Body(swigCPtr);
+        }
+        swigCPtr = 0;
+      }
+    }
+  
+    protected long getCPointer() {
+      return swigCPtr;
+    }
+  
+    public void set_0(IdentityPublicKeyV0 value) {
+      exampleJNI.IdentityPublicKey_dpp_identity_identity_public_key_IdentityPublicKey_V0_Body__0_set(swigCPtr, this, IdentityPublicKeyV0.getCPtr(value), value);
+    }
+  
+    public IdentityPublicKeyV0 get_0() {
+      long cPtr = exampleJNI.IdentityPublicKey_dpp_identity_identity_public_key_IdentityPublicKey_V0_Body__0_get(swigCPtr, this);
+      return (cPtr == 0) ? null : new IdentityPublicKeyV0(cPtr, false);
+    }
+  
+  }
+
+  public void setTag(IdentityPublicKey.Tag value) {
     exampleJNI.IdentityPublicKey_tag_set(swigCPtr, this, value.swigValue());
   }
 
-  public IdentityPublicKey_Tag getTag() {
-    return IdentityPublicKey_Tag.swigToEnum(exampleJNI.IdentityPublicKey_tag_get(swigCPtr, this));
+  public IdentityPublicKey.Tag getTag() {
+    return IdentityPublicKey.Tag.swigToEnum(exampleJNI.IdentityPublicKey_tag_get(swigCPtr, this));
   }
 
-  public void setV0(IdentityPublicKeyV0 value) {
-    exampleJNI.IdentityPublicKey_v0_set(swigCPtr, this, IdentityPublicKeyV0.getCPtr(value), value);
+  public void setV0(IdentityPublicKey.dpp_identity_identity_public_key_IdentityPublicKey_V0_Body value) {
+    exampleJNI.IdentityPublicKey_v0_set(swigCPtr, this, IdentityPublicKey.dpp_identity_identity_public_key_IdentityPublicKey_V0_Body.getCPtr(value), value);
   }
 
-  public IdentityPublicKeyV0 getV0() {
+  public IdentityPublicKey.dpp_identity_identity_public_key_IdentityPublicKey_V0_Body getV0() {
     long cPtr = exampleJNI.IdentityPublicKey_v0_get(swigCPtr, this);
-    return (cPtr == 0) ? null : new IdentityPublicKeyV0(cPtr, false);
+    return (cPtr == 0) ? null : new IdentityPublicKey.dpp_identity_identity_public_key_IdentityPublicKey_V0_Body(cPtr, false);
+  }
+
+  public final static class Tag {
+    public final static IdentityPublicKey.Tag dpp_identity_identity_public_key_IdentityPublicKey_V0 = new IdentityPublicKey.Tag("dpp_identity_identity_public_key_IdentityPublicKey_V0");
+
+    public final int swigValue() {
+      return swigValue;
+    }
+
+    public String toString() {
+      return swigName;
+    }
+
+    public static Tag swigToEnum(int swigValue) {
+      if (swigValue < swigValues.length && swigValue >= 0 && swigValues[swigValue].swigValue == swigValue)
+        return swigValues[swigValue];
+      for (int i = 0; i < swigValues.length; i++)
+        if (swigValues[i].swigValue == swigValue)
+          return swigValues[i];
+      throw new IllegalArgumentException("No enum " + Tag.class + " with value " + swigValue);
+    }
+
+    private Tag(String swigName) {
+      this.swigName = swigName;
+      this.swigValue = swigNext++;
+    }
+
+    private Tag(String swigName, int swigValue) {
+      this.swigName = swigName;
+      this.swigValue = swigValue;
+      swigNext = swigValue+1;
+    }
+
+    private Tag(String swigName, Tag swigEnum) {
+      this.swigName = swigName;
+      this.swigValue = swigEnum.swigValue;
+      swigNext = this.swigValue+1;
+    }
+
+    private static Tag[] swigValues = { dpp_identity_identity_public_key_IdentityPublicKey_V0 };
+    private static int swigNext = 0;
+    private final int swigValue;
+    private final String swigName;
   }
 
 }

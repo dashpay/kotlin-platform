@@ -16,8 +16,8 @@ public class IdentityTest extends BaseTest {
     public void basicIdentityInRustAndDestroy() {
         Identifier identifier1 = new Identifier(identifier);
         Identity identity = example.fetchIdentity(identifier1);
-        Assertions.assertEquals(Identity_Tag.IdentityV0Type, identity.getTag());
-        IdentityV0 identityV0 = identity.getV0();
+        Assertions.assertEquals(Identity.Tag.IdentityV0Type, identity.getTag());
+        IdentityV0 identityV0 = identity.getV0().get_0();
         assertNotNull(identityV0);
         assertArrayEquals(identifier, identityV0.getId().get_0().get_0());
         assertEquals(0L, identityV0.getRevision().toLong());
@@ -31,8 +31,8 @@ public class IdentityTest extends BaseTest {
     public void fetchIdentityAndDestroy() {
         Identifier identifier1 = new Identifier(contractIdentifier);
         Identity identity = example.fetchIdentity2(identifier1);
-        assertEquals(Identity_Tag.IdentityV0Type, identity.getTag());
-        IdentityV0 identityV0 = identity.getV0();
+        assertEquals(Identity.Tag.IdentityV0Type, identity.getTag());
+        IdentityV0 identityV0 = identity.getV0().get_0();
         assertNotNull(identityV0);
         assertArrayEquals(contractIdentifier, identityV0.getId().get_0().get_0());
         assertEquals(0L, identityV0.getRevision().toLong());
@@ -47,8 +47,8 @@ public class IdentityTest extends BaseTest {
         Identifier identifier1 = new Identifier(contractIdentifier);
         Result_ok_dpp_identity_identity_Identity_err_String result = example.fetchIdentity3(identifier1);
         Identity identity = result.getOk();
-        assertEquals(Identity_Tag.IdentityV0Type, identity.getTag());
-        IdentityV0 identityV0 = identity.getV0();
+        assertEquals(Identity.Tag.IdentityV0Type, identity.getTag());
+        IdentityV0 identityV0 = identity.getV0().get_0();
         assertNotNull(identityV0);
         assertArrayEquals(contractIdentifier, identityV0.getId().get_0().get_0());
         assertEquals(0L, identityV0.getRevision().toLong());
@@ -82,15 +82,15 @@ public class IdentityTest extends BaseTest {
         Identity identity = example.getIdentity2(identifier);
         assertNotNull(identity);
         assertTrue(identity.swigCMemOwn);
-        assertEquals(Identity_Tag.IdentityV0Type, identity.getTag());
-        IdentityV0 identityV0 = identity.getV0();
+        assertEquals(Identity.Tag.IdentityV0Type, identity.getTag());
+        IdentityV0 identityV0 = identity.getV0().get_0();
 
         assertEquals(2, identityV0.getBalance());
         assertEquals(1, identityV0.getRevision().toLong());
         assertEquals(2, identityV0.getPublicKeyCount());
 
-        assertNotNull(identity.getV0().getId().get_0().get_0());
-        assertArrayEquals(identifier.get_0().get_0(), identity.getV0().getId().get_0().get_0());
+        assertNotNull(identityV0.getId().get_0().get_0());
+        assertArrayEquals(identifier.get_0().get_0(), identityV0.getId().get_0().get_0());
 
         for (int i = 0; i < identityV0.getPublicKeyCount(); ++i) {
             IdentityPublicKeyV0 ipkv0 = identityV0.getPublicKey(i);
@@ -105,7 +105,7 @@ public class IdentityTest extends BaseTest {
         }
 
         IdentityPublicKeyV0 ipkv0 = identityV0.getPublicKey(0);
-        IdentityPublicKeyV0 identityPublicKeyV0ById = identity.getV0().getPublicKeyById(1);
+        IdentityPublicKeyV0 identityPublicKeyV0ById = identityV0.getPublicKeyById(1);
         assertEquals(ipkv0.getData().get_0().length, identityPublicKeyV0ById.getData().get_0().length);
         assertArrayEquals(ipkv0.getData().get_0(), identityPublicKeyV0ById.getData().get_0());
         identity.delete();
@@ -118,15 +118,15 @@ public class IdentityTest extends BaseTest {
         Identity identityWithBounds = example.getIdentityContractBounds(id, idContract);
         assertNotNull(identityWithBounds);
         assertTrue(identityWithBounds.swigCMemOwn);
-        assertEquals(Identity_Tag.IdentityV0Type, identityWithBounds.getTag());
-        IdentityV0 identityV0 = identityWithBounds.getV0();
+        assertEquals(Identity.Tag.IdentityV0Type, identityWithBounds.getTag());
+        IdentityV0 identityV0 = identityWithBounds.getV0().get_0();
 
         assertEquals(2, identityV0.getBalance());
         assertEquals(1, identityV0.getRevision().toLong());
         assertEquals(2, identityV0.getPublicKeyCount());
 
-        assertNotNull(identityWithBounds.getV0().getId().get_0().get_0());
-        assertArrayEquals(identifier, identityWithBounds.getV0().getId().get_0().get_0());
+        assertNotNull(identityWithBounds.getV0().get_0().getId().get_0().get_0());
+        assertArrayEquals(identifier, identityWithBounds.getV0().get_0().getId().get_0().get_0());
 
         for (int i = 0; i < identityV0.getPublicKeyCount(); ++i) {
             IdentityPublicKeyV0 ipkv0 = identityV0.getPublicKey(i);
@@ -138,12 +138,12 @@ public class IdentityTest extends BaseTest {
             assertNotNull(ipkv0.getDisabled_at());
             assertEquals(33, ipkv0.getData().get_0().length);
             assertNotNull(ipkv0.getContract_bounds());
-            Assertions.assertEquals(ContractBounds_Tag.SingleContract, ipkv0.getContract_bounds().getTag());
+            Assertions.assertEquals(ContractBounds.Tag.SingleContract, ipkv0.getContract_bounds().getTag());
             assertArrayEquals(contractIdentifier, ipkv0.getContract_bounds().getSingle_contract_document_type().getId().get_0().get_0());
         }
 
         IdentityPublicKeyV0 ipkv0 = identityV0.getPublicKey(0);
-        IdentityPublicKeyV0 identityPublicKeyV0ById = identityWithBounds.getV0().getPublicKeyById(1);
+        IdentityPublicKeyV0 identityPublicKeyV0ById = identityWithBounds.getV0().get_0().getPublicKeyById(1);
         assertEquals(ipkv0.getData().get_0().length, identityPublicKeyV0ById.getData().get_0().length);
         assertArrayEquals(ipkv0.getData().get_0(), identityPublicKeyV0ById.getData().get_0());
         // this crashes the system, it was created in Rust
@@ -159,8 +159,8 @@ public class IdentityTest extends BaseTest {
         Identity identity = example.createBasicIdentity(identifier.get_0().get_0());
         assertNotNull(identity);
         assertTrue(identity.swigCMemOwn);
-        assertEquals(Identity_Tag.IdentityV0Type, identity.getTag());
-        IdentityV0 identityV0 = identity.getV0();
+        assertEquals(Identity.Tag.IdentityV0Type, identity.getTag());
+        IdentityV0 identityV0 = identity.getV0().get_0();
         assertArrayEquals(contractIdentifier, identityV0.getId().get_0().get_0());
         assertEquals(0, identityV0.getRevision().toLong());
         assertEquals(0, identityV0.getBalance());
