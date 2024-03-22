@@ -164,7 +164,7 @@ dpp_identity_identity_public_key_purpose_Purpose * intToPurpose(int value) {
         ENUM_CASE(dpp_identity_identity_public_key_purpose, Purpose, AUTHENTICATION)
         ENUM_CASE(dpp_identity_identity_public_key_purpose, Purpose, DECRYPTION)
         ENUM_CASE(dpp_identity_identity_public_key_purpose, Purpose, ENCRYPTION)
-        ENUM_CASE(dpp_identity_identity_public_key_purpose, Purpose, WITHDRAW)
+        ENUM_CASE(dpp_identity_identity_public_key_purpose, Purpose, TRANSFER)
         ENUM_CASE(dpp_identity_identity_public_key_purpose, Purpose, SYSTEM)
         ENUM_CASE(dpp_identity_identity_public_key_purpose, Purpose, VOTING)
      }

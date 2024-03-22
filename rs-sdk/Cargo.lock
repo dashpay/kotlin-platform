@@ -834,7 +834,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "dapi-grpc-macros",
  "futures-core",
@@ -850,7 +850,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc-macros"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "heck",
  "quote",
@@ -955,7 +955,7 @@ dependencies = [
 
 [[package]]
 name = "dashpay-contract"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -965,7 +965,7 @@ dependencies = [
 
 [[package]]
 name = "data-contracts"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "dashpay-contract",
  "dpns-contract",
@@ -1029,7 +1029,7 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "dpns-contract"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1039,7 +1039,7 @@ dependencies = [
 
 [[package]]
 name = "dpp"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1089,7 +1089,7 @@ dependencies = [
 
 [[package]]
 name = "drive"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "arc-swap",
  "byteorder",
@@ -1114,7 +1114,7 @@ dependencies = [
 
 [[package]]
 name = "drive-proof-verifier"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "dapi-grpc",
  "dpp",
@@ -1294,7 +1294,7 @@ checksum = "25cbce373ec4653f1a01a31e8a5e5ec0c622dc27ff9c4e6606eefef5cbbed4a5"
 
 [[package]]
 name = "feature-flags-contract"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2125,7 +2125,7 @@ dependencies = [
 
 [[package]]
 name = "masternode-reward-shares-contract"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2540,7 +2540,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "bincode 2.0.0-rc.3",
  "platform-version",
@@ -2548,7 +2548,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization-derive"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2558,7 +2558,7 @@ dependencies = [
 
 [[package]]
 name = "platform-value"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "base64 0.13.1",
  "bincode 2.0.0-rc.3",
@@ -2583,7 +2583,7 @@ dependencies = [
 
 [[package]]
 name = "platform-version"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "ferment",
  "ferment-interfaces",
@@ -2593,7 +2593,7 @@ dependencies = [
 
 [[package]]
 name = "platform-versioning"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3032,7 +3032,7 @@ dependencies = [
 
 [[package]]
 name = "rs-dapi-client"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "backon",
  "chrono",
@@ -3052,7 +3052,7 @@ dependencies = [
 
 [[package]]
 name = "rs-sdk"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "async-trait",
  "bincode 2.0.0-rc.3",
@@ -3692,8 +3692,8 @@ dependencies = [
 
 [[package]]
 name = "tenderdash-abci"
-version = "0.14.0-dev.6"
-source = "git+https://github.com/dashpay/rs-tenderdash-abci?rev=81d28aa0b15fc0844dfa7f7251f6949f6c6c405a#81d28aa0b15fc0844dfa7f7251f6949f6c6c405a"
+version = "0.14.0-dev.9"
+source = "git+https://github.com/dashpay/rs-tenderdash-abci#17ed6e7e18a28602afa40622688a421389adcc89"
 dependencies = [
  "bytes",
  "futures",
@@ -3713,8 +3713,8 @@ dependencies = [
 
 [[package]]
 name = "tenderdash-proto"
-version = "0.14.0-dev.6"
-source = "git+https://github.com/dashpay/rs-tenderdash-abci?rev=81d28aa0b15fc0844dfa7f7251f6949f6c6c405a#81d28aa0b15fc0844dfa7f7251f6949f6c6c405a"
+version = "0.14.0-dev.9"
+source = "git+https://github.com/dashpay/rs-tenderdash-abci#17ed6e7e18a28602afa40622688a421389adcc89"
 dependencies = [
  "bytes",
  "chrono",
@@ -3733,8 +3733,8 @@ dependencies = [
 
 [[package]]
 name = "tenderdash-proto-compiler"
-version = "0.14.0-dev.6"
-source = "git+https://github.com/dashpay/rs-tenderdash-abci?rev=81d28aa0b15fc0844dfa7f7251f6949f6c6c405a#81d28aa0b15fc0844dfa7f7251f6949f6c6c405a"
+version = "0.14.0-dev.9"
+source = "git+https://github.com/dashpay/rs-tenderdash-abci#17ed6e7e18a28602afa40622688a421389adcc89"
 dependencies = [
  "fs_extra",
  "prost-build 0.12.3",
@@ -4595,7 +4595,7 @@ dependencies = [
 
 [[package]]
 name = "withdrawals-contract"
-version = "1.0.0-dev.7"
+version = "1.0.0-dev.9"
 dependencies = [
  "num_enum",
  "platform-value",

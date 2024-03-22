@@ -11,9 +11,9 @@
 %rename(AUTHENTICATION) dpp_identity_identity_public_key_purpose_Purpose_AUTHENTICATION;
 %rename(ENCRYPTION) dpp_identity_identity_public_key_purpose_Purpose_ENCRYPTION;
 %rename(DECRYPTION) dpp_identity_identity_public_key_purpose_Purpose_DECRYPTION;
-%rename(WITHDRAW) dpp_identity_identity_public_key_purpose_Purpose_WITHDRAW;
 %rename(SYSTEM) dpp_identity_identity_public_key_purpose_Purpose_SYSTEM;
 %rename(VOTING) dpp_identity_identity_public_key_purpose_Purpose_VOTING;
+%rename(TRANSFER) dpp_identity_identity_public_key_purpose_Purpose_TRANSFER;
 
 %rename (ECDSA_SECP256K1) dpp_identity_identity_public_key_key_type_KeyType_ECDSA_SECP256K1;
 %rename (BLS12_381) dpp_identity_identity_public_key_key_type_KeyType_BLS12_381;

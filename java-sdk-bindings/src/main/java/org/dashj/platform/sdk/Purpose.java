@@ -12,7 +12,7 @@ public final class Purpose {
   public final static Purpose AUTHENTICATION = new Purpose("AUTHENTICATION", exampleJNI.AUTHENTICATION_get());
   public final static Purpose ENCRYPTION = new Purpose("ENCRYPTION", exampleJNI.ENCRYPTION_get());
   public final static Purpose DECRYPTION = new Purpose("DECRYPTION", exampleJNI.DECRYPTION_get());
-  public final static Purpose WITHDRAW = new Purpose("WITHDRAW", exampleJNI.WITHDRAW_get());
+  public final static Purpose TRANSFER = new Purpose("TRANSFER", exampleJNI.TRANSFER_get());
   public final static Purpose SYSTEM = new Purpose("SYSTEM", exampleJNI.SYSTEM_get());
   public final static Purpose VOTING = new Purpose("VOTING", exampleJNI.VOTING_get());
 
@@ -50,7 +50,7 @@ public final class Purpose {
     swigNext = this.swigValue+1;
   }
 
-  private static Purpose[] swigValues = { AUTHENTICATION, ENCRYPTION, DECRYPTION, WITHDRAW, SYSTEM, VOTING };
+  private static Purpose[] swigValues = { AUTHENTICATION, ENCRYPTION, DECRYPTION, TRANSFER, SYSTEM, VOTING };
   private static int swigNext = 0;
   private final int swigValue;
   private final String swigName;
