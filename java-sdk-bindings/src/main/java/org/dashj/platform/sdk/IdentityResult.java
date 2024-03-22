@@ -10,16 +10,16 @@ package org.dashj.platform.sdk;
 
 import org.dashj.platform.sdk.base.BaseObject;
 
-public class Result_ok_dpp_identity_identity_Identity_err_String extends BaseObject {
+public class IdentityResult extends BaseObject {
   private transient long swigCPtr;
   protected transient boolean swigCMemOwn;
 
-  protected Result_ok_dpp_identity_identity_Identity_err_String(long cPtr, boolean cMemoryOwn) {
+  protected IdentityResult(long cPtr, boolean cMemoryOwn) {
     swigCMemOwn = cMemoryOwn;
     swigCPtr = cPtr;
   }
 
-  protected static long getCPtr(Result_ok_dpp_identity_identity_Identity_err_String obj) {
+  protected static long getCPtr(IdentityResult obj) {
     return (obj == null) ? 0 : obj.swigCPtr;
   }
 
@@ -32,7 +32,7 @@ public class Result_ok_dpp_identity_identity_Identity_err_String extends BaseObj
     if (swigCPtr != 0) {
       if (swigCMemOwn) {
         swigCMemOwn = false;
-        exampleJNI.delete_Result_ok_dpp_identity_identity_Identity_err_String(swigCPtr);
+        exampleJNI.delete_IdentityResult(swigCPtr);
       }
       swigCPtr = 0;
     }
@@ -43,20 +43,20 @@ public class Result_ok_dpp_identity_identity_Identity_err_String extends BaseObj
   }
 
   public void setOk(Identity value) {
-    exampleJNI.Result_ok_dpp_identity_identity_Identity_err_String_ok_set(swigCPtr, this, Identity.getCPtr(value), value);
+    exampleJNI.IdentityResult_ok_set(swigCPtr, this, Identity.getCPtr(value), value);
   }
 
   public Identity getOk() {
-    long cPtr = exampleJNI.Result_ok_dpp_identity_identity_Identity_err_String_ok_get(swigCPtr, this);
+    long cPtr = exampleJNI.IdentityResult_ok_get(swigCPtr, this);
     return (cPtr == 0) ? null : new Identity(cPtr, false);
   }
 
   public void setError(String value) {
-    exampleJNI.Result_ok_dpp_identity_identity_Identity_err_String_error_set(swigCPtr, this, value);
+    exampleJNI.IdentityResult_error_set(swigCPtr, this, value);
   }
 
   public String getError() {
-    return exampleJNI.Result_ok_dpp_identity_identity_Identity_err_String_error_get(swigCPtr, this);
+    return exampleJNI.IdentityResult_error_get(swigCPtr, this);
   }
 
 }

@@ -415,9 +415,9 @@ public class example {
     return (cPtr == 0) ? null : new Identity(cPtr, true);
   }
 
-  public static Result_ok_dpp_identity_identity_Identity_err_String fetchIdentity3(Identifier identifier) {
+  public static IdentityResult fetchIdentity3(Identifier identifier) {
     long cPtr = exampleJNI.fetchIdentity3(Identifier.getCPtr(identifier), identifier);
-    return (cPtr == 0) ? null : new Result_ok_dpp_identity_identity_Identity_err_String(cPtr, true);
+    return (cPtr == 0) ? null : new IdentityResult(cPtr, true);
   }
 
   public static Identity fetchIdentity(Identifier identifier) {
@@ -452,13 +452,13 @@ public class example {
     exampleJNI.stdCollectionsMapKeysDppIdentityIdentityPublicKeyKeyIDValuesDppIdentityIdentityPublicKeyIdentityPublicKeyDestroy(std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey.getCPtr(ffi), ffi);
   }
 
-  public static Result_ok_dpp_identity_identity_Identity_err_String resultOkDppIdentityIdentityIdentityErrStringCtor(Identity ok, String error) {
+  public static IdentityResult resultOkDppIdentityIdentityIdentityErrStringCtor(Identity ok, String error) {
     long cPtr = exampleJNI.resultOkDppIdentityIdentityIdentityErrStringCtor(Identity.getCPtr(ok), ok, error);
-    return (cPtr == 0) ? null : new Result_ok_dpp_identity_identity_Identity_err_String(cPtr, false);
+    return (cPtr == 0) ? null : new IdentityResult(cPtr, false);
   }
 
-  public static void resultOkDppIdentityIdentityIdentityErrStringDestroy(Result_ok_dpp_identity_identity_Identity_err_String ffi) {
-    exampleJNI.resultOkDppIdentityIdentityIdentityErrStringDestroy(Result_ok_dpp_identity_identity_Identity_err_String.getCPtr(ffi), ffi);
+  public static void resultOkDppIdentityIdentityIdentityErrStringDestroy(IdentityResult ffi) {
+    exampleJNI.resultOkDppIdentityIdentityIdentityErrStringDestroy(IdentityResult.getCPtr(ffi), ffi);
   }
 
   public static void setMemoryFactory(MemoryFactory value) {

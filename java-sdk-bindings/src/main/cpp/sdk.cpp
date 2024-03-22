@@ -420,6 +420,9 @@ SWIGINTERN void delete_dpp_identity_identity_Identity(dpp_identity_identity_Iden
         printf("~Identity(%lx)\n", (uint64_t)self);
         dpp_identity_identity_Identity_destroy(self);
     }
+SWIGINTERN void delete_Result_ok_dpp_identity_identity_Identity_err_String(Result_ok_dpp_identity_identity_Identity_err_String *self){
+        Result_ok_dpp_identity_identity_Identity_err_String_destroy(self);
+    }
 
 #ifdef __cplusplus
 extern "C" {
@@ -2090,7 +2093,7 @@ SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_delete_1Identity(
 }
 
 
-SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_Result_1ok_1dpp_1identity_1identity_1Identity_1err_1String_1ok_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
+SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_IdentityResult_1ok_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
   Result_ok_dpp_identity_identity_Identity_err_String *arg1 = (Result_ok_dpp_identity_identity_Identity_err_String *) 0 ;
   dpp_identity_identity_Identity *arg2 = (dpp_identity_identity_Identity *) 0 ;
   
@@ -2104,7 +2107,7 @@ SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_Result_1ok_1dpp_1
 }
 
 
-SWIGEXPORT jlong JNICALL Java_org_dashj_platform_sdk_exampleJNI_Result_1ok_1dpp_1identity_1identity_1Identity_1err_1String_1ok_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jlong JNICALL Java_org_dashj_platform_sdk_exampleJNI_IdentityResult_1ok_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jlong jresult = 0 ;
   Result_ok_dpp_identity_identity_Identity_err_String *arg1 = (Result_ok_dpp_identity_identity_Identity_err_String *) 0 ;
   dpp_identity_identity_Identity *result = 0 ;
@@ -2119,7 +2122,7 @@ SWIGEXPORT jlong JNICALL Java_org_dashj_platform_sdk_exampleJNI_Result_1ok_1dpp_
 }
 
 
-SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_Result_1ok_1dpp_1identity_1identity_1Identity_1err_1String_1error_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
+SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_IdentityResult_1error_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
   Result_ok_dpp_identity_identity_Identity_err_String *arg1 = (Result_ok_dpp_identity_identity_Identity_err_String *) 0 ;
   char *arg2 = (char *) 0 ;
   
@@ -2145,7 +2148,7 @@ SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_Result_1ok_1dpp_1
 }
 
 
-SWIGEXPORT jstring JNICALL Java_org_dashj_platform_sdk_exampleJNI_Result_1ok_1dpp_1identity_1identity_1Identity_1err_1String_1error_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jstring JNICALL Java_org_dashj_platform_sdk_exampleJNI_IdentityResult_1error_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jstring jresult = 0 ;
   Result_ok_dpp_identity_identity_Identity_err_String *arg1 = (Result_ok_dpp_identity_identity_Identity_err_String *) 0 ;
   char *result = 0 ;
@@ -2160,13 +2163,13 @@ SWIGEXPORT jstring JNICALL Java_org_dashj_platform_sdk_exampleJNI_Result_1ok_1dp
 }
 
 
-SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_delete_1Result_1ok_1dpp_1identity_1identity_1Identity_1err_1String(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_delete_1IdentityResult(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   Result_ok_dpp_identity_identity_Identity_err_String *arg1 = (Result_ok_dpp_identity_identity_Identity_err_String *) 0 ;
   
   (void)jenv;
   (void)jcls;
   arg1 = *(Result_ok_dpp_identity_identity_Identity_err_String **)&jarg1; 
-  delete arg1;
+  delete_Result_ok_dpp_identity_identity_Identity_err_String(arg1);
 }
 
 

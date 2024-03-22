@@ -45,7 +45,7 @@ public class IdentityTest extends BaseTest {
     @Test
     public void fetchIdentity3AndDestroy() {
         Identifier identifier1 = new Identifier(contractIdentifier);
-        Result_ok_dpp_identity_identity_Identity_err_String result = example.fetchIdentity3(identifier1);
+        IdentityResult result = example.fetchIdentity3(identifier1);
         Identity identity = result.getOk();
         assertEquals(Identity.Tag.V0, identity.getTag());
         IdentityV0 identityV0 = identity.getV0().get_0();
@@ -61,7 +61,7 @@ public class IdentityTest extends BaseTest {
     @Test
     public void fetchIdentity3FailAndDestroy() {
         Identifier identifier1 = new Identifier(identifier);
-        Result_ok_dpp_identity_identity_Identity_err_String result = example.fetchIdentity3(identifier1);
+        IdentityResult result = example.fetchIdentity3(identifier1);
         assertNull(result.getOk());
         String error = result.getError();
         assertNotNull(error);

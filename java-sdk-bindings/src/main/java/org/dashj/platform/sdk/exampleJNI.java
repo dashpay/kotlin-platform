@@ -120,11 +120,11 @@ public class exampleJNI {
   public final static native void Identity_v0_set(long jarg1, Identity jarg1_, long jarg2, Identity.V0_Body jarg2_);
   public final static native long Identity_v0_get(long jarg1, Identity jarg1_);
   public final static native void delete_Identity(long jarg1);
-  public final static native void Result_ok_dpp_identity_identity_Identity_err_String_ok_set(long jarg1, Result_ok_dpp_identity_identity_Identity_err_String jarg1_, long jarg2, Identity jarg2_);
-  public final static native long Result_ok_dpp_identity_identity_Identity_err_String_ok_get(long jarg1, Result_ok_dpp_identity_identity_Identity_err_String jarg1_);
-  public final static native void Result_ok_dpp_identity_identity_Identity_err_String_error_set(long jarg1, Result_ok_dpp_identity_identity_Identity_err_String jarg1_, String jarg2);
-  public final static native String Result_ok_dpp_identity_identity_Identity_err_String_error_get(long jarg1, Result_ok_dpp_identity_identity_Identity_err_String jarg1_);
-  public final static native void delete_Result_ok_dpp_identity_identity_Identity_err_String(long jarg1);
+  public final static native void IdentityResult_ok_set(long jarg1, IdentityResult jarg1_, long jarg2, Identity jarg2_);
+  public final static native long IdentityResult_ok_get(long jarg1, IdentityResult jarg1_);
+  public final static native void IdentityResult_error_set(long jarg1, IdentityResult jarg1_, String jarg2);
+  public final static native String IdentityResult_error_get(long jarg1, IdentityResult jarg1_);
+  public final static native void delete_IdentityResult(long jarg1);
   public final static native long platformValueHash256Ctor(byte[] jarg1);
   public final static native void platformValueHash256Destroy(long jarg1, platform_value_Hash256 jarg1_);
   public final static native byte[] platformValueHash256Get0(long jarg1, platform_value_Hash256 jarg1_);
@@ -224,7 +224,7 @@ public class exampleJNI {
   public final static native long stdCollectionsMapKeysDppIdentityIdentityPublicKeyKeyIDValuesDppIdentityIdentityPublicKeyIdentityPublicKeyCtor(long jarg1, long jarg2, long jarg3);
   public final static native void stdCollectionsMapKeysDppIdentityIdentityPublicKeyKeyIDValuesDppIdentityIdentityPublicKeyIdentityPublicKeyDestroy(long jarg1, std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey jarg1_);
   public final static native long resultOkDppIdentityIdentityIdentityErrStringCtor(long jarg1, Identity jarg1_, String jarg2);
-  public final static native void resultOkDppIdentityIdentityIdentityErrStringDestroy(long jarg1, Result_ok_dpp_identity_identity_Identity_err_String jarg1_);
+  public final static native void resultOkDppIdentityIdentityIdentityErrStringDestroy(long jarg1, IdentityResult jarg1_);
   public final static native long MemoryFactory_getInstance();
   public final static native long new_MemoryFactory();
   public final static native void delete_MemoryFactory(long jarg1);

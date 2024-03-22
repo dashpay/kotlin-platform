@@ -60,3 +60,10 @@
 %rename (createBasicIdentity) platform_mobile_identity_create_basic_identity(uint8_t (*id)[32]);
 %rename (getIdentityContractBounds) platform_mobile_identity_get_identity_contract_bounds(platform_value_types_identifier_Identifier *identifier, platform_value_types_identifier_Identifier *contract_identifier);
 %rename (getIdentity2) platform_mobile_identity_get_identity2(platform_value_types_identifier_Identifier *);
+
+%rename (IdentityResult) Result_ok_dpp_identity_identity_Identity_err_String;
+%extend Result_ok_dpp_identity_identity_Identity_err_String {
+    ~Result_ok_dpp_identity_identity_Identity_err_String() {
+        Result_ok_dpp_identity_identity_Identity_err_String_destroy($self);
+    }
+}
