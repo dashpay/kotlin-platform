@@ -45,11 +45,18 @@
 %rename(Identity_Tag) dpp_identity_identity_Identity_Tag;
 %rename(IdentityV0Type) dpp_identity_identity_Identity_V0;
 
-%newobject get_identity2(struct platform_value_types_identifier_Identifier *);
-%newobject get_an_identity(void);
-%newobject create_basic_identity(uint8_t (*)[32]);
-%newobject get_identity_contract_bounds(struct platform_value_types_identifier_Identifier *identifier, struct platform_value_types_identifier_Identifier *contract_identifier);
-%newobject fetch_identity3(struct platform_value_types_identifier_Identifier *identifier);
-%newobject fetch_identity(struct platform_value_types_identifier_Identifier *identifier);
-%newobject get_document(void);
-%newobject fetch_identity2(struct platform_value_types_identifier_Identifier *identifier);
+%newobject platform_mobile_identity_get_identity2(struct platform_value_types_identifier_Identifier *);
+%newobject platform_mobile_identity_get_an_identity(void);
+%newobject platform_mobile_identity_create_basic_identity(uint8_t (*)[32]);
+%newobject platform_mobile_identity_get_identity_contract_bounds(struct platform_value_types_identifier_Identifier *identifier, struct platform_value_types_identifier_Identifier *contract_identifier);
+%newobject platform_mobile_fetch_identity_fetch_identity3(struct platform_value_types_identifier_Identifier *identifier);
+%newobject platform_mobile_fetch_identity_fetch_identity(struct platform_value_types_identifier_Identifier *identifier);
+%newobject platform_mobile_fetch_identity_get_document(void);
+%newobject platform_mobile_fetch_identity_fetch_identity2(struct platform_value_types_identifier_Identifier *identifier);
+%rename (fetchIdentity) platform_mobile_fetch_identity_fetch_identity(struct platform_value_types_identifier_Identifier *identifier);
+%rename (fetchIdentity2) platform_mobile_fetch_identity_fetch_identity2(struct platform_value_types_identifier_Identifier *identifier);
+%rename (fetchIdentity3) platform_mobile_fetch_identity_fetch_identity3(struct platform_value_types_identifier_Identifier *identifier);
+%rename (getDocument) platform_mobile_fetch_identity_get_document(void);
+%rename (createBasicIdentity) platform_mobile_identity_create_basic_identity(uint8_t (*id)[32]);
+%rename (getIdentityContractBounds) platform_mobile_identity_get_identity_contract_bounds(struct platform_value_types_identifier_Identifier *identifier, struct platform_value_types_identifier_Identifier *contract_identifier);
+%rename (getIdentity2) platform_mobile_identity_get_identity2(struct platform_value_types_identifier_Identifier *);

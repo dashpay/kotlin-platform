@@ -21,9 +21,7 @@ dependencies {
 }
 
 cmake {
-    // optional source folder. This is where the main CMakeLists.txt file resides. Default is ./src/main/cpp
     sourceFolder=file("$projectDir/src/main/cpp")
-    println("here it is: $projectDir/src/main/cpp")
 }
 
 //assemble.dependsOn cmakeBuild
