@@ -24,9 +24,9 @@
         printf("  ->data->_0->values(%lx)\n", (long)binaryData->_0->values);
         dpp_identity_identity_public_key_contract_bounds_ContractBounds * contract_bounds_copy = nullptr;
         if (contract_bounds != nullptr) {
-            if (contract_bounds->tag == dpp_identity_identity_public_key_contract_bounds_ContractBounds::Tag::dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContract) {
+            if (contract_bounds->tag == dpp_identity_identity_public_key_contract_bounds_ContractBounds::Tag::SingleContract) {
                 contract_bounds_copy = dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContract_ctor(Identifier_clone(contract_bounds->single_contract.id));
-            } else if (contract_bounds->tag == dpp_identity_identity_public_key_contract_bounds_ContractBounds::Tag::dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContractDocumentType) {
+            } else if (contract_bounds->tag == dpp_identity_identity_public_key_contract_bounds_ContractBounds::Tag::SingleContractDocumentType) {
                 char * typeCopy = memoryFactory.clone(contract_bounds->single_contract_document_type.document_type_name);
                 contract_bounds_copy = dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContractDocumentType_ctor(Identifier_clone(contract_bounds->single_contract_document_type.id), typeCopy);
             }

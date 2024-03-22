@@ -13,4 +13,4 @@ include = []
 extra_bindings = []
 
 [enum]
-prefix_with_name = true
+prefix_with_name = false

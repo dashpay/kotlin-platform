@@ -148,7 +148,7 @@ extern MemoryFactory & memoryFactory;
 //}
 
 #define ENUM_CASE(crate, enum_class, value) \
-    case crate##_##enum_class::crate##_##enum_class##_##value: \
+    case crate##_##enum_class::value: \
         return crate##_##enum_class##_##value##_ctor();
 
 dpp_identity_identity_public_key_key_type_KeyType * intToKeyType(dpp_identity_identity_public_key_key_type_KeyType value) {

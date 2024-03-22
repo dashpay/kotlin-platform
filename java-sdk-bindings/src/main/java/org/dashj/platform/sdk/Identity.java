@@ -42,16 +42,16 @@ public class Identity extends BaseObject {
     return swigCPtr;
   }
 
-  static public class dpp_identity_identity_Identity_V0_Body extends BaseObject {
+  static public class V0_Body extends BaseObject {
     private transient long swigCPtr;
     protected transient boolean swigCMemOwn;
   
-    protected dpp_identity_identity_Identity_V0_Body(long cPtr, boolean cMemoryOwn) {
+    protected V0_Body(long cPtr, boolean cMemoryOwn) {
       swigCMemOwn = cMemoryOwn;
       swigCPtr = cPtr;
     }
   
-    protected static long getCPtr(dpp_identity_identity_Identity_V0_Body obj) {
+    protected static long getCPtr(V0_Body obj) {
       return (obj == null) ? 0 : obj.swigCPtr;
     }
   
@@ -64,7 +64,7 @@ public class Identity extends BaseObject {
       if (swigCPtr != 0) {
         if (swigCMemOwn) {
           swigCMemOwn = false;
-          exampleJNI.delete_Identity_dpp_identity_identity_Identity_V0_Body(swigCPtr);
+          exampleJNI.delete_Identity_V0_Body(swigCPtr);
         }
         swigCPtr = 0;
       }
@@ -75,11 +75,11 @@ public class Identity extends BaseObject {
     }
   
     public void set_0(IdentityV0 value) {
-      exampleJNI.Identity_dpp_identity_identity_Identity_V0_Body__0_set(swigCPtr, this, IdentityV0.getCPtr(value), value);
+      exampleJNI.Identity_V0_Body__0_set(swigCPtr, this, IdentityV0.getCPtr(value), value);
     }
   
     public IdentityV0 get_0() {
-      long cPtr = exampleJNI.Identity_dpp_identity_identity_Identity_V0_Body__0_get(swigCPtr, this);
+      long cPtr = exampleJNI.Identity_V0_Body__0_get(swigCPtr, this);
       return (cPtr == 0) ? null : new IdentityV0(cPtr, false);
     }
   
@@ -93,17 +93,17 @@ public class Identity extends BaseObject {
     return Identity.Tag.swigToEnum(exampleJNI.Identity_tag_get(swigCPtr, this));
   }
 
-  public void setV0(Identity.dpp_identity_identity_Identity_V0_Body value) {
-    exampleJNI.Identity_v0_set(swigCPtr, this, Identity.dpp_identity_identity_Identity_V0_Body.getCPtr(value), value);
+  public void setV0(Identity.V0_Body value) {
+    exampleJNI.Identity_v0_set(swigCPtr, this, Identity.V0_Body.getCPtr(value), value);
   }
 
-  public Identity.dpp_identity_identity_Identity_V0_Body getV0() {
+  public Identity.V0_Body getV0() {
     long cPtr = exampleJNI.Identity_v0_get(swigCPtr, this);
-    return (cPtr == 0) ? null : new Identity.dpp_identity_identity_Identity_V0_Body(cPtr, false);
+    return (cPtr == 0) ? null : new Identity.V0_Body(cPtr, false);
   }
 
   public final static class Tag {
-    public final static Identity.Tag IdentityV0Type = new Identity.Tag("IdentityV0Type");
+    public final static Identity.Tag V0 = new Identity.Tag("V0");
 
     public final int swigValue() {
       return swigValue;
@@ -139,7 +139,7 @@ public class Identity extends BaseObject {
       swigNext = this.swigValue+1;
     }
 
-    private static Tag[] swigValues = { IdentityV0Type };
+    private static Tag[] swigValues = { V0 };
     private static int swigNext = 0;
     private final int swigValue;
     private final String swigName;
