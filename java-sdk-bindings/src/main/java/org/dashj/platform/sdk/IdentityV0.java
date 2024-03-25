@@ -60,6 +60,10 @@ public class IdentityV0 extends BaseObject {
     return (cPtr == 0) ? null : new Revision(cPtr, false);
   }
 
+  public IdentityV0(Identifier identifier, java.util.Map<KeyID, IdentityPublicKey> public_keys, java.math.BigInteger balance, Revision revision) {
+    this(exampleJNI.new_IdentityV0(Identifier.getCPtr(identifier), identifier, public_keys, balance, Revision.getCPtr(revision), revision), true);
+  }
+
   public int getPublicKeyCount() {
     return exampleJNI.IdentityV0_getPublicKeyCount(swigCPtr, this);
   }
@@ -76,6 +80,10 @@ public class IdentityV0 extends BaseObject {
 
   public long getBalance() {
     return exampleJNI.IdentityV0_getBalance(swigCPtr, this);
+  }
+
+  public java.util.Map<KeyID, IdentityPublicKey> getPublicKeys() {
+    return exampleJNI.IdentityV0_getPublicKeys(swigCPtr, this);
   }
 
 }

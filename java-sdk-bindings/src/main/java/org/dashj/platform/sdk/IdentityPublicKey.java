@@ -102,6 +102,10 @@ public class IdentityPublicKey extends BaseObject {
     return (cPtr == 0) ? null : new IdentityPublicKey.V0_Body(cPtr, false);
   }
 
+  public IdentityPublicKey(IdentityPublicKeyV0 ipkv0) {
+    this(exampleJNI.new_IdentityPublicKey(IdentityPublicKeyV0.getCPtr(ipkv0), ipkv0), true);
+  }
+
   public final static class Tag {
     public final static IdentityPublicKey.Tag V0 = new IdentityPublicKey.Tag("V0");
 

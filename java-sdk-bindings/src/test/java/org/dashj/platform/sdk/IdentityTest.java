@@ -4,6 +4,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
+import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -92,6 +96,19 @@ public class IdentityTest extends BaseTest {
         assertNotNull(identityV0.getId().get_0().get_0());
         assertArrayEquals(identifier.get_0().get_0(), identityV0.getId().get_0().get_0());
 
+        Map<KeyID, IdentityPublicKey> map = identityV0.getPublicKeys();
+        map.values().forEach(ipk -> {
+            IdentityPublicKeyV0 ipkv0 = ipk.getV0().get_0();
+            assertEquals(1, ipkv0.getId().toInt());
+            assertFalse(ipkv0.getRead_only());
+            Assertions.assertEquals(Purpose.AUTHENTICATION, ipkv0.getPurpose());
+            Assertions.assertEquals(SecurityLevel.MASTER, ipkv0.getSecurityLevel());
+            Assertions.assertEquals(KeyType.ECDSA_SECP256K1, ipkv0.getKeyType());
+            assertNull(ipkv0.getDisabled_at());
+            assertEquals(33, ipkv0.getData().get_0().length);
+            assertNull(ipkv0.getContract_bounds());
+        });
+
         for (int i = 0; i < identityV0.getPublicKeyCount(); ++i) {
             IdentityPublicKeyV0 ipkv0 = identityV0.getPublicKey(i);
             assertEquals(1, ipkv0.getId().toInt());
@@ -167,6 +184,36 @@ public class IdentityTest extends BaseTest {
         assertEquals(0, identityV0.getPublicKeyCount());
         example.dppIdentityIdentityIdentityDestroy(identity);
         identifier.delete();
+    }
+
+    @Test
+    void createIdentityTest() {
+        HashMap<KeyID, IdentityPublicKey> keyMap = new HashMap<>();
+        for(int i = 0; i < 2; ++i) {
+            IdentityPublicKeyV0 ipkv0 = new IdentityPublicKeyV0(
+                    new KeyID(i + 1),
+                    Purpose.AUTHENTICATION,
+                    SecurityLevel.MASTER,
+                    null,
+                    KeyType.BIP13_SCRIPT_HASH,
+                    false,
+                    new BinaryData(new byte[20]),
+                    new TimestampMillis()
+            );
+            IdentityPublicKey ipk = new IdentityPublicKey(ipkv0);
+            keyMap.put(new KeyID(i + 1), ipk);
+        }
+
+        Identifier identifier1 = new Identifier(identifier);
+        IdentityV0 identityV0 = new IdentityV0(identifier1, keyMap, BigInteger.TEN, new Revision(1));
+        Identity identity = new Identity(identityV0);
+        identity.getV0().get_0().getPublicKeys().values().forEach(ipk -> {
+            IdentityPublicKeyV0 ipkv0 = ipk.getV0().get_0();
+            assertEquals(Purpose.AUTHENTICATION, ipkv0.getPurpose());
+        });
+        identifier1.delete();
+        identityV0.delete();
+        identity.delete();
     }
 //
 //    @Test

@@ -62,5 +62,19 @@
 %rename(IdentityPublicKey) dpp_identity_identity_public_key_IdentityPublicKey;
 %rename(IdentityPublicKey_Tag) dpp_identity_identity_public_key_IdentityPublicKey_Tag;
 
+%extend dpp_identity_identity_public_key_IdentityPublicKey {
+    dpp_identity_identity_public_key_IdentityPublicKey(dpp_identity_identity_public_key_v0_IdentityPublicKeyV0 * ipkv0) {
+        return dpp_identity_identity_public_key_IdentityPublicKey_V0_ctor(
+            platform_mobile_identity_IdentityPublicKeyV0_clone(ipkv0)
+        );
+    }
+    ~dpp_identity_identity_public_key_IdentityPublicKey() {
+        dpp_identity_identity_public_key_IdentityPublicKey_destroy($self);
+    }
+}
 %newobject random_key;
 %newobject random_key_args;
+
+%ignore std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey_ctor(uintptr_t count,
+                                                                                                                                                                                                                                                          dpp_identity_identity_public_key_KeyID **keys,
+                                                                                                                                                                                                                                                          dpp_identity_identity_public_key_IdentityPublicKey **values);

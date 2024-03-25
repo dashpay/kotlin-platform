@@ -102,6 +102,10 @@ public class Identity extends BaseObject {
     return (cPtr == 0) ? null : new Identity.V0_Body(cPtr, false);
   }
 
+  public Identity(IdentityV0 identityV0) {
+    this(exampleJNI.new_Identity(IdentityV0.getCPtr(identityV0), identityV0), true);
+  }
+
   public final static class Tag {
     public final static Identity.Tag V0 = new Identity.Tag("V0");
 
