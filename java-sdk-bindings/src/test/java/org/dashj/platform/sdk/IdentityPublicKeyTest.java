@@ -20,25 +20,10 @@ public class IdentityPublicKeyTest extends BaseTest {
     }
 
     @Test
-    public void createKeyIDinRustAndDestroy() {
-        KeyID id = example.dppIdentityIdentityPublicKeyKeyIDCtor(1);
-        assertEquals(1, id.toInt());
-        example.dppIdentityIdentityPublicKeyKeyIDDestroy(id);
-    }
-
-    @Test
     public void createKeyIDinJavaAndDestroy() {
         KeyID id = new KeyID(1);
         assertEquals(1, id.toInt());
         id.delete();
-    }
-
-    @Test
-    public void createTimestampMillisinRustAndDestroy() {
-        long timestamp = System.currentTimeMillis();
-        TimestampMillis ts = example.dppIdentityIdentityPublicKeyTimestampMillisCtor(BigInteger.valueOf(timestamp));
-        assertEquals(timestamp, ts.toLong());
-        example.dppIdentityIdentityPublicKeyTimestampMillisDestroy(ts);
     }
 
     @Test

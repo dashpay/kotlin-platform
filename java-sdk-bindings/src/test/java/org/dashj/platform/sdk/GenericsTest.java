@@ -55,9 +55,9 @@ public class GenericsTest extends BaseTest {
 //        holder.delete();
 //    }
 
-    @Test
-    public void hash256Test() {
-        platform_value_Hash256 hash256 = example.platformValueHash256Ctor(identifier);
-        example.platformValueHash256Destroy(hash256);
-    }
+//    @Test
+//    public void hash256Test() {
+//        platform_value_Hash256 hash256 = example.platformValueHash256Ctor(identifier);
+//        example.platformValueHash256Destroy(hash256);
+//    }
 }

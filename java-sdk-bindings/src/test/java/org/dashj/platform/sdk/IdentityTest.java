@@ -27,7 +27,7 @@ public class IdentityTest extends BaseTest {
         assertEquals(0L, identityV0.getRevision().toLong());
         assertEquals(0L, identityV0.getBalance());
         assertNull(identityV0.getPublicKey(0));
-        example.dppIdentityIdentityIdentityDestroy(identity);
+        identity.delete();
         identifier1.delete();
     }
 
@@ -42,7 +42,7 @@ public class IdentityTest extends BaseTest {
         assertEquals(0L, identityV0.getRevision().toLong());
         assertEquals(0L, identityV0.getBalance());
         assertNotNull(identityV0.getPublicKey(0));
-        example.dppIdentityIdentityIdentityDestroy(identity);
+        identity.delete();
         identifier1.delete();
     }
 
@@ -58,7 +58,7 @@ public class IdentityTest extends BaseTest {
         assertEquals(0L, identityV0.getRevision().toLong());
         assertEquals(0L, identityV0.getBalance());
         assertNotNull(identityV0.getPublicKey(0));
-        example.dppIdentityIdentityIdentityDestroy(identity);
+        identity.delete();
         identifier1.delete();
     }
 
@@ -76,7 +76,6 @@ public class IdentityTest extends BaseTest {
     @Test
     public void getDocument() {
         Identifier identifier1 = example.getDocument();
-
         identifier1.delete();
     }
 
@@ -182,7 +181,7 @@ public class IdentityTest extends BaseTest {
         assertEquals(0, identityV0.getRevision().toLong());
         assertEquals(0, identityV0.getBalance());
         assertEquals(0, identityV0.getPublicKeyCount());
-        example.dppIdentityIdentityIdentityDestroy(identity);
+        identity.delete();
         identifier.delete();
     }
 
@@ -258,11 +257,5 @@ public class IdentityTest extends BaseTest {
 //        //example.
 //        SWIGTYPE_p_void p_void = new SWIGTYPE_p_void();
 //        //String result = example.ffiGetChainTypeStringAsync(p_void, mainNet);
-//    }
-
-//    @Test
-//    public void createAnIdentityInJavaAndDestroy() {
-//        Identity identity = new Identity();
-//        identity.delete();
 //    }
 }

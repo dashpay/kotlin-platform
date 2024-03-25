@@ -64,6 +64,8 @@ import org.dashj.platform.sdk.base.BaseObject;
   }
 %}
 
+%include "ignore.i"
+
 //extern "C" {
 %include "../../../../rs-sdk/target/rs_sdk_bindings.h"
 //}

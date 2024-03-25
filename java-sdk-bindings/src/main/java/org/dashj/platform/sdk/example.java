@@ -9,30 +9,12 @@
 package org.dashj.platform.sdk;
 
 public class example {
-  public static Revision dppPreludeRevisionCtor(java.math.BigInteger o_0) {
-    long cPtr = exampleJNI.dppPreludeRevisionCtor(o_0);
-    return (cPtr == 0) ? null : new Revision(cPtr, false);
-  }
-
-  public static void dppPreludeRevisionDestroy(Revision ffi) {
-    exampleJNI.dppPreludeRevisionDestroy(Revision.getCPtr(ffi), ffi);
-  }
-
   public static java.math.BigInteger dppPreludeRevisionGet0(Revision obj) {
     return exampleJNI.dppPreludeRevisionGet0(Revision.getCPtr(obj), obj);
   }
 
   public static void dppPreludeRevisionSet0(Revision obj, java.math.BigInteger value) {
     exampleJNI.dppPreludeRevisionSet0(Revision.getCPtr(obj), obj, value);
-  }
-
-  public static dpp_identity_identity_public_key_KeyCount dppIdentityIdentityPublicKeyKeyCountCtor(KeyID o_0) {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyKeyCountCtor(KeyID.getCPtr(o_0), o_0);
-    return (cPtr == 0) ? null : new dpp_identity_identity_public_key_KeyCount(cPtr, false);
-  }
-
-  public static void dppIdentityIdentityPublicKeyKeyCountDestroy(dpp_identity_identity_public_key_KeyCount ffi) {
-    exampleJNI.dppIdentityIdentityPublicKeyKeyCountDestroy(dpp_identity_identity_public_key_KeyCount.getCPtr(ffi), ffi);
   }
 
   public static KeyID dppIdentityIdentityPublicKeyKeyCountGet0(dpp_identity_identity_public_key_KeyCount obj) {
@@ -44,15 +26,6 @@ public class example {
     exampleJNI.dppIdentityIdentityPublicKeyKeyCountSet0(dpp_identity_identity_public_key_KeyCount.getCPtr(obj), obj, KeyID.getCPtr(value), value);
   }
 
-  public static KeyID dppIdentityIdentityPublicKeyKeyIDCtor(long o_0) {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyKeyIDCtor(o_0);
-    return (cPtr == 0) ? null : new KeyID(cPtr, false);
-  }
-
-  public static void dppIdentityIdentityPublicKeyKeyIDDestroy(KeyID ffi) {
-    exampleJNI.dppIdentityIdentityPublicKeyKeyIDDestroy(KeyID.getCPtr(ffi), ffi);
-  }
-
   public static long dppIdentityIdentityPublicKeyKeyIDGet0(KeyID obj) {
     return exampleJNI.dppIdentityIdentityPublicKeyKeyIDGet0(KeyID.getCPtr(obj), obj);
   }
@@ -61,73 +34,12 @@ public class example {
     exampleJNI.dppIdentityIdentityPublicKeyKeyIDSet0(KeyID.getCPtr(obj), obj, value);
   }
 
-  public static TimestampMillis dppIdentityIdentityPublicKeyTimestampMillisCtor(java.math.BigInteger o_0) {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyTimestampMillisCtor(o_0);
-    return (cPtr == 0) ? null : new TimestampMillis(cPtr, false);
-  }
-
-  public static void dppIdentityIdentityPublicKeyTimestampMillisDestroy(TimestampMillis ffi) {
-    exampleJNI.dppIdentityIdentityPublicKeyTimestampMillisDestroy(TimestampMillis.getCPtr(ffi), ffi);
-  }
-
   public static java.math.BigInteger dppIdentityIdentityPublicKeyTimestampMillisGet0(TimestampMillis obj) {
     return exampleJNI.dppIdentityIdentityPublicKeyTimestampMillisGet0(TimestampMillis.getCPtr(obj), obj);
   }
 
   public static void dppIdentityIdentityPublicKeyTimestampMillisSet0(TimestampMillis obj, java.math.BigInteger value) {
     exampleJNI.dppIdentityIdentityPublicKeyTimestampMillisSet0(TimestampMillis.getCPtr(obj), obj, value);
-  }
-
-  public static IdentityPublicKey dppIdentityIdentityPublicKeyIdentityPublicKeyV0Ctor(IdentityPublicKeyV0 o_0) {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyIdentityPublicKeyV0Ctor(IdentityPublicKeyV0.getCPtr(o_0), o_0);
-    return (cPtr == 0) ? null : new IdentityPublicKey(cPtr, false);
-  }
-
-  public static void dppIdentityIdentityPublicKeyIdentityPublicKeyDestroy(IdentityPublicKey ffi) {
-    exampleJNI.dppIdentityIdentityPublicKeyIdentityPublicKeyDestroy(IdentityPublicKey.getCPtr(ffi), ffi);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose dppIdentityIdentityPublicKeyPurposePurposeAUTHENTICATIONCtor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyPurposePurposeAUTHENTICATIONCtor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose dppIdentityIdentityPublicKeyPurposePurposeENCRYPTIONCtor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyPurposePurposeENCRYPTIONCtor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose dppIdentityIdentityPublicKeyPurposePurposeDECRYPTIONCtor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyPurposePurposeDECRYPTIONCtor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose dppIdentityIdentityPublicKeyPurposePurposeTRANSFERCtor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyPurposePurposeTRANSFERCtor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose dppIdentityIdentityPublicKeyPurposePurposeSYSTEMCtor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyPurposePurposeSYSTEMCtor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose dppIdentityIdentityPublicKeyPurposePurposeVOTINGCtor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyPurposePurposeVOTINGCtor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose(cPtr, false);
-  }
-
-  public static void dppIdentityIdentityPublicKeyPurposePurposeDestroy(SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose ffi) {
-    exampleJNI.dppIdentityIdentityPublicKeyPurposePurposeDestroy(SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose.getCPtr(ffi));
-  }
-
-  public static IdentityPublicKeyV0 dppIdentityIdentityPublicKeyV0IdentityPublicKeyV0Ctor(KeyID id, SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose purpose, SWIGTYPE_p_dpp_identity_identity_public_key_security_level_SecurityLevel security_level, ContractBounds contract_bounds, SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType key_type, boolean read_only, BinaryData data, TimestampMillis disabled_at) {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyV0IdentityPublicKeyV0Ctor(KeyID.getCPtr(id), id, SWIGTYPE_p_dpp_identity_identity_public_key_purpose_Purpose.getCPtr(purpose), SWIGTYPE_p_dpp_identity_identity_public_key_security_level_SecurityLevel.getCPtr(security_level), ContractBounds.getCPtr(contract_bounds), contract_bounds, SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType.getCPtr(key_type), read_only, BinaryData.getCPtr(data), data, TimestampMillis.getCPtr(disabled_at), disabled_at);
-    return (cPtr == 0) ? null : new IdentityPublicKeyV0(cPtr, false);
-  }
-
-  public static void dppIdentityIdentityPublicKeyV0IdentityPublicKeyV0Destroy(IdentityPublicKeyV0 ffi) {
-    exampleJNI.dppIdentityIdentityPublicKeyV0IdentityPublicKeyV0Destroy(IdentityPublicKeyV0.getCPtr(ffi), ffi);
   }
 
   public static KeyID dppIdentityIdentityPublicKeyV0IdentityPublicKeyV0GetId(IdentityPublicKeyV0 obj) {
@@ -201,86 +113,6 @@ public class example {
     exampleJNI.dppIdentityIdentityPublicKeyV0IdentityPublicKeyV0SetDisabledAt(IdentityPublicKeyV0.getCPtr(obj), obj, TimestampMillis.getCPtr(value), value);
   }
 
-  public static ContractBounds dppIdentityIdentityPublicKeyContractBoundsContractBoundsSingleContractCtor(Identifier id) {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyContractBoundsContractBoundsSingleContractCtor(Identifier.getCPtr(id), id);
-    return (cPtr == 0) ? null : new ContractBounds(cPtr, false);
-  }
-
-  public static ContractBounds dppIdentityIdentityPublicKeyContractBoundsContractBoundsSingleContractDocumentTypeCtor(Identifier id, String document_type_name) {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyContractBoundsContractBoundsSingleContractDocumentTypeCtor(Identifier.getCPtr(id), id, document_type_name);
-    return (cPtr == 0) ? null : new ContractBounds(cPtr, false);
-  }
-
-  public static void dppIdentityIdentityPublicKeyContractBoundsContractBoundsDestroy(ContractBounds ffi) {
-    exampleJNI.dppIdentityIdentityPublicKeyContractBoundsContractBoundsDestroy(ContractBounds.getCPtr(ffi), ffi);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType dppIdentityIdentityPublicKeyKeyTypeKeyTypeECDSASECP256K1Ctor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyKeyTypeKeyTypeECDSASECP256K1Ctor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType dppIdentityIdentityPublicKeyKeyTypeKeyTypeBLS12381Ctor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyKeyTypeKeyTypeBLS12381Ctor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType dppIdentityIdentityPublicKeyKeyTypeKeyTypeECDSAHASH160Ctor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyKeyTypeKeyTypeECDSAHASH160Ctor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType dppIdentityIdentityPublicKeyKeyTypeKeyTypeBIP13SCRIPTHASHCtor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyKeyTypeKeyTypeBIP13SCRIPTHASHCtor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType dppIdentityIdentityPublicKeyKeyTypeKeyTypeEDDSA25519HASH160Ctor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyKeyTypeKeyTypeEDDSA25519HASH160Ctor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType(cPtr, false);
-  }
-
-  public static void dppIdentityIdentityPublicKeyKeyTypeKeyTypeDestroy(SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType ffi) {
-    exampleJNI.dppIdentityIdentityPublicKeyKeyTypeKeyTypeDestroy(SWIGTYPE_p_dpp_identity_identity_public_key_key_type_KeyType.getCPtr(ffi));
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_security_level_SecurityLevel dppIdentityIdentityPublicKeySecurityLevelSecurityLevelMASTERCtor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeySecurityLevelSecurityLevelMASTERCtor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_security_level_SecurityLevel(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_security_level_SecurityLevel dppIdentityIdentityPublicKeySecurityLevelSecurityLevelCRITICALCtor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeySecurityLevelSecurityLevelCRITICALCtor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_security_level_SecurityLevel(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_security_level_SecurityLevel dppIdentityIdentityPublicKeySecurityLevelSecurityLevelHIGHCtor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeySecurityLevelSecurityLevelHIGHCtor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_security_level_SecurityLevel(cPtr, false);
-  }
-
-  public static SWIGTYPE_p_dpp_identity_identity_public_key_security_level_SecurityLevel dppIdentityIdentityPublicKeySecurityLevelSecurityLevelMEDIUMCtor() {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeySecurityLevelSecurityLevelMEDIUMCtor();
-    return (cPtr == 0) ? null : new SWIGTYPE_p_dpp_identity_identity_public_key_security_level_SecurityLevel(cPtr, false);
-  }
-
-  public static void dppIdentityIdentityPublicKeySecurityLevelSecurityLevelDestroy(SWIGTYPE_p_dpp_identity_identity_public_key_security_level_SecurityLevel ffi) {
-    exampleJNI.dppIdentityIdentityPublicKeySecurityLevelSecurityLevelDestroy(SWIGTYPE_p_dpp_identity_identity_public_key_security_level_SecurityLevel.getCPtr(ffi));
-  }
-
-  public static Identity dppIdentityIdentityIdentityV0Ctor(IdentityV0 o_0) {
-    long cPtr = exampleJNI.dppIdentityIdentityIdentityV0Ctor(IdentityV0.getCPtr(o_0), o_0);
-    return (cPtr == 0) ? null : new Identity(cPtr, false);
-  }
-
-  public static void dppIdentityIdentityIdentityDestroy(Identity ffi) {
-    exampleJNI.dppIdentityIdentityIdentityDestroy(Identity.getCPtr(ffi), ffi);
-  }
-
-  public static void dppIdentityV0IdentityV0Destroy(IdentityV0 ffi) {
-    exampleJNI.dppIdentityV0IdentityV0Destroy(IdentityV0.getCPtr(ffi), ffi);
-  }
-
   public static Identifier dppIdentityV0IdentityV0GetId(IdentityV0 obj) {
     long cPtr = exampleJNI.dppIdentityV0IdentityV0GetId(IdentityV0.getCPtr(obj), obj);
     return (cPtr == 0) ? null : new Identifier(cPtr, false);
@@ -312,25 +144,12 @@ public class example {
     return (cPtr == 0) ? null : new platform_value_Hash256(cPtr, false);
   }
 
-  public static void platformValueHash256Destroy(platform_value_Hash256 ffi) {
-    exampleJNI.platformValueHash256Destroy(platform_value_Hash256.getCPtr(ffi), ffi);
-  }
-
   public static byte[] platformValueHash256Get0(platform_value_Hash256 obj) {
     return exampleJNI.platformValueHash256Get0(platform_value_Hash256.getCPtr(obj), obj);
   }
 
   public static void platformValueHash256Set0(platform_value_Hash256 obj, byte[] value) {
     exampleJNI.platformValueHash256Set0(platform_value_Hash256.getCPtr(obj), obj, value);
-  }
-
-  public static BinaryData platformValueTypesBinaryDataBinaryDataCtor(byte[] o_0) {
-    long cPtr = exampleJNI.platformValueTypesBinaryDataBinaryDataCtor(o_0);
-    return (cPtr == 0) ? null : new BinaryData(cPtr, false);
-  }
-
-  public static void platformValueTypesBinaryDataBinaryDataDestroy(BinaryData ffi) {
-    exampleJNI.platformValueTypesBinaryDataBinaryDataDestroy(BinaryData.getCPtr(ffi), ffi);
   }
 
   public static byte[] platformValueTypesBinaryDataBinaryDataGet0(BinaryData obj) {
@@ -346,25 +165,12 @@ public class example {
     return (cPtr == 0) ? null : new IdentifierBytes32(cPtr, false);
   }
 
-  public static void platformValueTypesIdentifierIdentifierBytes32Destroy(IdentifierBytes32 ffi) {
-    exampleJNI.platformValueTypesIdentifierIdentifierBytes32Destroy(IdentifierBytes32.getCPtr(ffi), ffi);
-  }
-
   public static byte[] platformValueTypesIdentifierIdentifierBytes32Get0(IdentifierBytes32 obj) {
     return exampleJNI.platformValueTypesIdentifierIdentifierBytes32Get0(IdentifierBytes32.getCPtr(obj), obj);
   }
 
   public static void platformValueTypesIdentifierIdentifierBytes32Set0(IdentifierBytes32 obj, byte[] value) {
     exampleJNI.platformValueTypesIdentifierIdentifierBytes32Set0(IdentifierBytes32.getCPtr(obj), obj, value);
-  }
-
-  public static Identifier platformValueTypesIdentifierIdentifierCtor(IdentifierBytes32 o_0) {
-    long cPtr = exampleJNI.platformValueTypesIdentifierIdentifierCtor(IdentifierBytes32.getCPtr(o_0), o_0);
-    return (cPtr == 0) ? null : new Identifier(cPtr, false);
-  }
-
-  public static void platformValueTypesIdentifierIdentifierDestroy(Identifier ffi) {
-    exampleJNI.platformValueTypesIdentifierIdentifierDestroy(Identifier.getCPtr(ffi), ffi);
   }
 
   public static IdentifierBytes32 platformValueTypesIdentifierIdentifierGet0(Identifier obj) {
@@ -439,23 +245,6 @@ public class example {
   public static IdentityPublicKeyV0 platformMobileIdentityIdentityPublicKeyV0Clone(IdentityPublicKeyV0 identity_public_key) {
     long cPtr = exampleJNI.platformMobileIdentityIdentityPublicKeyV0Clone(IdentityPublicKeyV0.getCPtr(identity_public_key), identity_public_key);
     return (cPtr == 0) ? null : new IdentityPublicKeyV0(cPtr, false);
-  }
-
-  public static byte[] vecU8Ctor(long count, SWIGTYPE_p_unsigned_char values) {
-    return exampleJNI.vecU8Ctor(count, SWIGTYPE_p_unsigned_char.getCPtr(values));
-  }
-
-  public static void vecU8Destroy(byte[] ffi) {
-    exampleJNI.vecU8Destroy(ffi);
-  }
-
-  public static IdentityResult resultOkDppIdentityIdentityIdentityErrStringCtor(Identity ok, String error) {
-    long cPtr = exampleJNI.resultOkDppIdentityIdentityIdentityErrStringCtor(Identity.getCPtr(ok), ok, error);
-    return (cPtr == 0) ? null : new IdentityResult(cPtr, false);
-  }
-
-  public static void resultOkDppIdentityIdentityIdentityErrStringDestroy(IdentityResult ffi) {
-    exampleJNI.resultOkDppIdentityIdentityIdentityErrStringDestroy(IdentityResult.getCPtr(ffi), ffi);
   }
 
   public static void setMemoryFactory(MemoryFactory value) {
