@@ -30,7 +30,7 @@ object PlatformExplorer {
         val value = example.fetchIdentity3(Identifier(Base58.decode(idString)));
         if (value.ok != null) {
             when (value.ok.tag) {
-                Identity.Tag.IdentityV0Type -> {
+                Identity.Tag.V0 -> {
                     println("id: ${value.ok.v0._0.id}")
                     println("balance: ${value.ok.v0._0.balance}")
                     println("keys: ${value.ok.v0._0.publicKeyCount}")

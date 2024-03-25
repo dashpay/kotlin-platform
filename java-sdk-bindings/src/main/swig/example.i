@@ -6,6 +6,7 @@
 //}
 #include <stdlib.h>
 #include "dpp.h"
+#include "conversions.h"
 #include <ctime>
 
 MemoryFactory * MemoryFactory::instance = new MemoryFactory();

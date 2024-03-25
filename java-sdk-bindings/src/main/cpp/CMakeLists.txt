@@ -8,7 +8,8 @@ SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
 project(sdk)
 
 # Define the C source file
-set(C_SOURCE_FILE sdk.cpp)
+set(C_SOURCE_FILE sdk.cpp
+        java_map_keyid_identitypublickey.cpp)
 
 # Define the pre-built Rust library
 set(RUST_LIBRARY ${CMAKE_SOURCE_DIR}/../../../../rs-sdk/target/debug/librssdkbindings.a)
