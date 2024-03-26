@@ -23,7 +23,7 @@
             $result = jenv->CallStaticObjectMethod(resultClass, midSuccess, okObject);
         } else {
             jstring errorString = jenv->NewStringUTF($1->error);
-            jmethodID midFailure = jenv->GetStaticMethodID(resultClass, "Err", "(Ljava/lang/Object;)Lorg/dashj/platform/sdk/base/Result");
+            jmethodID midFailure = jenv->GetStaticMethodID(resultClass, "Err", "(Ljava/lang/Object;)Lorg/dashj/platform/sdk/base/Result;");
             $result = jenv->CallStaticObjectMethod(resultClass, midFailure, errorString);
         }
         // destroy the Result<T, E>
