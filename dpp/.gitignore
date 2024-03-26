@@ -1,0 +1,6 @@
+*.log
+.gradle/
+build/
+.idea/
+cmake-build-debug
+cmake-build-release
