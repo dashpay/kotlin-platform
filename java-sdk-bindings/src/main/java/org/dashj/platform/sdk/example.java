@@ -207,9 +207,8 @@ public class example {
     return (cPtr == 0) ? null : new Identity(cPtr, true);
   }
 
-  public static IdentityResult fetchIdentity3(Identifier identifier) {
-    long cPtr = exampleJNI.fetchIdentity3(Identifier.getCPtr(identifier), identifier);
-    return (cPtr == 0) ? null : new IdentityResult(cPtr, true);
+  public static org.dashj.platform.sdk.base.Result<Identity,String> fetchIdentity3(Identifier identifier) {
+    return exampleJNI.fetchIdentity3(Identifier.getCPtr(identifier), identifier);
   }
 
   public static Identity createBasicIdentity(byte[] id) {

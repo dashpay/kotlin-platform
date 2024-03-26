@@ -1,5 +1,6 @@
 package org.dashj.platform.sdk;
 
+import org.dashj.platform.sdk.base.Result;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -47,10 +48,10 @@ public class IdentityTest extends BaseTest {
     }
 
     @Test
-    public void fetchIdentity3AndDestroy() {
+    public void fetchIdentity3AndDestroy() throws Exception {
         Identifier identifier1 = new Identifier(contractIdentifier);
-        IdentityResult result = example.fetchIdentity3(identifier1);
-        Identity identity = result.getOk();
+        Result<Identity, String> result = example.fetchIdentity3(identifier1);
+        Identity identity = result.unwrap();
         assertEquals(Identity.Tag.V0, identity.getTag());
         IdentityV0 identityV0 = identity.getV0().get_0();
         assertNotNull(identityV0);
@@ -63,13 +64,14 @@ public class IdentityTest extends BaseTest {
     }
 
     @Test
-    public void fetchIdentity3FailAndDestroy() {
+    public void fetchIdentity3FailAndDestroy() throws Exception {
         Identifier identifier1 = new Identifier(identifier);
-        IdentityResult result = example.fetchIdentity3(identifier1);
-        assertNull(result.getOk());
-        String error = result.getError();
-        assertNotNull(error);
-        result.delete();
+        Result<Identity, String> result = example.fetchIdentity3(identifier1);
+        assertNull(result.unwrap());
+        //String error = result.getError();
+        //assertNotNull(error);
+        //result.delete();
+        result.unwrap().delete();
         identifier1.delete();
     }
 

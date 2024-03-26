@@ -78,12 +78,9 @@ jobject fermented_tree_to_java_map_KeyID_IdentityPublicKey(JNIEnv * jenv, Fermen
     jmethodID jmethodID_IdentityPublicKey_constructor = jenv->GetMethodID(keyIDClass, "<init>", "(JZ)V");
 
     for (uintptr_t i = 0; i < input->count; ++i) {
-
         jobject key = jenv->NewObject(keyIDClass, keyIDConstructor, (jlong) input->keys[i], false);
-
         jobject value = jenv->NewObject(jclass_IdentityPublicKey, jmethodID_IdentityPublicKey_constructor,
                                         (jlong) input->values[i], false);
-
         jenv->CallObjectMethod(hashMapInstance, putMethod, key, value);
     }
 

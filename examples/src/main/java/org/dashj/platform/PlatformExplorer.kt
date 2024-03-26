@@ -2,6 +2,7 @@ package org.dashj.platform
 
 import org.bitcoinj.core.Base58
 import org.dashj.platform.sdk.*
+import java.lang.Exception
 import java.util.Scanner
 
 object PlatformExplorer {
@@ -28,19 +29,21 @@ object PlatformExplorer {
         println(" > $idString")
 
         val value = example.fetchIdentity3(Identifier(Base58.decode(idString)));
-        if (value.ok != null) {
-            when (value.ok.tag) {
+        try {
+
+            val identity = value.unwrap();
+            when (identity.tag) {
                 Identity.Tag.V0 -> {
-                    println("id: ${value.ok.v0._0.id}")
-                    println("balance: ${value.ok.v0._0.balance}")
-                    println("keys: ${value.ok.v0._0.publicKeyCount}")
+                    println("id: ${identity.v0._0.id}")
+                    println("balance: ${identity.v0._0.balance}")
+                    println("keys: ${identity.v0._0.publicKeyCount}")
                 }
                 else -> {
 
                 }
             }
-        } else {
-            println("fetch identity error: ${value.error}")
+        } catch (e: Exception){
+            println("fetch identity error: ${value.unwrapError()}")
         }
 
     }

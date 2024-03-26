@@ -80,12 +80,12 @@
 %rename (getIdentityContractBounds) platform_mobile_identity_get_identity_contract_bounds(platform_value_types_identifier_Identifier *identifier, platform_value_types_identifier_Identifier *contract_identifier);
 %rename (getIdentity2) platform_mobile_identity_get_identity2(platform_value_types_identifier_Identifier *);
 
-%rename (IdentityResult) Result_ok_dpp_identity_identity_Identity_err_String;
-%extend Result_ok_dpp_identity_identity_Identity_err_String {
-    ~Result_ok_dpp_identity_identity_Identity_err_String() {
-        Result_ok_dpp_identity_identity_Identity_err_String_destroy($self);
-    }
-}
+// %rename (IdentityResult) Result_ok_dpp_identity_identity_Identity_err_String;
+// %extend Result_ok_dpp_identity_identity_Identity_err_String {
+//     ~Result_ok_dpp_identity_identity_Identity_err_String() {
+//         Result_ok_dpp_identity_identity_Identity_err_String_destroy($self);
+//     }
+// }
 %ignore platform_mobile_identity_std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey_clone(std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *public_keys);
 %ignore dpp_identity_v0_IdentityV0_ctor(platform_value_types_identifier_Identifier *id,
                                                             std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *public_keys,
@@ -135,3 +135,5 @@ struct std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dp
 %ignore dpp_identity_v0_IdentityV0_set_public_keys(dpp_identity_v0_IdentityV0 *obj,
                                                 std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *value);
 %ignore std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey_destroy(std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *ffi);
+
+%include "result.i"

@@ -117,11 +117,6 @@ public class exampleJNI {
   public final static native void platform_value_Hash256__0_set(long jarg1, platform_value_Hash256 jarg1_, byte[] jarg2);
   public final static native byte[] platform_value_Hash256__0_get(long jarg1, platform_value_Hash256 jarg1_);
   public final static native void delete_platform_value_Hash256(long jarg1);
-  public final static native void IdentityResult_ok_set(long jarg1, IdentityResult jarg1_, long jarg2, Identity jarg2_);
-  public final static native long IdentityResult_ok_get(long jarg1, IdentityResult jarg1_);
-  public final static native void IdentityResult_error_set(long jarg1, IdentityResult jarg1_, String jarg2);
-  public final static native String IdentityResult_error_get(long jarg1, IdentityResult jarg1_);
-  public final static native void delete_IdentityResult(long jarg1);
   public final static native java.math.BigInteger dppPreludeRevisionGet0(long jarg1, Revision jarg1_);
   public final static native void dppPreludeRevisionSet0(long jarg1, Revision jarg1_, java.math.BigInteger jarg2);
   public final static native long dppIdentityIdentityPublicKeyKeyCountGet0(long jarg1, dpp_identity_identity_public_key_KeyCount jarg1_);
@@ -167,7 +162,7 @@ public class exampleJNI {
   public final static native long getDocument();
   public final static native long fetchIdentity(long jarg1, Identifier jarg1_);
   public final static native long fetchIdentity2(long jarg1, Identifier jarg1_);
-  public final static native long fetchIdentity3(long jarg1, Identifier jarg1_);
+  public final static native org.dashj.platform.sdk.base.Result<Identity,String> fetchIdentity3(long jarg1, Identifier jarg1_);
   public final static native long createBasicIdentity(byte[] jarg1);
   public final static native long platformMobileIdentityIdentityClone(long jarg1, Identity jarg1_);
   public final static native long platformMobileIdentityIdentityV0Clone(long jarg1, IdentityV0 jarg1_);

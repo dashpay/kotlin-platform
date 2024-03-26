@@ -443,9 +443,6 @@ SWIGINTERN void delete_dpp_identity_identity_Identity(dpp_identity_identity_Iden
         printf("~Identity(%lx)\n", (uint64_t)self);
         dpp_identity_identity_Identity_destroy(self);
     }
-SWIGINTERN void delete_Result_ok_dpp_identity_identity_Identity_err_String(Result_ok_dpp_identity_identity_Identity_err_String *self){
-        Result_ok_dpp_identity_identity_Identity_err_String_destroy(self);
-    }
 
 #ifdef __cplusplus
 extern "C" {
@@ -2118,86 +2115,6 @@ SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_delete_1platform_
 }
 
 
-SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_IdentityResult_1ok_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
-  Result_ok_dpp_identity_identity_Identity_err_String *arg1 = (Result_ok_dpp_identity_identity_Identity_err_String *) 0 ;
-  dpp_identity_identity_Identity *arg2 = (dpp_identity_identity_Identity *) 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  (void)jarg2_;
-  arg1 = *(Result_ok_dpp_identity_identity_Identity_err_String **)&jarg1; 
-  arg2 = *(dpp_identity_identity_Identity **)&jarg2; 
-  if (arg1) (arg1)->ok = arg2;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_org_dashj_platform_sdk_exampleJNI_IdentityResult_1ok_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jlong jresult = 0 ;
-  Result_ok_dpp_identity_identity_Identity_err_String *arg1 = (Result_ok_dpp_identity_identity_Identity_err_String *) 0 ;
-  dpp_identity_identity_Identity *result = 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(Result_ok_dpp_identity_identity_Identity_err_String **)&jarg1; 
-  result = (dpp_identity_identity_Identity *) ((arg1)->ok);
-  *(dpp_identity_identity_Identity **)&jresult = result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_IdentityResult_1error_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
-  Result_ok_dpp_identity_identity_Identity_err_String *arg1 = (Result_ok_dpp_identity_identity_Identity_err_String *) 0 ;
-  char *arg2 = (char *) 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(Result_ok_dpp_identity_identity_Identity_err_String **)&jarg1; 
-  arg2 = 0;
-  if (jarg2) {
-    arg2 = (char *)jenv->GetStringUTFChars(jarg2, 0);
-    if (!arg2) return ;
-  }
-  {
-    delete [] arg1->error;
-    if (arg2) {
-      arg1->error = (char *) (new char[strlen((const char *)arg2)+1]);
-      strcpy((char *)arg1->error, (const char *)arg2);
-    } else {
-      arg1->error = 0;
-    }
-  }
-  if (arg2) jenv->ReleaseStringUTFChars(jarg2, (const char *)arg2);
-}
-
-
-SWIGEXPORT jstring JNICALL Java_org_dashj_platform_sdk_exampleJNI_IdentityResult_1error_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jstring jresult = 0 ;
-  Result_ok_dpp_identity_identity_Identity_err_String *arg1 = (Result_ok_dpp_identity_identity_Identity_err_String *) 0 ;
-  char *result = 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(Result_ok_dpp_identity_identity_Identity_err_String **)&jarg1; 
-  result = (char *) ((arg1)->error);
-  if (result) jresult = jenv->NewStringUTF((const char *)result);
-  return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_delete_1IdentityResult(JNIEnv *jenv, jclass jcls, jlong jarg1) {
-  Result_ok_dpp_identity_identity_Identity_err_String *arg1 = (Result_ok_dpp_identity_identity_Identity_err_String *) 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  arg1 = *(Result_ok_dpp_identity_identity_Identity_err_String **)&jarg1; 
-  delete_Result_ok_dpp_identity_identity_Identity_err_String(arg1);
-}
-
-
 SWIGEXPORT jobject JNICALL Java_org_dashj_platform_sdk_exampleJNI_dppPreludeRevisionGet0(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jobject jresult = 0 ;
   dpp_prelude_Revision *arg1 = (dpp_prelude_Revision *) 0 ;
@@ -3075,8 +2992,8 @@ SWIGEXPORT jlong JNICALL Java_org_dashj_platform_sdk_exampleJNI_fetchIdentity2(J
 }
 
 
-SWIGEXPORT jlong JNICALL Java_org_dashj_platform_sdk_exampleJNI_fetchIdentity3(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jlong jresult = 0 ;
+SWIGEXPORT jobject JNICALL Java_org_dashj_platform_sdk_exampleJNI_fetchIdentity3(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jobject jresult = 0 ;
   platform_value_types_identifier_Identifier *arg1 = (platform_value_types_identifier_Identifier *) 0 ;
   Result_ok_dpp_identity_identity_Identity_err_String *result = 0 ;
   
@@ -3085,7 +3002,30 @@ SWIGEXPORT jlong JNICALL Java_org_dashj_platform_sdk_exampleJNI_fetchIdentity3(J
   (void)jarg1_;
   arg1 = *(platform_value_types_identifier_Identifier **)&jarg1; 
   result = (Result_ok_dpp_identity_identity_Identity_err_String *)platform_mobile_fetch_identity_fetch_identity3(arg1);
-  *(Result_ok_dpp_identity_identity_Identity_err_String **)&jresult = result; 
+  {
+    if (!result) {
+      jresult = NULL;
+    } else {
+      jclass resultClass = jenv->FindClass("org/dashj/platform/sdk/base/Result");
+      
+      if (result->ok != NULL) {
+        jclass myClass = jenv->FindClass("org/dashj/platform/sdk/Identity");
+        jmethodID constructor = jenv->GetMethodID(myClass, "<init>", "(JZ)V");
+        void * clonedObject = platform_mobile_identity_Identity_clone(result->ok);
+        jobject okObject = jenv->NewObject(myClass, constructor, (jlong) clonedObject, false);
+        
+        jmethodID midSuccess = jenv->GetStaticMethodID(resultClass, "Ok", "(Ljava/lang/Object;)Lorg/dashj/platform/sdk/base/Result;");
+        // printf("success mid = 0x%lx, okObject: %lx, %s\n", (long)midSuccess, (long)okObject, "(Ljava/lang/Object;)Lorg/dashj/platform/sdk/base/Result;");
+        jresult = jenv->CallStaticObjectMethod(resultClass, midSuccess, okObject);
+      } else {
+        jstring errorString = jenv->NewStringUTF(result->error);
+        jmethodID midFailure = jenv->GetStaticMethodID(resultClass, "Err", "(Ljava/lang/Object;)Lorg/dashj/platform/sdk/base/Result");
+        jresult = jenv->CallStaticObjectMethod(resultClass, midFailure, errorString);
+      }
+      // destroy the Result<T, E>
+      Result_ok_dpp_identity_identity_Identity_err_String_destroy(result);
+    }
+  }
   return jresult;
 }
 
