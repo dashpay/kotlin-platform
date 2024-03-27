@@ -75,6 +75,18 @@ public class IdentityTest extends BaseTest {
         identifier1.delete();
     }
 
+//    @Test
+//    public void fetchIdentityByKeyFailAndDestroy() throws Exception {
+//        Identifier identifier1 = new Identifier(identifier);
+//        Result<Identity, String> result = example.getIdentityByPublicKeyHash(new byte[20], );
+//        assertNotNull(result.unwrapError());
+//        //String error = result.getError();
+//        //assertNotNull(error);
+//        //result.delete();
+//        //result.unwrap().delete();
+//        identifier1.delete();
+//    }
+
     @Test
     public void getDocument() {
         Identifier identifier1 = example.getDocument();

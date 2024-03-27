@@ -1,10 +1,7 @@
 package org.dashj.platform
 
 import com.google.common.util.concurrent.SettableFuture
-import org.bitcoinj.core.Base58
-import org.bitcoinj.core.Context
-import org.bitcoinj.core.NetworkParameters
-import org.bitcoinj.core.Sha256Hash
+import org.bitcoinj.core.*
 import org.bitcoinj.kits.WalletAppKit
 import org.bitcoinj.net.discovery.ThreeMethodPeerDiscovery
 import org.bitcoinj.params.MainNetParams
@@ -156,7 +153,10 @@ object PlatformExplorer {
             }
 
         }
-        val value = example.platformMobileFetchIdentityFetchIdentity(Identifier(Base58.decode(idString)), BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO);
+        val notFound = example.getIdentityByPublicKeyHash(ByteArray(20), BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
+        println(notFound.unwrapError())
+
+        val value = example.fetchIdentity(Identifier(Base58.decode(idString)), BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
         try {
 
             val identity = value.unwrap();
@@ -170,6 +170,10 @@ object PlatformExplorer {
 
                 }
             }
+            val key = ECKey.fromPublicOnly(identity.v0._0.publicKeys.values.stream().findFirst().get().v0._0.data._0)
+            val publicKeyHash = key.pubKeyHash
+            val found = example.getIdentityByPublicKeyHash(publicKeyHash, BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
+            println(found.unwrap())
         } catch (e: Exception) {
             println("fetch identity error: ${value.unwrapError()}")
         }

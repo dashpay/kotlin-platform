@@ -41,6 +41,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "keyid.i"
 %include "revision.i"
 %include "uint8_array.i"
+%include "uint8_array_20.i"
 %include "timestamp_millis.i"
 %include "enums.i"
 

@@ -80,7 +80,7 @@
 %rename (createBasicIdentity) platform_mobile_identity_create_basic_identity(uint8_t (*id)[32]);
 %rename (getIdentityContractBounds) platform_mobile_identity_get_identity_contract_bounds(platform_value_types_identifier_Identifier *identifier, platform_value_types_identifier_Identifier *contract_identifier);
 %rename (getIdentity2) platform_mobile_identity_get_identity2(platform_value_types_identifier_Identifier *);
-
+%rename (getIdentityByPublicKeyHash) platform_mobile_fetch_identity_fetch_identity_with_keyhash(uint8_t (*key_hash)[20], uint64_t quorum_public_key_callback, uint64_t data_contract_callback);
 // %rename (IdentityResult) Result_ok_dpp_identity_identity_Identity_err_String;
 // %extend Result_ok_dpp_identity_identity_Identity_err_String {
 //     ~Result_ok_dpp_identity_identity_Identity_err_String() {
