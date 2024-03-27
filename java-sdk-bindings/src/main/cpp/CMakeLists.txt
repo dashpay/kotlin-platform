@@ -9,7 +9,8 @@ project(sdk)
 
 # Define the C source file
 set(C_SOURCE_FILE sdk.cpp
-        java_map_keyid_identitypublickey.cpp)
+        java_map_keyid_identitypublickey.cpp
+        context_provider.cpp)
 
 # Define the pre-built Rust library
 set(RUST_LIBRARY ${CMAKE_SOURCE_DIR}/../../../../rs-sdk/target/debug/librssdkbindings.a)

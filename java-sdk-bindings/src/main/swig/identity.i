@@ -72,7 +72,8 @@
 %newobject platform_mobile_fetch_identity_fetch_identity(platform_value_types_identifier_Identifier *identifier);
 %newobject platform_mobile_fetch_identity_get_document(void);
 %newobject platform_mobile_fetch_identity_fetch_identity2(platform_value_types_identifier_Identifier *identifier);
-%rename (fetchIdentity) platform_mobile_fetch_identity_fetch_identity(platform_value_types_identifier_Identifier *identifier);
+%rename (fetchIdentity) platform_mobile_fetch_identity_fetch_identity(platform_value_types_identifier_Identifier *identifier, uint64_t quorum_public_key_callback,
+                                                                                                                        uint64_t data_contract_callback);
 %rename (fetchIdentity2) platform_mobile_fetch_identity_fetch_identity2(platform_value_types_identifier_Identifier *identifier);
 %rename (fetchIdentity3) platform_mobile_fetch_identity_fetch_identity3(platform_value_types_identifier_Identifier *identifier);
 %rename (getDocument) platform_mobile_fetch_identity_get_document();

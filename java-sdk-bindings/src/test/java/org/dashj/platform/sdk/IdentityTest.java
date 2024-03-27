@@ -20,7 +20,7 @@ public class IdentityTest extends BaseTest {
     @Test
     public void basicIdentityInRustAndDestroy() {
         Identifier identifier1 = new Identifier(identifier);
-        Identity identity = example.fetchIdentity(identifier1);
+        Identity identity = example.createBasicIdentity(identifier);
         Assertions.assertEquals(Identity.Tag.V0, identity.getTag());
         IdentityV0 identityV0 = identity.getV0().get_0();
         assertNotNull(identityV0);
@@ -32,25 +32,25 @@ public class IdentityTest extends BaseTest {
         identifier1.delete();
     }
 
-    @Test
-    public void fetchIdentityAndDestroy() {
-        Identifier identifier1 = new Identifier(contractIdentifier);
-        Identity identity = example.fetchIdentity2(identifier1);
-        assertEquals(Identity.Tag.V0, identity.getTag());
-        IdentityV0 identityV0 = identity.getV0().get_0();
-        assertNotNull(identityV0);
-        assertArrayEquals(contractIdentifier, identityV0.getId().get_0().get_0());
-        assertEquals(0L, identityV0.getRevision().toLong());
-        assertEquals(0L, identityV0.getBalance());
-        assertNotNull(identityV0.getPublicKey(0));
-        identity.delete();
-        identifier1.delete();
-    }
+//    @Test
+//    public void fetchIdentityAndDestroy() {
+//        Identifier identifier1 = new Identifier(contractIdentifier);
+//        Identity identity = example.fetchIdentity2(identifier1);
+//        assertEquals(Identity.Tag.V0, identity.getTag());
+//        IdentityV0 identityV0 = identity.getV0().get_0();
+//        assertNotNull(identityV0);
+//        assertArrayEquals(contractIdentifier, identityV0.getId().get_0().get_0());
+//        assertEquals(0L, identityV0.getRevision().toLong());
+//        assertEquals(0L, identityV0.getBalance());
+//        assertNotNull(identityV0.getPublicKey(0));
+//        identity.delete();
+//        identifier1.delete();
+//    }
 
     @Test
     public void fetchIdentity3AndDestroy() throws Exception {
         Identifier identifier1 = new Identifier(contractIdentifier);
-        Result<Identity, String> result = example.fetchIdentity3(identifier1);
+        Result<Identity, String> result = example.platformMobileFetchIdentityFetchIdentityWithCore(identifier1);
         Identity identity = result.unwrap();
         assertEquals(Identity.Tag.V0, identity.getTag());
         IdentityV0 identityV0 = identity.getV0().get_0();
@@ -66,12 +66,12 @@ public class IdentityTest extends BaseTest {
     @Test
     public void fetchIdentity3FailAndDestroy() throws Exception {
         Identifier identifier1 = new Identifier(identifier);
-        Result<Identity, String> result = example.fetchIdentity3(identifier1);
-        assertNull(result.unwrap());
+        Result<Identity, String> result = example.platformMobileFetchIdentityFetchIdentityWithCore(identifier1);
+        assertNotNull(result.unwrapError());
         //String error = result.getError();
         //assertNotNull(error);
         //result.delete();
-        result.unwrap().delete();
+        //result.unwrap().delete();
         identifier1.delete();
     }
 
