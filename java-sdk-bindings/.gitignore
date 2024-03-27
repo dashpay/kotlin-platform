@@ -4,3 +4,10 @@ build/
 .idea/
 cmake-build-debug
 cmake-build-release
+.chain
+.spvchain
+.wallet
+.tmp
+.mnlist
+.chainlocks
+.gobjects
