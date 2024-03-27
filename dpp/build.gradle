@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.8.22' // Use a compatible version
+}
+
+group 'org.dashj.platform'
+version 'unspecified'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':java-sdk-bindings')
+    implementation "org.dashj:dashj-core:$dashj_version"
+    implementation 'org.json:json:20190722'
+    implementation 'com.google.guava:guava:29.0-android'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
+}
