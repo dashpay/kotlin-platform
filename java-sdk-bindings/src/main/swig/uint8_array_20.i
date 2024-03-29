@@ -12,8 +12,6 @@
     if (!jarr) return $null;
     byteArray = (uint8_t *)memoryFactory.alloc(20); // this is a memory leak?
     memcpy(byteArray, jarr, sz);
-
-    //memcpy($1, jarr, sz);
     JCALL3(ReleaseByteArrayElements, jenv, $input, jarr, JNI_ABORT);
     $1 = (uint8_t (*) [20])byteArray;
 }

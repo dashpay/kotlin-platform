@@ -30,6 +30,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 //%rename("%(lowercamelcase)s") "";
 %include "stdint.i"
 // %include "arrays_java.i"
+%include "default_class.i"
 
 // Identity Related Structures
 %include "binary_data.i"
@@ -44,6 +45,9 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "uint8_array_20.i"
 %include "timestamp_millis.i"
 %include "enums.i"
+
+//
+%include "rs_sdk.i"
 
 // ignore
 
