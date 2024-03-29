@@ -12,6 +12,7 @@ import org.bitcoinj.quorums.LLMQParameters
 import org.bitcoinj.utils.BriefLogFormatter
 import org.bitcoinj.utils.Threading
 import org.dashj.platform.dpp.toHex
+import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.Identifier
 import org.dashj.platform.sdk.Identity
 import org.dashj.platform.sdk.example
@@ -118,18 +119,6 @@ object PlatformExplorer {
     }
 
     private fun run() {
-        println("Platform Explorer")
-        println("-----------------")
-        println("Main Menu")
-        println("1. Query Identity")
-
-        println("Enter an identity id:")
-        val scanner = Scanner(System.`in`)
-        val idString = scanner.nextLine()
-
-        println(" > $idString")
-
-        //val value = example.fetchIdentity(Identifier(Base58.decode(idString)));
         val contextProvider = object : ContextProvider() {
             override fun getQuorumPublicKey(
                 quorumType: Int,
@@ -139,7 +128,11 @@ object PlatformExplorer {
                 val quorumHash = Sha256Hash.wrap(quorumHashBytes)
                 var quorumPublicKey: ByteArray? = null
                 println("searching for quorum: $quorumType, $quorumHash, $coreChainLockedHeight")
-                Context.get().masternodeListManager.getQuorumListAtTip(LLMQParameters.LLMQType.fromValue(quorumType)).forEachQuorum(true) {
+                Context.get().masternodeListManager.getQuorumListAtTip(
+                    LLMQParameters.LLMQType.fromValue(
+                        quorumType
+                    )
+                ).forEachQuorum(true) {
                     if (it.llmqType.value == quorumType && it.quorumHash == quorumHash) {
                         quorumPublicKey = it.quorumPublicKey.serialize(false)
                     }
@@ -151,34 +144,104 @@ object PlatformExplorer {
             override fun getDataContract(identifier: Identifier?): ByteArray {
                 return byteArrayOf(0)
             }
-
         }
-        val notFound = example.getIdentityByPublicKeyHash(ByteArray(20), BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
-        println(notFound.unwrapError())
 
-        val value = example.fetchIdentity(Identifier(Base58.decode(idString)), BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
-        try {
+        val scanner = Scanner(System.`in`)
+        var quit = false
+        while (!quit) {
+            println()
+            println("Platform Explorer")
+            println("-----------------")
+            println("Main Menu")
+            println("1. Query Identity from id")
+            println("2. Query Identity from public key hash")
+            println("3. Query Identity from public key")
+            println("q. Quit")
+            val menuItem = scanner.nextLine()
+            when (menuItem) {
+                "1" -> {
+                    println("Enter an identity id:")
+                    val idString = scanner.nextLine()
 
-            val identity = value.unwrap();
-            when (identity.tag) {
-                Identity.Tag.V0 -> {
-                    println("id: ${org.dashj.platform.dpp.identifier.Identifier(identity.v0._0.id._0._0)}")
-                    println("balance: ${identity.v0._0.balance}")
-                    println("keys: ${identity.v0._0.publicKeyCount}")
+                    println(" > $idString")
+
+                    val value = example.fetchIdentity(
+                        Identifier(Base58.decode(idString)),
+                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+                        BigInteger.ZERO
+                    )
+                    try {
+
+                        val identity = value.unwrap();
+                        print(identity)
+                    } catch (e: Exception) {
+                        println("fetch identity error: ${value.unwrapError()}")
+                    }
                 }
-                else -> {
 
+                "2" -> {
+                    println("Enter a public key hash:")
+                    val publicKeyHashString = scanner.nextLine()
+
+                    println(" > $publicKeyHashString")
+
+                    val value = example.getIdentityByPublicKeyHash(
+                        Converters.fromHex(publicKeyHashString),
+                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+                        BigInteger.ZERO
+                    )
+                    try {
+                        val identity = value.unwrap();
+                        print(identity)
+                    } catch (e: Exception) {
+                        println("fetch identity error: ${value.unwrapError()}")
+                    }
+                }
+                "3" -> {
+                    println("Enter a public key:")
+                    val publicKeyString = scanner.nextLine()
+                    val publicKey = ECKey.fromPublicOnly(Converters.fromHex(publicKeyString))
+                    println(" > $publicKeyString")
+                    println(" > ${publicKey.pubKeyHash.toHex()}")
+
+                    val value = example.getIdentityByPublicKeyHash(
+                        publicKey.pubKeyHash,
+                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+                        BigInteger.ZERO
+                    )
+                    try {
+
+                        val identity = value.unwrap();
+                        print(identity)
+                    } catch (e: Exception) {
+                        println("fetch identity error: ${value.unwrapError()}")
+                    }
+                }
+                "q", "Q" -> {
+                    quit = true
                 }
             }
-            val key = ECKey.fromPublicOnly(identity.v0._0.publicKeys.values.stream().findFirst().get().v0._0.data._0)
-            val publicKeyHash = key.pubKeyHash
-            val found = example.getIdentityByPublicKeyHash(publicKeyHash, BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
-            println(found.unwrap())
-        } catch (e: Exception) {
-            println("fetch identity error: ${value.unwrapError()}")
         }
         quitFuture.set(true)
     }
-}
 
-// MTMoBVf6N9zpPwCTQ51vfttFYmHwfacWUHFupFTApUG
+    private fun print(identity: Identity) {
+        println()
+        println("Identity Results:")
+        println("version: ${identity.tag}")
+        when (identity.tag) {
+            Identity.Tag.V0 -> {
+                println("id: ${org.dashj.platform.dpp.identifier.Identifier(identity.v0._0.id._0._0)}")
+                println("balance: ${identity.v0._0.balance}")
+                println("keys: ${identity.v0._0.publicKeyCount}")
+                identity.v0._0.publicKeys.forEach {
+                    val ipkv0 = it.value.v0._0
+                    println(" ${ipkv0.id.toInt()} ${ipkv0.keyType} ${ipkv0.purpose} ${ipkv0.securityLevel} ${ipkv0.data._0.toHex()}")
+                }
+            }
+            else -> {
+                println("This version is not support")
+            }
+        }
+    }
+}
