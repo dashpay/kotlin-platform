@@ -37,6 +37,9 @@ task generateSWIG(type: Exec) {
     file(javaOutputDir).mkdirs()
     file(cppOutputDir).mkdirs()
 
+    // execute ignore.py
+    commandLine 'python3', 'ignore.py'
+
     // Command to execute SWIG
     // Make sure to adjust the parameters according to your needs
     commandLine 'swig', '-java', '-c++',
@@ -46,8 +49,6 @@ task generateSWIG(type: Exec) {
             '-I${swigInputDir}', // Include directory for SWIG interfaces
             "${swigInputDir}/example.i" // SWIG interface file
 
-    // Optional: Specify the working directory if needed
-    // workingDir 'someDir'
 
     // Ensure that this task is run before compiling the sources
     tasks.compileJava.dependsOn generateSWIG
@@ -61,60 +62,17 @@ sourceSets {
         }
     }
 }
+tasks.named('compileJava').configure { dependsOn 'cmakeBuild' }
+//tasks.named('cmakeBuild').configure { dependsOn 'generateSWIG' }
+//compileJava.dependsOn cmakeBuild
+//cmakeBuild.dependsOn generateSWIG
 
-//assemble.dependsOn cmakeBuild
-//cmakeBuild.dependsOn cmakeConfigure
-//clean.dependsOn cmakeClean
-
-//model {
-//    externalNativeBuild {
-//        cmake {
-//            path '../cpp/CMakeLists.txt'
-//        }
-//    }
-//    components {
-//        main(NativeLibrarySpec) {
-//            targetPlatform "osx_x86-64"
-//
-//            sources {
-//                cpp {
-//                    source {
-//                        srcDir "src/main/c" // Adjust the source directory as needed
-//                        include "**/*.c"    // Adjust the file patterns as needed
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
 
 test {
     useJUnitPlatform()
     systemProperty "java.library.path", "build/cmake"
     println(systemProperties["java.library.path"])
 }
-
-// Define a custom configuration to specify the location of the pre-built Rust library
-configurations {
-    rustLib
-}
-
-//dependencies {
-//    // Specify the pre-built Rust library as a dependency
-//    rustLib fileTree(dir: '../target/debug', include: ['libferment_example.rlib'])
-//}
-//
-//task compileC(type: Exec) {
-//    workingDir 'src/main/c'
-//    commandLine 'gcc', 'sdk.c', '-o', 'sdk.o', '-I.', "-L${configurations.rustLib.singleFile.parent}", "-l:libferment_example.rlib"
-//}
-//
-//task createSharedLibrary(type: Exec, dependsOn: compileC) {
-//    workingDir 'src/main/c'
-//    commandLine 'gcc', '-shared', '-o', 'libcombined.so', 'sdk.o', '-I.', "-L${configurations.rustLib.singleFile.parent}", "-l:libferment_example.rlib"
-//}
-//
-//assemble.dependsOn createSharedLibrary
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     archiveClassifier = 'javadoc'
