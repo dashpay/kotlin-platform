@@ -25,6 +25,43 @@ cmake {
     sourceFolder=file("$projectDir/src/main/cpp")
 }
 
+task generateSWIG(type: Exec) {
+    // Define the input directory where your .i files are located
+    def swigInputDir = "${projectDir}/src/main/swig"
+
+    // Define the output directory for the generated Java and C/C++ files
+    def javaOutputDir = "${buildDir}/generated/java/org/dashj/platform/sdk"
+    def cppOutputDir = "${buildDir}/generated/cpp"
+
+    // Create the output directories if they don't already exist
+    file(javaOutputDir).mkdirs()
+    file(cppOutputDir).mkdirs()
+
+    // Command to execute SWIG
+    // Make sure to adjust the parameters according to your needs
+    commandLine 'swig', '-java', '-c++',
+            '-outdir', javaOutputDir,
+            '-package', 'org.dashj.platform.sdk',
+            '-o', "${cppOutputDir}/sdk.cpp",
+            '-I${swigInputDir}', // Include directory for SWIG interfaces
+            "${swigInputDir}/example.i" // SWIG interface file
+
+    // Optional: Specify the working directory if needed
+    // workingDir 'someDir'
+
+    // Ensure that this task is run before compiling the sources
+    tasks.compileJava.dependsOn generateSWIG
+}
+
+// Ensure that the generated Java sources are included in compilation
+sourceSets {
+    main {
+        java {
+            srcDir "${buildDir}/generated/java"
+        }
+    }
+}
+
 //assemble.dependsOn cmakeBuild
 //cmakeBuild.dependsOn cmakeConfigure
 //clean.dependsOn cmakeClean

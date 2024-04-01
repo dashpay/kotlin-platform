@@ -30,7 +30,7 @@ uint8_t * get_quorum_public_key(int quorum_type, char * quorum_hash, int core_ch
     jbyteArray quorum_hash_bytes = jenv->NewByteArray(32);
     jenv->SetByteArrayRegion(quorum_hash_bytes, 0, 32, reinterpret_cast<jbyte *>(quorum_hash));
 
-    jbyteArray quorum_public_key = (jbyteArray) jenv->CallObjectMethod(contextProvider, getQuorumPublicKey, quorum_type, quorum_hash_bytes, core_chain_locked_height);
+    auto quorum_public_key = (jbyteArray) jenv->CallObjectMethod(contextProvider, getQuorumPublicKey, quorum_type, quorum_hash_bytes, core_chain_locked_height);
     if (quorum_public_key == nullptr) {
         memcpy(native_array, invalid_key, 48);
     } else {
@@ -58,6 +58,7 @@ uint8_t * get_quorum_public_key(int quorum_type, char * quorum_hash, int core_ch
         //return native_array;
     }
 }
+
 extern "C" JNIEXPORT jlong JNICALL Java_org_dashj_platform_sdk_callbacks_ContextProvider_getQuorumPublicKeyCallback(JNIEnv * env, jclass provider) {
     jenv = env;
     if (contextProvider != nullptr) {

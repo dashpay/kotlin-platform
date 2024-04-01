@@ -15,8 +15,8 @@ import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.Identifier
 import org.dashj.platform.sdk.Identity
-import org.dashj.platform.sdk.example
 import org.dashj.platform.sdk.callbacks.ContextProvider;
+import org.dashj.platform.sdk.example
 
 import java.io.File
 import java.io.FileInputStream

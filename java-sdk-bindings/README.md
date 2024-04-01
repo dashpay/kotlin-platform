@@ -7,6 +7,12 @@
 ./gradlew cmakeClean cmakeConfigure cmakeBuild --info
 ```
 
+```bash
+./gradlew generateSWIG
+./gradlew cmakeClean cmakeConfigure cmakeBuild
+```
+
+
 # TODO
 1. ignore enum constructors, destructors
 2. ContractBounds crash - fixed

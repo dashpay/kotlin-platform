@@ -1,6 +1,5 @@
 package org.dashj.platform.sdk;
 
-import org.dashj.platform.sdk.MemoryFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
