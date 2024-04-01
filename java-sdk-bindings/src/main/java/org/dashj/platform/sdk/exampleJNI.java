@@ -118,9 +118,11 @@ public class exampleJNI {
   public final static native void platform_value_Hash256__0_set(long jarg1, platform_value_Hash256 jarg1_, byte[] jarg2);
   public final static native byte[] platform_value_Hash256__0_get(long jarg1, platform_value_Hash256 jarg1_);
   public final static native void delete_platform_value_Hash256(long jarg1);
-  public final static native void dpp_identity_identity_public_key_KeyCount__0_set(long jarg1, dpp_identity_identity_public_key_KeyCount jarg1_, long jarg2, KeyID jarg2_);
-  public final static native long dpp_identity_identity_public_key_KeyCount__0_get(long jarg1, dpp_identity_identity_public_key_KeyCount jarg1_);
-  public final static native void delete_dpp_identity_identity_public_key_KeyCount(long jarg1);
+  public final static native long new_KeyCount__SWIG_0();
+  public final static native long new_KeyCount__SWIG_1(int jarg1);
+  public final static native void delete_KeyCount(long jarg1);
+  public final static native int KeyCount_toInt(long jarg1, KeyCount jarg1_);
+  public final static native boolean KeyCount_objectEquals(long jarg1, KeyCount jarg1_, long jarg2, KeyCount jarg2_);
   public final static native long platformMobileGetBinaryData();
   public final static native long platformMobileConvertToPkh(byte[] jarg1);
   public final static native long platformMobileGetBinaryData2();
@@ -150,8 +152,8 @@ public class exampleJNI {
   public final static native void rsSdkPlatformTypesIdentityPublicKeyHashSet0(long jarg1, PublicKeyHash jarg1_, byte[] jarg2);
   public final static native long dppIdentityIdentityPublicKeyKeyIDGet0(long jarg1, KeyID jarg1_);
   public final static native void dppIdentityIdentityPublicKeyKeyIDSet0(long jarg1, KeyID jarg1_, long jarg2);
-  public final static native long dppIdentityIdentityPublicKeyKeyCountGet0(long jarg1, dpp_identity_identity_public_key_KeyCount jarg1_);
-  public final static native void dppIdentityIdentityPublicKeyKeyCountSet0(long jarg1, dpp_identity_identity_public_key_KeyCount jarg1_, long jarg2, KeyID jarg2_);
+  public final static native long dppIdentityIdentityPublicKeyKeyCountGet0(long jarg1, KeyCount jarg1_);
+  public final static native void dppIdentityIdentityPublicKeyKeyCountSet0(long jarg1, KeyCount jarg1_, long jarg2, KeyID jarg2_);
   public final static native java.math.BigInteger dppIdentityIdentityPublicKeyTimestampMillisGet0(long jarg1, TimestampMillis jarg1_);
   public final static native void dppIdentityIdentityPublicKeyTimestampMillisSet0(long jarg1, TimestampMillis jarg1_, java.math.BigInteger jarg2);
   public final static native long dppIdentityIdentityPublicKeyV0IdentityPublicKeyV0GetId(long jarg1, IdentityPublicKeyV0 jarg1_);

@@ -140,13 +140,13 @@ public class example {
     exampleJNI.dppIdentityIdentityPublicKeyKeyIDSet0(KeyID.getCPtr(obj), obj, value);
   }
 
-  public static KeyID dppIdentityIdentityPublicKeyKeyCountGet0(dpp_identity_identity_public_key_KeyCount obj) {
-    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyKeyCountGet0(dpp_identity_identity_public_key_KeyCount.getCPtr(obj), obj);
+  public static KeyID dppIdentityIdentityPublicKeyKeyCountGet0(KeyCount obj) {
+    long cPtr = exampleJNI.dppIdentityIdentityPublicKeyKeyCountGet0(KeyCount.getCPtr(obj), obj);
     return (cPtr == 0) ? null : new KeyID(cPtr, false);
   }
 
-  public static void dppIdentityIdentityPublicKeyKeyCountSet0(dpp_identity_identity_public_key_KeyCount obj, KeyID value) {
-    exampleJNI.dppIdentityIdentityPublicKeyKeyCountSet0(dpp_identity_identity_public_key_KeyCount.getCPtr(obj), obj, KeyID.getCPtr(value), value);
+  public static void dppIdentityIdentityPublicKeyKeyCountSet0(KeyCount obj, KeyID value) {
+    exampleJNI.dppIdentityIdentityPublicKeyKeyCountSet0(KeyCount.getCPtr(obj), obj, KeyID.getCPtr(value), value);
   }
 
   public static java.math.BigInteger dppIdentityIdentityPublicKeyTimestampMillisGet0(TimestampMillis obj) {

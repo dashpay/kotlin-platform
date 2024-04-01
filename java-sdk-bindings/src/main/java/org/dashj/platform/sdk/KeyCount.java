@@ -10,16 +10,16 @@ package org.dashj.platform.sdk;
 
 import org.dashj.platform.sdk.base.BaseObject;
 
-public class dpp_identity_identity_public_key_KeyCount extends BaseObject {
+public class KeyCount extends BaseObject {
   private transient long swigCPtr;
   protected transient boolean swigCMemOwn;
 
-  protected dpp_identity_identity_public_key_KeyCount(long cPtr, boolean cMemoryOwn) {
+  protected KeyCount(long cPtr, boolean cMemoryOwn) {
     swigCMemOwn = cMemoryOwn;
     swigCPtr = cPtr;
   }
 
-  protected static long getCPtr(dpp_identity_identity_public_key_KeyCount obj) {
+  protected static long getCPtr(KeyCount obj) {
     return (obj == null) ? 0 : obj.swigCPtr;
   }
 
@@ -32,7 +32,7 @@ public class dpp_identity_identity_public_key_KeyCount extends BaseObject {
     if (swigCPtr != 0) {
       if (swigCMemOwn) {
         swigCMemOwn = false;
-        exampleJNI.delete_dpp_identity_identity_public_key_KeyCount(swigCPtr);
+        exampleJNI.delete_KeyCount(swigCPtr);
       }
       swigCPtr = 0;
     }
@@ -42,13 +42,20 @@ public class dpp_identity_identity_public_key_KeyCount extends BaseObject {
     return swigCPtr;
   }
 
-  public void set_0(KeyID value) {
-    exampleJNI.dpp_identity_identity_public_key_KeyCount__0_set(swigCPtr, this, KeyID.getCPtr(value), value);
+  public KeyCount() {
+    this(exampleJNI.new_KeyCount__SWIG_0(), true);
   }
 
-  public KeyID get_0() {
-    long cPtr = exampleJNI.dpp_identity_identity_public_key_KeyCount__0_get(swigCPtr, this);
-    return (cPtr == 0) ? null : new KeyID(cPtr, false);
+  public KeyCount(int value) {
+    this(exampleJNI.new_KeyCount__SWIG_1(value), true);
+  }
+
+  public int toInt() {
+    return exampleJNI.KeyCount_toInt(swigCPtr, this);
+  }
+
+  public boolean objectEquals(KeyCount other) {
+    return exampleJNI.KeyCount_objectEquals(swigCPtr, this, KeyCount.getCPtr(other), other);
   }
 
 }

@@ -46,7 +46,8 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "timestamp_millis.i"
 %include "enums.i"
 
-//
+// modules and crates
+%include "dpp.i"
 %include "rs_sdk.i"
 
 // ignore

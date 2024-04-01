@@ -449,6 +449,23 @@ SWIGINTERN void delete_dpp_identity_identity_Identity(dpp_identity_identity_Iden
         printf("~Identity(%lx)\n", (uint64_t)self);
         dpp_identity_identity_Identity_destroy(self);
     }
+SWIGINTERN dpp_identity_identity_public_key_KeyCount *new_dpp_identity_identity_public_key_KeyCount__SWIG_0(){
+        return dpp_identity_identity_public_key_KeyCount_ctor(0);
+    }
+SWIGINTERN dpp_identity_identity_public_key_KeyCount *new_dpp_identity_identity_public_key_KeyCount__SWIG_1(int value){
+        return dpp_identity_identity_public_key_KeyCount_ctor(value);
+    }
+SWIGINTERN void delete_dpp_identity_identity_public_key_KeyCount(dpp_identity_identity_public_key_KeyCount *self){
+        dpp_identity_identity_public_key_KeyCount_destroy(self);
+    }
+SWIGINTERN int dpp_identity_identity_public_key_KeyCount_toInt(dpp_identity_identity_public_key_KeyCount *self){
+        return self->_0;
+    }
+SWIGINTERN bool dpp_identity_identity_public_key_KeyCount_objectEquals(dpp_identity_identity_public_key_KeyCount *self,dpp_identity_identity_public_key_KeyCount *other){
+        if (self == other) return true;
+        if (self == nullptr || other == nullptr) return false;
+        return self->_0 == other->_0;
+    }
 
 #ifdef __cplusplus
 extern "C" {
@@ -2171,42 +2188,72 @@ SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_delete_1platform_
 }
 
 
-SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_dpp_1identity_1identity_1public_1key_1KeyCount_1_10_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
+SWIGEXPORT jlong JNICALL Java_org_dashj_platform_sdk_exampleJNI_new_1KeyCount_1_1SWIG_10(JNIEnv *jenv, jclass jcls) {
+  jlong jresult = 0 ;
+  dpp_identity_identity_public_key_KeyCount *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  result = (dpp_identity_identity_public_key_KeyCount *)new_dpp_identity_identity_public_key_KeyCount__SWIG_0();
+  *(dpp_identity_identity_public_key_KeyCount **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_dashj_platform_sdk_exampleJNI_new_1KeyCount_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jint jarg1) {
+  jlong jresult = 0 ;
+  int arg1 ;
+  dpp_identity_identity_public_key_KeyCount *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = (int)jarg1; 
+  result = (dpp_identity_identity_public_key_KeyCount *)new_dpp_identity_identity_public_key_KeyCount__SWIG_1(arg1);
+  *(dpp_identity_identity_public_key_KeyCount **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_delete_1KeyCount(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   dpp_identity_identity_public_key_KeyCount *arg1 = (dpp_identity_identity_public_key_KeyCount *) 0 ;
-  dpp_identity_identity_public_key_KeyID *arg2 = (dpp_identity_identity_public_key_KeyID *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(dpp_identity_identity_public_key_KeyCount **)&jarg1; 
+  delete_dpp_identity_identity_public_key_KeyCount(arg1);
+}
+
+
+SWIGEXPORT jint JNICALL Java_org_dashj_platform_sdk_exampleJNI_KeyCount_1toInt(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  dpp_identity_identity_public_key_KeyCount *arg1 = (dpp_identity_identity_public_key_KeyCount *) 0 ;
+  int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(dpp_identity_identity_public_key_KeyCount **)&jarg1; 
+  result = (int)dpp_identity_identity_public_key_KeyCount_toInt(arg1);
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jboolean JNICALL Java_org_dashj_platform_sdk_exampleJNI_KeyCount_1objectEquals(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
+  jboolean jresult = 0 ;
+  dpp_identity_identity_public_key_KeyCount *arg1 = (dpp_identity_identity_public_key_KeyCount *) 0 ;
+  dpp_identity_identity_public_key_KeyCount *arg2 = (dpp_identity_identity_public_key_KeyCount *) 0 ;
+  bool result;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   (void)jarg2_;
   arg1 = *(dpp_identity_identity_public_key_KeyCount **)&jarg1; 
-  arg2 = *(dpp_identity_identity_public_key_KeyID **)&jarg2; 
-  if (arg1) (arg1)->_0 = arg2;
-}
-
-
-SWIGEXPORT jlong JNICALL Java_org_dashj_platform_sdk_exampleJNI_dpp_1identity_1identity_1public_1key_1KeyCount_1_10_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jlong jresult = 0 ;
-  dpp_identity_identity_public_key_KeyCount *arg1 = (dpp_identity_identity_public_key_KeyCount *) 0 ;
-  dpp_identity_identity_public_key_KeyID *result = 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(dpp_identity_identity_public_key_KeyCount **)&jarg1; 
-  result = (dpp_identity_identity_public_key_KeyID *) ((arg1)->_0);
-  *(dpp_identity_identity_public_key_KeyID **)&jresult = result; 
+  arg2 = *(dpp_identity_identity_public_key_KeyCount **)&jarg2; 
+  result = (bool)dpp_identity_identity_public_key_KeyCount_objectEquals(arg1,arg2);
+  jresult = (jboolean)result; 
   return jresult;
-}
-
-
-SWIGEXPORT void JNICALL Java_org_dashj_platform_sdk_exampleJNI_delete_1dpp_1identity_1identity_1public_1key_1KeyCount(JNIEnv *jenv, jclass jcls, jlong jarg1) {
-  dpp_identity_identity_public_key_KeyCount *arg1 = (dpp_identity_identity_public_key_KeyCount *) 0 ;
-  
-  (void)jenv;
-  (void)jcls;
-  arg1 = *(dpp_identity_identity_public_key_KeyCount **)&jarg1; 
-  delete arg1;
 }
 
 

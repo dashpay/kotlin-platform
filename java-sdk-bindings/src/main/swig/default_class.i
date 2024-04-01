@@ -1,3 +1,11 @@
+%define DEFINE_DESTRUCTOR(CLASS_NAME, CTYPE)
+%extend CTYPE {
+     ~CTYPE() {
+         CTYPE##_destroy($self);
+     }
+}
+%enddef
+
 %define DEFINE_CLASS(CLASS_NAME, CTYPE)
 %rename (CLASS_NAME) CTYPE;
 %extend CTYPE {
@@ -25,7 +33,7 @@
     CTYPE() {
         return CTYPE##_ctor(DEFAULT);
     }
-    CTYPE(PARAM) {
+    CTYPE(TYPE value) {
         return CTYPE##_ctor(value);
     }
     ~CTYPE() {
@@ -34,7 +42,6 @@
     TYPE GET() {
         return $self->_0;
     }
-
     bool objectEquals(CTYPE* other) {
         if ($self == other) return true;
         if ($self == nullptr || other == nullptr) return false;
