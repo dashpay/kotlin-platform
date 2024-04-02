@@ -3127,15 +3127,12 @@ name = "rs-sdk-bindings"
 version = "0.1.0"
 dependencies = [
  "cbindgen",
- "data-contracts",
  "dpp",
  "ferment",
  "ferment-interfaces",
  "ferment-macro",
  "platform-mobile",
  "platform-value",
- "platform-version",
- "rs-dapi-client",
  "rs-sdk",
  "toml 0.8.11",
 ]
