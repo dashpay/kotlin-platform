@@ -1,0 +1,121 @@
+plugins {
+    id 'com.android.library'
+    id "org.mozilla.rust-android-gradle.rust-android" version "0.9.3"
+    id 'maven-publish'
+}
+
+android {
+    namespace "org.dashj.platform"
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 24
+        targetSdk 32
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
+
+    ndkVersion = "23.1.7779620"
+}
+
+cargo {
+    module  = "./src/main/rust"       // Or whatever directory contains your Cargo.toml
+    libname = "rssdkbindings"          // Or whatever matches Cargo.toml's [package] name.
+    targets = ["arm", "arm64", "x86", "x86_64"]  // See bellow for a longer list of options
+    prebuiltToolchains = true
+    profile = 'release'
+    verbose = false
+    rustupChannel = "nightly"
+    targetDirectory = './build/rust'
+    targetIncludes = ['librssdkbindings.so']
+    extraCargoBuildArguments = ['-Zbuild-std']
+}
+
+tasks.whenTaskAdded { task ->
+    if ((task.name == 'javaPreCompileDebug' || task.name == 'javaPreCompileRelease')) {
+        task.dependsOn 'cargoBuild'
+    }
+}
+
+preBuild.dependsOn "cargoBuild"
+
+task copyArm8Library(type: Copy) {
+    from 'src/main/rust/target/aarch64-linux-android/release/librssdkbindings.so'
+    from android.ndkDirectory.getPath() + '/sources/cxx-stl/llvm-libc++/libs/arm64-v8a/libc++_shared.so'
+    into 'src/main/jniLibs/arm64-v8a'
+}
+
+task copyArm7Library(type: Copy) {
+    from './src/main/rust/target/armv7-linux-androideabi/release/librssdkbindings.so'
+    from android.ndkDirectory.getPath() + '/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_shared.so'
+    into './src/main/jniLibs/armeabi-v7a'
+}
+
+task copyX86Library(type: Copy) {
+    from 'src/main/rust/target/i686-linux-android/release/librssdkbindings.so'
+    from android.ndkDirectory.getPath() + '/sources/cxx-stl/llvm-libc++/libs/x86/libc++_shared.so'
+    into 'src/main/jniLibs/x86'
+}
+
+task copyX64Library(type: Copy) {
+    from './src/main/rust/target/x86_64-linux-android/release/librssdkbindings.so'
+    from android.ndkDirectory.getPath() + '/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++_shared.so'
+    into './src/main/jniLibs/x86_64'
+}
+
+preBuild.dependsOn 'copyArm8Library'
+preBuild.dependsOn 'copyArm7Library'
+preBuild.dependsOn 'copyX86Library'
+preBuild.dependsOn 'copyX64Library'
+
+dependencies {
+    //implementation 'org.dashj.android:dashj-merk:0.20-SNAPSHOT'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    //testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
+group 'org.dashj.android'
+version '0.22-SNAPSHOT'
+
+task sourcesJar(type: Jar) {
+    classifier 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+assemble.dependsOn(publishToMavenLocal)
+
+//test {
+//   useJUnitPlatform()
+//}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}

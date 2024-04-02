@@ -4,3 +4,4 @@ include 'java-sdk-bindings'
 include 'examples'
 include 'dpp'
 
+include ':dashj-platform-android'

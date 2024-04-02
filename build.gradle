@@ -5,11 +5,13 @@ buildscript {
     ext.dapi_client_version = '0.24-SNAPSHOT'
     ext.dashj_version = '20.0.2-CJ-SNAPSHOT'
     repositories {
+        google()  // Required for Android library and application projects
         mavenCentral()
     }
 
     dependencies {
         //classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.android.tools.build:gradle:7.2.0'  // Use the latest version
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.6'
     }
 }
@@ -18,6 +20,7 @@ buildscript {
 allprojects {
     repositories {
         mavenLocal() // temporary
+        google()  // Required for Android library and application projects
         mavenCentral()
         maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     }
