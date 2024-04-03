@@ -103,10 +103,6 @@ object PlatformExplorer {
 
         }
 
-
-        val identifier = example.getDocument()
-        println(Base58.encode(identifier._0._0))
-
         kit.peerGroup().addMnListDownloadCompleteListener( {
             println(Context.get().masternodeListManager)
             run()
@@ -145,6 +141,9 @@ object PlatformExplorer {
                 return byteArrayOf(0)
             }
         }
+
+        val identifier = example.platformMobileFetchIdentityGetDocumentWithCallbacks(BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
+        println(Base58.encode(identifier._0._0))
 
         val scanner = Scanner(System.`in`)
         var quit = false
