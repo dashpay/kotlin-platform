@@ -1,0 +1,11 @@
+[package]
+name = "rs-sdk-bindings"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rs-sdk = { git = "https://github.com/dashpay/platform.git", branch="v1.0-dev" }
+
+[lib]
+name = "rssdkbindings"
+crate-type = ["cdylib"]

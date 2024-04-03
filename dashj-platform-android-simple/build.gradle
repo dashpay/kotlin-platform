@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace "org.dashj.platform"
-    compileSdk 34
+    compileSdk 32
 
     defaultConfig {
         minSdk 24
@@ -75,11 +75,14 @@ task buildRustRelease(type: Exec) {
     String abi = "armv7-linux-androideabi"
     String minSdkVersion = "24" // Set this to your project's minSdkVersion
     String outputPath = "$projectDir/src/main/rust/target" // Adjust the output path as necessary
-    commandLine 'cargo', 'ndk', '-t', abi, '-o', outputPath, 'build', '--release', '--target=' + abi, '-Zbuild-std'
+    commandLine 'cargo', 'ndk', '-t', abi, '-o', outputPath, 'build', '--release', '-Zbuild-std'
     environment "CARGO_TARGET_DIR", "target"
+    environment "CARGO_NDK_ANDROID_PLATFORM", "24"
     // Automatically determine the correct `CC` and `AR` commands based on the selected ABI and minSdkVersion
-    environment "CARGO_NDK_CC", "$ndkPath/toolchains/llvm/prebuilt/darwin-x86_64/bin/${abi}${minSdkVersion}-clang"
-    environment "CARGO_NDK_AR", "$ndkPath/toolchains/llvm/prebuilt/darwin-x86_64/bin/${abi}-ar"
+    environment "CXX", "$ndkPath/toolchains/llvm/prebuilt/darwin-x86_64/bin/${abi}${minSdkVersion}-clang++"
+    environment "CC", "$ndkPath/toolchains/llvm/prebuilt/darwin-x86_64/bin/${abi}${minSdkVersion}-clang"
+    environment "AR", "$ndkPath/toolchains/llvm/prebuilt/darwin-x86_64/bin/${abi}-ar"
+
     // No need to manually set `CFLAGS` as `cargo-ndk` handles it
     environment "CFLAGS", "--sysroot=" +android.ndkDirectory.getPath() + '/toolchains/llvm/prebuilt/darwin-x86_64/sysroot'
     environment "CMAKE_TOOLCHAIN_FILE", android.ndkDirectory.getPath() + '/build/cmake/android.toolchain.cmake'

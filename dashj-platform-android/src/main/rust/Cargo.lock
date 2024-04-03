@@ -591,7 +591,7 @@ dependencies = [
  "serde_json",
  "syn 1.0.109",
  "tempfile",
- "toml 0.5.11",
+ "toml",
 ]
 
 [[package]]
@@ -1055,9 +1055,6 @@ dependencies = [
  "derive_more",
  "ed25519-dalek",
  "env_logger 0.9.3",
- "ferment",
- "ferment-interfaces",
- "ferment-macro",
  "getrandom",
  "hex",
  "indexmap 2.2.5",
@@ -1103,7 +1100,7 @@ dependencies = [
  "integer-encoding 4.0.0",
  "moka",
  "nohash-hasher",
- "parking_lot 0.12.1",
+ "parking_lot",
  "platform-version",
  "rand",
  "serde",
@@ -1312,10 +1309,6 @@ dependencies = [
  "quote",
  "syn 1.0.109",
 ]
-
-[[package]]
-name = "ferment-interfaces"
-version = "0.1.4"
 
 [[package]]
 name = "ferment-macro"
@@ -1996,7 +1989,7 @@ dependencies = [
  "lazy_static",
  "memchr",
  "num-cmp",
- "parking_lot 0.12.1",
+ "parking_lot",
  "percent-encoding",
  "regex",
  "serde",
@@ -2199,7 +2192,7 @@ dependencies = [
  "crossbeam-utils",
  "futures-util",
  "once_cell",
- "parking_lot 0.12.1",
+ "parking_lot",
  "quanta",
  "rustc_version",
  "scheduled-thread-pool",
@@ -2420,37 +2413,12 @@ checksum = "bb813b8af86854136c6922af0598d719255ecb2179515e6e7730d468f05c9cae"
 
 [[package]]
 name = "parking_lot"
-version = "0.11.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d17b78036a60663b797adeaee46f5c9dfebb86948d1255007a1d6be0271ff99"
-dependencies = [
- "instant",
- "lock_api",
- "parking_lot_core 0.8.6",
-]
-
-[[package]]
-name = "parking_lot"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3742b2c103b9f06bc9fff0a37ff4912935851bee6d36f3c02bcc755bcfec228f"
 dependencies = [
  "lock_api",
- "parking_lot_core 0.9.9",
-]
-
-[[package]]
-name = "parking_lot_core"
-version = "0.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60a2cfe6f0ad2bfc16aefa463b497d5c7a5ecd44a23efa72aa342d90177356dc"
-dependencies = [
- "cfg-if",
- "instant",
- "libc",
- "redox_syscall 0.2.16",
- "smallvec",
- "winapi",
+ "parking_lot_core",
 ]
 
 [[package]]
@@ -2461,7 +2429,7 @@ checksum = "4c42a9226546d68acdd9c0a280d17ce19bfe27a46bf68784e4066115788d008e"
 dependencies = [
  "cfg-if",
  "libc",
- "redox_syscall 0.4.1",
+ "redox_syscall",
  "smallvec",
  "windows-targets 0.48.5",
 ]
@@ -2543,32 +2511,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 
 [[package]]
-name = "platform-mobile"
-version = "0.1.0"
-dependencies = [
- "data-contracts",
- "dotenvy",
- "dpp",
- "drive-proof-verifier",
- "envy",
- "ferment-interfaces",
- "ferment-macro",
- "hex",
- "http",
- "lazy_static",
- "lru",
- "parking_lot 0.11.2",
- "platform-value",
- "platform-version",
- "rs-dapi-client",
- "rs-sdk",
- "serde",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "platform-serialization"
 version = "1.0.0-dev.9"
 dependencies = [
@@ -2593,11 +2535,7 @@ dependencies = [
  "base64 0.13.1",
  "bincode 2.0.0-rc.3",
  "bs58",
- "cbindgen",
  "ciborium",
- "ferment",
- "ferment-interfaces",
- "ferment-macro",
  "hex",
  "indexmap 2.2.5",
  "lazy_static",
@@ -2615,9 +2553,6 @@ dependencies = [
 name = "platform-version"
 version = "1.0.0-dev.9"
 dependencies = [
- "ferment",
- "ferment-interfaces",
- "ferment-macro",
  "thiserror",
 ]
 
@@ -2946,15 +2881,6 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.2.16"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb5a58c1855b4b6819d59012155603f0b22ad30cad752600aadfcb695265519a"
-dependencies = [
- "bitflags 1.3.2",
-]
-
-[[package]]
-name = "redox_syscall"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4722d768eff46b75989dd134e5c353f0d6296e5aaa3132e776cbdb56be7731aa"
@@ -3076,9 +3002,6 @@ dependencies = [
  "backon",
  "chrono",
  "dapi-grpc",
- "ferment",
- "ferment-interfaces",
- "ferment-macro",
  "futures",
  "hex",
  "http",
@@ -3106,9 +3029,6 @@ dependencies = [
  "drive",
  "drive-proof-verifier",
  "envy",
- "ferment",
- "ferment-interfaces",
- "ferment-macro",
  "futures",
  "hex",
  "http",
@@ -3127,17 +3047,8 @@ name = "rs-sdk-bindings"
 version = "0.1.0"
 dependencies = [
  "cbindgen",
- "data-contracts",
- "dpp",
  "ferment",
- "ferment-interfaces",
- "ferment-macro",
- "platform-mobile",
- "platform-value",
- "platform-version",
- "rs-dapi-client",
  "rs-sdk",
- "toml 0.8.11",
 ]
 
 [[package]]
@@ -3315,7 +3226,7 @@ version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3cbc66816425a074528352f5789333ecff06ca41b36b0b0efdfbb29edc391a19"
 dependencies = [
- "parking_lot 0.12.1",
+ "parking_lot",
 ]
 
 [[package]]
@@ -3433,15 +3344,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.53",
-]
-
-[[package]]
-name = "serde_spanned"
-version = "0.6.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb3622f419d1296904700073ea6cc23ad690adbd66f13ea683df73298736f0c1"
-dependencies = [
- "serde",
 ]
 
 [[package]]
@@ -3960,25 +3862,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "toml"
-version = "0.8.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af06656561d28735e9c1cd63dfd57132c8155426aa6af24f36a00a351f88c48e"
-dependencies = [
- "serde",
- "serde_spanned",
- "toml_datetime",
- "toml_edit 0.22.7",
-]
-
-[[package]]
 name = "toml_datetime"
 version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3550f4e9685620ac18a50ed434eb3aec30db8ba93b0287467bca5826ea25baf1"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "toml_edit"
@@ -3988,7 +3875,7 @@ checksum = "1b5bb770da30e5cbfde35a2d7b9b8a2c4b8ef89548a7a6aeab5c9a576e3e7421"
 dependencies = [
  "indexmap 2.2.5",
  "toml_datetime",
- "winnow 0.5.40",
+ "winnow",
 ]
 
 [[package]]
@@ -3999,20 +3886,7 @@ checksum = "6a8534fd7f78b5405e860340ad6575217ce99f38d4d5c8f2442cb5ecb50090e1"
 dependencies = [
  "indexmap 2.2.5",
  "toml_datetime",
- "winnow 0.5.40",
-]
-
-[[package]]
-name = "toml_edit"
-version = "0.22.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18769cd1cec395d70860ceb4d932812a0b4d06b1a4bb336745a4d21b9496e992"
-dependencies = [
- "indexmap 2.2.5",
- "serde",
- "serde_spanned",
- "toml_datetime",
- "winnow 0.6.5",
+ "winnow",
 ]
 
 [[package]]
@@ -4133,18 +4007,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c06d3da6113f116aaee68e4d601191614c9053067f9ab7f6edbcb161237daa54"
 dependencies = [
  "once_cell",
- "valuable",
-]
-
-[[package]]
-name = "tracing-log"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee855f1f400bd0e5c02d150ae5de3840039a3f54b025156404e34c23c03f47c3"
-dependencies = [
- "log",
- "once_cell",
- "tracing-core",
 ]
 
 [[package]]
@@ -4158,11 +4020,9 @@ dependencies = [
  "once_cell",
  "regex",
  "sharded-slab",
- "smallvec",
  "thread_local",
  "tracing",
  "tracing-core",
- "tracing-log",
 ]
 
 [[package]]
@@ -4295,12 +4155,6 @@ dependencies = [
  "getrandom",
  "rand",
 ]
-
-[[package]]
-name = "valuable"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "830b7e5d4d90034032940e4ace0d9a9a057e7a45cd94e6c007832e39edb82f6d"
 
 [[package]]
 name = "vcpkg"
@@ -4619,15 +4473,6 @@ name = "winnow"
 version = "0.5.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f593a95398737aeed53e489c785df13f3618e41dbcd6718c6addbf1395aa6876"
-dependencies = [
- "memchr",
-]
-
-[[package]]
-name = "winnow"
-version = "0.6.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dffa400e67ed5a4dd237983829e66475f0a4a26938c4b04c21baede6262215b8"
 dependencies = [
  "memchr",
 ]

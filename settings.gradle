@@ -5,3 +5,4 @@ include 'examples'
 include 'dpp'
 
 include ':dashj-platform-android'
+include ':dashj-platform-android-simple'
