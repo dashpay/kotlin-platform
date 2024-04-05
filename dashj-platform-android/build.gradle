@@ -65,25 +65,35 @@ android {
 //    // Set additional environment variables as needed
 //}
 
-task buildRustRelease(type: Exec) {
-    workingDir 'src/main/rust' // Adjust to the path of your Rust project relative to your Android project
-    // Use `cargo ndk -t <abi> -o <output_path> build --release` command format
-    // Note: Replace `<abi>` with your target ABI, and `<min_sdk_version>` with the minimum Android SDK version
-    // Example for ARMv7: 'armv7-linux-androideabi'
-    // Define the output path where the compiled libraries will be placed. It should match your project structure for JNI libraries.
-    String ndkPath = android.ndkDirectory.getPath()
-    String abi = "armv7-linux-androideabi"
-    String minSdkVersion = "24" // Set this to your project's minSdkVersion
-    String outputPath = "$projectDir/src/main/rust/target" // Adjust the output path as necessary
-    commandLine 'cargo', 'ndk', '-t', abi, '-o', outputPath, 'build', '--release', '--target=' + abi, '-Zbuild-std'
-    environment "CARGO_TARGET_DIR", "target"
-    // Automatically determine the correct `CC` and `AR` commands based on the selected ABI and minSdkVersion
-    environment "CARGO_NDK_CC", "$ndkPath/toolchains/llvm/prebuilt/darwin-x86_64/bin/${abi}${minSdkVersion}-clang"
-    environment "CARGO_NDK_AR", "$ndkPath/toolchains/llvm/prebuilt/darwin-x86_64/bin/${abi}-ar"
-    // No need to manually set `CFLAGS` as `cargo-ndk` handles it
-    environment "CFLAGS", "--sysroot=" +android.ndkDirectory.getPath() + '/toolchains/llvm/prebuilt/darwin-x86_64/sysroot'
-    environment "CMAKE_TOOLCHAIN_FILE", android.ndkDirectory.getPath() + '/build/cmake/android.toolchain.cmake'
+task buildRustRelease() {
+    doLast {
+        String ndkPath = android.ndkDirectory.getPath()
+        String outputPath = "$projectDir/src/main/jniLibs" // Adjust the output path as necessary
+        def abis = [
+                "armv7-linux-androideabi",
+                "aarch64-linux-android",
+                "i686-linux-android",
+                "x86_64-linux-android"
+        ]
 
+        // Detect the host OS for setting the correct sysroot path
+        String hostOs = System.getProperty("os.name").toLowerCase()
+        String osFolder = hostOs.contains("windows") ? "windows-x86_64" :
+                hostOs.contains("mac") ? "darwin-x86_64" :
+                        "linux-x86_64"
+
+        abis.each { abi ->
+            exec {
+                workingDir 'src/main/rust' // Adjust to the path of your Rust project relative to your Android project
+                environment "CARGO_TARGET_DIR", "target"
+                //environment "CARGO_FEATURE_STD", 1
+                environment "CFLAGS", "--sysroot=$ndkPath/toolchains/llvm/prebuilt/$osFolder/sysroot"
+                commandLine 'cargo', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std'
+                // Uncomment the next line if you need verbose output for debugging
+                // commandLine 'cargo', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std', '-vv'
+            }
+        }
+    }
 }
 
 //tasks.whenTaskAdded { task ->
@@ -133,10 +143,10 @@ dependencies {
 group 'org.dashj.android'
 version '0.22-SNAPSHOT'
 
-task sourcesJar(type: Jar) {
-    classifier 'sources'
-    from android.sourceSets.main.java.srcDirs
-}
+//task sourcesJar(type: Jar) {
+//    classifier 'sources'
+//    from android.sourceSets.main.java.srcDirs
+//}
 
 assemble.dependsOn(publishToMavenLocal)
 
@@ -144,17 +154,17 @@ assemble.dependsOn(publishToMavenLocal)
 //   useJUnitPlatform()
 //}
 
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
+//task javadoc(type: Javadoc) {
+//    source = android.sourceSets.main.java.srcDirs
+//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+//}
+//
+//task javadocJar(type: Jar, dependsOn: javadoc) {
+//    classifier = 'javadoc'
+//    from javadoc.destinationDir
+//}
+//
+//artifacts {
+//    archives javadocJar
+//    //archives sourcesJar
+//}

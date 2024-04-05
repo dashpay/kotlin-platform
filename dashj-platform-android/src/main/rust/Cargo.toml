@@ -5,7 +5,7 @@ edition = "2021"
 #build = "build.rs"
 
 [dependencies]
-rs-sdk = { path = "../../../../../platform-upstream/packages/rs-sdk" }
+rs-sdk = { path = "../../../../../platform/packages/rs-sdk" }
 
 #ferment-interfaces = { path = "../../../../../ferment/ferment-interfaces" }
 #ferment-macro = { path = "../../../../../ferment/ferment-macro" }
