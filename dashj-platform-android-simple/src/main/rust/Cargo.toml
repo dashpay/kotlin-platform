@@ -4,8 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rs-sdk = { git = "https://github.com/dashpay/platform.git", branch="v1.0-dev" }
-
+#rs-sdk = { git = "https://github.com/dashpay/platform.git", branch="v1.0-dev" }
+#rs-sdk = { path = "../../../../../platform/packages/rs-sdk" }
+bls-signatures = { path = "../../../../../bls-signatures/rust-bindings/bls-signatures"}
 [lib]
 name = "rssdkbindings"
 crate-type = ["cdylib"]
