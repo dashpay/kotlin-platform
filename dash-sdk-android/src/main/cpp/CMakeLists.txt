@@ -20,9 +20,9 @@ elseif(ANDROID_ABI STREQUAL "x86_64")
 endif()
 
 # Define the C source file
-set(C_SOURCE_FILE ${CMAKE_SOURCE_DIR}/../../../../java-sdk-bindings/build/generated/cpp/sdk.cpp
-        ${CMAKE_SOURCE_DIR}/../../../../java-sdk-bindings/src/main/cpp/java_map_keyid_identitypublickey.cpp
-        ${CMAKE_SOURCE_DIR}/../../../../java-sdk-bindings/src/main/cpp/context_provider.cpp)
+set(C_SOURCE_FILE ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/build/generated/cpp/sdk.cpp
+        ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/java_map_keyid_identitypublickey.cpp
+        ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/context_provider.cpp)
 
 # Define the pre-built Rust library
 set(RUST_LIBRARY ${CMAKE_SOURCE_DIR}/../rust/target/${RUST_TARGET_TRIPLE}/release/librssdkbindings.a)
@@ -33,7 +33,7 @@ set(JAVA_INCLUDE_PATH2 NotNeeded)
 set(JAVA_AWT_INCLUDE_PATH NotNeeded)
 find_package(JNI REQUIRED)
 
-include_directories(${JNI_INCLUDE_DIRS}, ${CMAKE_SOURCE_DIR}/../../../../java-sdk-bindings/src/main/cpp)
+include_directories(${JNI_INCLUDE_DIRS}, ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp)
 
 # Create a shared library that links C++ and Rust code
 add_library(sdklib SHARED ${C_SOURCE_FILE})

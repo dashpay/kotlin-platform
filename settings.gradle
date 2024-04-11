@@ -1,8 +1,8 @@
 import org.gradle.util.GradleVersion
 
-include 'java-sdk-bindings'
+include 'dash-sdk-java'
 include 'examples'
 include 'dpp'
 
-include ':dashj-platform-android'
+include ':dash-sdk-android'
 include ':dashj-platform-android-simple'

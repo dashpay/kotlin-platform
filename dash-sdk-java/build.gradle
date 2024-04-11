@@ -93,7 +93,7 @@ artifacts {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifactId = 'dashj-platform-bindings'
+            artifactId = 'dash-sdk-java'
             version "$version"
             from components.java
             artifact sourcesJar

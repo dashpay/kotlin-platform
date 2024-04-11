@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':java-sdk-bindings')
+    implementation project(':dash-sdk-java')
     implementation "org.dashj:dashj-core:$dashj_version"
     implementation 'org.json:json:20190722'
     implementation 'com.google.guava:guava:29.0-android'

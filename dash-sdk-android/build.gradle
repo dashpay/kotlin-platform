@@ -117,8 +117,7 @@ task buildRustRelease() {
 //preBuild.dependsOn "cargoBuild"
 
 dependencies {
-    implementation project(':java-sdk-bindings')
-    //implementation 'org.dashj.android:dashj-merk:0.20-SNAPSHOT'
+    implementation project(':dash-sdk-java')
     //implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
@@ -161,7 +160,7 @@ afterEvaluate {
         publications {
             release(MavenPublication) {
                 groupId group
-                artifactId 'dashj-sdk-android'
+                artifactId 'dash-sdk-android'
                 version "$version"
                 from components.release
 
