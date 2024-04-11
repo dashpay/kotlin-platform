@@ -20,7 +20,7 @@ public class IdentityTest extends BaseTest {
     @Test
     public void basicIdentityInRustAndDestroy() {
         Identifier identifier1 = new Identifier(identifier);
-        Identity identity = example.createBasicIdentity(identifier);
+        Identity identity = dashsdk.createBasicIdentity(identifier);
         Assertions.assertEquals(Identity.Tag.V0, identity.getTag());
         IdentityV0 identityV0 = identity.getV0().get_0();
         assertNotNull(identityV0);
@@ -35,7 +35,7 @@ public class IdentityTest extends BaseTest {
 //    @Test
 //    public void fetchIdentityAndDestroy() {
 //        Identifier identifier1 = new Identifier(contractIdentifier);
-//        Identity identity = example.fetchIdentity2(identifier1);
+//        Identity identity = dashsdk.fetchIdentity2(identifier1);
 //        assertEquals(Identity.Tag.V0, identity.getTag());
 //        IdentityV0 identityV0 = identity.getV0().get_0();
 //        assertNotNull(identityV0);
@@ -50,7 +50,7 @@ public class IdentityTest extends BaseTest {
     @Test
     public void fetchIdentity3AndDestroy() throws Exception {
         Identifier identifier1 = new Identifier(contractIdentifier);
-        Result<Identity, String> result = example.platformMobileFetchIdentityFetchIdentityWithCore(identifier1);
+        Result<Identity, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityWithCore(identifier1);
         Identity identity = result.unwrap();
         assertEquals(Identity.Tag.V0, identity.getTag());
         IdentityV0 identityV0 = identity.getV0().get_0();
@@ -66,7 +66,7 @@ public class IdentityTest extends BaseTest {
     @Test
     public void fetchIdentity3FailAndDestroy() throws Exception {
         Identifier identifier1 = new Identifier(identifier);
-        Result<Identity, String> result = example.platformMobileFetchIdentityFetchIdentityWithCore(identifier1);
+        Result<Identity, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityWithCore(identifier1);
         assertNotNull(result.unwrapError());
         //String error = result.getError();
         //assertNotNull(error);
@@ -78,7 +78,7 @@ public class IdentityTest extends BaseTest {
 //    @Test
 //    public void fetchIdentityByKeyFailAndDestroy() throws Exception {
 //        Identifier identifier1 = new Identifier(identifier);
-//        Result<Identity, String> result = example.getIdentityByPublicKeyHash(new byte[20], );
+//        Result<Identity, String> result = dashsdk.getIdentityByPublicKeyHash(new byte[20], );
 //        assertNotNull(result.unwrapError());
 //        //String error = result.getError();
 //        //assertNotNull(error);
@@ -89,14 +89,14 @@ public class IdentityTest extends BaseTest {
 
     @Test
     public void getDocument() {
-        Identifier identifier1 = example.getDocument();
+        Identifier identifier1 = dashsdk.getDocument();
         identifier1.delete();
     }
 
     @Test
     public void getIdentityTest() {
         Identifier identifier = new Identifier(contractIdentifier);
-        Identity identity = example.getIdentity2(identifier);
+        Identity identity = dashsdk.getIdentity2(identifier);
         assertNotNull(identity);
         assertTrue(identity.swigCMemOwn);
         assertEquals(Identity.Tag.V0, identity.getTag());
@@ -145,7 +145,7 @@ public class IdentityTest extends BaseTest {
     public void getIdentityWithBoundsFromRustAndDestroyTest() {
         Identifier id = new Identifier(identifier);
         Identifier idContract = new Identifier(contractIdentifier);
-        Identity identityWithBounds = example.getIdentityContractBounds(id, idContract);
+        Identity identityWithBounds = dashsdk.getIdentityContractBounds(id, idContract);
         assertNotNull(identityWithBounds);
         assertTrue(identityWithBounds.swigCMemOwn);
         assertEquals(Identity.Tag.V0, identityWithBounds.getTag());
@@ -186,7 +186,7 @@ public class IdentityTest extends BaseTest {
     @Test
     public void createBasicIdentityInRustAndDestroyTest() {
         Identifier identifier = new Identifier(contractIdentifier);
-        Identity identity = example.createBasicIdentity(identifier.get_0().get_0());
+        Identity identity = dashsdk.createBasicIdentity(identifier.get_0().get_0());
         assertNotNull(identity);
         assertTrue(identity.swigCMemOwn);
         assertEquals(Identity.Tag.V0, identity.getTag());
@@ -232,8 +232,8 @@ public class IdentityTest extends BaseTest {
 //    @Test
 //    public void traitTest() {
 //
-//        ChainType type = example.ffiGetChainSettings();
-//        IHaveChainSettings_TraitObject trait = example.chainTypeAsIHaveChainSettingsTraitObject(type);
+//        ChainType type = dashsdk.ffiGetChainSettings();
+//        IHaveChainSettings_TraitObject trait = dashsdk.chainTypeAsIHaveChainSettingsTraitObject(type);
 //        IHaveChainSettings ihcs = new IHaveChainSettings(trait);
 //        assertEquals(0, ihcs.genesisHeight());
 //        assertEquals(0, ihcs.genesisHash().get_0()[1]);
@@ -245,8 +245,8 @@ public class IdentityTest extends BaseTest {
 //        HashID hashID = new HashID(hash);
 //        assertArrayEquals(hashID.get_0(), hash);
 //
-//        MyIdentityFactory myFactory = example.ffiGetIdentityFactory();
-//        IdentityFactory_TraitObject traitObject = example.myIdentityFactoryAsIdentityFactoryTraitObject(myFactory);
+//        MyIdentityFactory myFactory = dashsdk.ffiGetIdentityFactory();
+//        IdentityFactory_TraitObject traitObject = dashsdk.myIdentityFactoryAsIdentityFactoryTraitObject(myFactory);
 //        IdentityFactory factory = new IdentityFactory(traitObject);
 //        Identity identity = factory.getIdentity(new Identifier(new byte[32]));
 //        assertArrayEquals(new byte[32], identity.getV0().getId().get_0().get_0());
@@ -265,11 +265,11 @@ public class IdentityTest extends BaseTest {
 
 //    @Test
 //    public void asyncFunctionTest() {
-//        ChainType mainNet = example.chainTypeMainNetCtor();
+//        ChainType mainNet = dashsdk.chainTypeMainNetCtor();
 //        assertEquals("ChainType_MainNet", mainNet.getTag().toString());
 //        //ChainType chainType = new ChainType();
-//        //example.
+//        //dashsdk.
 //        SWIGTYPE_p_void p_void = new SWIGTYPE_p_void();
-//        //String result = example.ffiGetChainTypeStringAsync(p_void, mainNet);
+//        //String result = dashsdk.ffiGetChainTypeStringAsync(p_void, mainNet);
 //    }
 }

@@ -1,4 +1,4 @@
-%module example
+%module dashsdk
 
 %{
 //extern "C" {
