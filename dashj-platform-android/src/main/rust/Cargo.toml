@@ -11,14 +11,14 @@ rs-sdk = { path = "../../../../../platform/packages/rs-sdk" }
 # bls-signatures = { path = "../../../../../bls-signatures/rust-bindings/bls-signatures"}
 
 
-#ferment-interfaces = { path = "../../../../../ferment/ferment-interfaces" }
-#ferment-macro = { path = "../../../../../ferment/ferment-macro" }
+ferment-interfaces = { path = "../../../../../ferment/ferment-interfaces" }
+ferment-macro = { path = "../../../../../ferment/ferment-macro" }
 
-#platform-mobile = { path = "../../../../../platform-mobile"}
+platform-mobile = { path = "../../../../../platform-mobile"}
 
-#platform-value = { path = "../../../../../platform/packages/rs-platform-value" }
+platform-value = { path = "../../../../../platform/packages/rs-platform-value" }
 #data-contracts = { path = "../../../../../platform/packages/data-contracts" }
-#dpp = { path = "../../../../../platform/packages/rs-dpp" }
+dpp = { path = "../../../../../platform/packages/rs-dpp" }
 #rs-dapi-client = { path = "../../../../../platform/packages/rs-dapi-client" }
 #platform-version = { path = "../../../../../platform/packages/rs-platform-version" }
 

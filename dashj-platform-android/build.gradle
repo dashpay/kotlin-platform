@@ -2,7 +2,7 @@ plugins {
     id 'com.android.library'
     //id "org.mozilla.rust-android-gradle.rust-android" version "0.9.3"
     id 'maven-publish'
-    id("dev.welbyseely.gradle-cmake-plugin") version "0.1.0"
+    id 'signing'
 }
 
 android {
@@ -33,11 +33,33 @@ android {
     }
 
     ndkVersion = "23.1.7779620"
+    externalNativeBuild {
+        cmake {
+            path 'src/main/cpp/CMakeLists.txt'
+            version '3.22.1'
+        }
+    }
+
+    defaultConfig {
+        ndk {
+            abiFilters 'arm64-v8a', 'x86_64'
+        }
+    }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
-cmake {
-    sourceFolder=file("$projectDir/src/main/cpp")
+repositories {
+    mavenLocal()
+    mavenCentral()
 }
+
+//cmake {
+//    sourceFolder=file("$projectDir/src/main/cpp")
+//}
 
 //cargo {
 //    module  = "./src/main/rust"       // Or whatever directory contains your Cargo.toml
@@ -66,9 +88,9 @@ task buildRustRelease() {
     doLast {
         String outputPath = "$projectDir/src/main/jniLibs" // Adjust the output path as necessary
         def abis = [
-                "armv7-linux-androideabi",
+                //armv7-linux-androideabi",
                 "aarch64-linux-android",
-                "i686-linux-android",
+                //"i686-linux-android",
                 "x86_64-linux-android"
         ]
 
@@ -77,7 +99,7 @@ task buildRustRelease() {
                 workingDir 'src/main/rust' // Adjust to the path of your Rust project relative to your Android project
                 environment "CARGO_TARGET_DIR", "target"
                 //environment "CARGO_FEATURE_STD", 1 // this is to trick indexmap, among others
-                commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std'
+                commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '--platform', '24', 'build', '--release', '-Zbuild-std'
                 // Uncomment the next line if you need verbose output for debugging
                 // commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std', '-vv'
             }
@@ -97,18 +119,18 @@ task buildRustRelease() {
 dependencies {
     implementation project(':java-sdk-bindings')
     //implementation 'org.dashj.android:dashj-merk:0.20-SNAPSHOT'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    //testImplementation 'junit:junit:4.13.2'
+    //implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
-group 'org.dashj.android'
-version '0.22-SNAPSHOT'
+//group 'org.dashj.android'
+//version '1.0-SNAPSHOT'
 
-//task sourcesJar(type: Jar) {
-//    classifier 'sources'
-//    from android.sourceSets.main.java.srcDirs
-//}
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
 
 assemble.dependsOn(publishToMavenLocal)
 
@@ -116,17 +138,74 @@ assemble.dependsOn(publishToMavenLocal)
 //   useJUnitPlatform()
 //}
 
-//task javadoc(type: Javadoc) {
-//    source = android.sourceSets.main.java.srcDirs
-//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-//}
-//
-//task javadocJar(type: Jar, dependsOn: javadoc) {
-//    classifier = 'javadoc'
-//    from javadoc.destinationDir
-//}
-//
-//artifacts {
-//    archives javadocJar
-//    //archives sourcesJar
-//}
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+assemble.dependsOn(publishToMavenLocal)
+assemble.dependsOn(sourcesJar)
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId group
+                artifactId 'dashj-sdk-android'
+                version "$version"
+                from components.release
+
+                pom {
+                    name = 'Dash-SDK-Android'
+                    description = 'Dash SDK Android Library'
+                    url = 'https://dashj.org'
+
+                    licenses {
+                        license {
+                            name = 'MIT'
+                            url = 'https://opensource.org/licenses/MIT'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'hashengineering'
+                            name = 'HashEngineering'
+                            email = 'hashengineeringsolutions@gmail.com'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com/HashEngineering/kotlin-platform.git'
+                        developerConnection = 'scm:git:ssh://github.com/HashEngineering/kotlin-platform.git'
+                        url = 'http://github.com/HashEngineering/kotlin-platform.git'
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                // change URLs to point to your repos, e.g. http://my.org/repo
+                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                credentials {
+                    username = project.hasProperty('ossrhUsername') ? project.findProperty('ossrhUsername') : ''
+                    password = project.hasProperty('ossrhPassword') ? project.findProperty('ossrhPassword') : ''
+                }
+            }
+        }
+    }
+    signing {
+        required { gradle.taskGraph.hasTask("publish") }
+        sign publishing.publications.release
+    }
+}

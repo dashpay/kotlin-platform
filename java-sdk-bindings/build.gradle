@@ -9,9 +9,10 @@ plugins {
     id 'signing'
 }
 
-version '1.0-SNAPSHOT'
+//version '1.0-SNAPSHOT'
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -93,6 +94,7 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             artifactId = 'dashj-platform-bindings'
+            version "$version"
             from components.java
             artifact sourcesJar
             artifact javadocJar
