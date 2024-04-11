@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     //id "org.mozilla.rust-android-gradle.rust-android" version "0.9.3"
     id 'maven-publish'
+    id("dev.welbyseely.gradle-cmake-plugin") version "0.1.0"
 }
 
 android {
@@ -32,14 +33,10 @@ android {
     }
 
     ndkVersion = "23.1.7779620"
-    //ndkVersion = "21.4.7075529"
+}
 
-    // Define a map from target architecture to NDK sysroot path
-    def ndkSysroots = [
-            'armv7-linux-androideabi': android.ndkDirectory.getPath() + '/toolchains/llvm/prebuilt/darwin-x86_64/sysroot',
-            'aarch64-linux-android': android.ndkDirectory.getPath() + 'toolchains/llvm/prebuilt/darwin-x86_64/sysroot',
-            // Add other architectures as needed
-    ]
+cmake {
+    sourceFolder=file("$projectDir/src/main/cpp")
 }
 
 //cargo {
@@ -97,36 +94,8 @@ task buildRustRelease() {
 
 //preBuild.dependsOn "cargoBuild"
 
-task copyArm8Library(type: Copy) {
-    from 'src/main/rust/target/aarch64-linux-android/release/librssdkbindings.so'
-    from android.ndkDirectory.getPath() + '/sources/cxx-stl/llvm-libc++/libs/arm64-v8a/libc++_shared.so'
-    into 'src/main/jniLibs/arm64-v8a'
-}
-
-task copyArm7Library(type: Copy) {
-    from './src/main/rust/target/armv7-linux-androideabi/release/librssdkbindings.so'
-    from android.ndkDirectory.getPath() + '/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_shared.so'
-    into './src/main/jniLibs/armeabi-v7a'
-}
-
-task copyX86Library(type: Copy) {
-    from 'src/main/rust/target/i686-linux-android/release/librssdkbindings.so'
-    from android.ndkDirectory.getPath() + '/sources/cxx-stl/llvm-libc++/libs/x86/libc++_shared.so'
-    into 'src/main/jniLibs/x86'
-}
-
-task copyX64Library(type: Copy) {
-    from './src/main/rust/target/x86_64-linux-android/release/librssdkbindings.so'
-    from android.ndkDirectory.getPath() + '/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++_shared.so'
-    into './src/main/jniLibs/x86_64'
-}
-
-//preBuild.dependsOn 'copyArm8Library'
-//preBuild.dependsOn 'copyArm7Library'
-//preBuild.dependsOn 'copyX86Library'
-//preBuild.dependsOn 'copyX64Library'
-
 dependencies {
+    implementation project(':java-sdk-bindings')
     //implementation 'org.dashj.android:dashj-merk:0.20-SNAPSHOT'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     //testImplementation 'junit:junit:4.13.2'

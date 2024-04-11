@@ -35,4 +35,4 @@ rs-x11-hash = { path = "../../../../../rs-x11-hash" }
 
 [lib]
 name = "rssdkbindings"
-crate-type = ["cdylib"]
+crate-type = ["staticlib"]
