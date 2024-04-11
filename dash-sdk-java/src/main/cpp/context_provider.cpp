@@ -1,6 +1,6 @@
 
 #include <jni.h>
-#include "../../../../rs-sdk/target/rs_sdk_bindings.h"
+#include "../../../../dash-sdk-bindings/target/rs_sdk_bindings.h"
 #include <cstring>
 // fetchIdentity4
 

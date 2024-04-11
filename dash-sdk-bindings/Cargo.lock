@@ -775,6 +775,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "dash-sdk-bindings"
+version = "1.0.0"
+dependencies = [
+ "cbindgen",
+ "dpp",
+ "ferment",
+ "ferment-interfaces",
+ "ferment-macro",
+ "platform-mobile",
+ "platform-value",
+ "rs-sdk",
+ "toml 0.8.11",
+]
+
+[[package]]
 name = "dashcore"
 version = "0.30.0"
 source = "git+https://github.com/dashpay/rust-dashcore?branch=master#25053c8e31e57d26f5876eff50bfc06ad9ee8b72"
@@ -1863,6 +1878,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "matchers"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8263075bb86c5a1b1427b5ae862e8889656f126e9f77c484496e8b47cf5c5558"
+dependencies = [
+ "regex-automata 0.1.10",
+]
+
+[[package]]
 name = "matchit"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2584,8 +2608,17 @@ checksum = "b62dbe01f0b06f9d8dc7d49e05a0785f153b00b2c227856282f671e0318c9b15"
 dependencies = [
  "aho-corasick",
  "memchr",
- "regex-automata",
- "regex-syntax",
+ "regex-automata 0.4.6",
+ "regex-syntax 0.8.2",
+]
+
+[[package]]
+name = "regex-automata"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c230d73fb8d8c1b9c0b3135c5142a8acee3a0558fb8db5cf1cb65f8d7862132"
+dependencies = [
+ "regex-syntax 0.6.29",
 ]
 
 [[package]]
@@ -2596,8 +2629,14 @@ checksum = "86b83b8b9847f9bf95ef68afb0b8e6cdb80f498442f5179a29fad448fcc1eaea"
 dependencies = [
  "aho-corasick",
  "memchr",
- "regex-syntax",
+ "regex-syntax 0.8.2",
 ]
+
+[[package]]
+name = "regex-syntax"
+version = "0.6.29"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f162c6dd7b008981e4d40210aca20b4bd0f9b60ca9271061b07f78537722f2e1"
 
 [[package]]
 name = "regex-syntax"
@@ -2712,25 +2751,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "rs-sdk-bindings"
-version = "0.1.0"
-dependencies = [
- "cbindgen",
- "dpp",
- "ferment",
- "ferment-interfaces",
- "ferment-macro",
- "platform-mobile",
- "platform-value",
- "rs-sdk",
- "toml 0.8.11",
-]
-
-[[package]]
 name = "rs-x11-hash"
 version = "0.1.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94ea852806513d6f5fd7750423300375bc8481a18ed033756c1a836257893a30"
 dependencies = [
  "bindgen",
  "cc",
@@ -3495,12 +3517,11 @@ dependencies = [
 [[package]]
 name = "tower"
 version = "0.4.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8fa9be0de6cf49e536ce1851f987bd21a43b771b09473c3549a6c853db37c1c"
+source = "git+https://github.com/QuantumExplorer/tower?branch=fix/indexMap2OnV0413#5286f8c605d10f48d51254f2434c5ab3fc5d7779"
 dependencies = [
  "futures-core",
  "futures-util",
- "indexmap 1.9.3",
+ "indexmap 2.2.6",
  "pin-project",
  "pin-project-lite",
  "rand",
@@ -3515,14 +3536,12 @@ dependencies = [
 [[package]]
 name = "tower-layer"
 version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c20c8dbed6283a09604c3e69b4b7eeb54e298b8a600d4d5ecb5ad39de609f1d0"
+source = "git+https://github.com/QuantumExplorer/tower?branch=fix/indexMap2OnV0413#5286f8c605d10f48d51254f2434c5ab3fc5d7779"
 
 [[package]]
 name = "tower-service"
 version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6bc1c9ce2b5135ac7f93c72918fc37feb872bdc6a5533a8b85eb4b86bfdae52"
+source = "git+https://github.com/QuantumExplorer/tower?branch=fix/indexMap2OnV0413#5286f8c605d10f48d51254f2434c5ab3fc5d7779"
 
 [[package]]
 name = "tracing"
@@ -3573,10 +3592,14 @@ version = "0.3.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad0f048c97dbd9faa9b7df56362b8ebcaa52adb06b498c050d2f4e32f90a7a8b"
 dependencies = [
+ "matchers",
  "nu-ansi-term",
+ "once_cell",
+ "regex",
  "sharded-slab",
  "smallvec",
  "thread_local",
+ "tracing",
  "tracing-core",
  "tracing-log",
 ]

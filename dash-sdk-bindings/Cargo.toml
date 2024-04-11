@@ -1,8 +1,7 @@
 [package]
-name = "rs-sdk-bindings"
-version = "0.1.0"
+name = "dash-sdk-bindings"
+version = "1.0.0"
 edition = "2021"
-build = "build.rs"
 
 [dependencies]
 ferment-interfaces = { path = "../../ferment/ferment-interfaces" }
@@ -23,6 +22,11 @@ cbindgen = "0.26.0"
 ferment = { path = "../../ferment/ferment" }
 toml = "0.8.8"
 
+[patch.crates-io]
+tower-service = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
+tower-layer = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
+tower = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
+rs-x11-hash = { path = "../../rs-x11-hash" }
+
 [lib]
-name = "rssdkbindings"
 crate-type = ["staticlib"]

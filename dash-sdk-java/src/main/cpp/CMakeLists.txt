@@ -13,7 +13,7 @@ set(C_SOURCE_FILE ${CMAKE_SOURCE_DIR}/../../../build/generated/cpp/sdk.cpp
         context_provider.cpp)
 
 # Define the pre-built Rust library
-set(RUST_LIBRARY ${CMAKE_SOURCE_DIR}/../../../../rs-sdk/target/debug/librssdkbindings.a)
+set(RUST_LIBRARY ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-bindings/target/debug/libdash_sdk_bindings.a)
 find_package(JNI REQUIRED)
 include_directories(${JNI_INCLUDE_DIRS}, ${CMAKE_SOURCE_DIR})
 # Create an executable that links C and Rust code
