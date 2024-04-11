@@ -5,6 +5,7 @@ SET(BUILD_MODE Release)
 SET(CMAKE_CXX_FLAGS "-Wall -fPIC")
 SET(CMAKE_CXX_FLAGS_DEBUG "-g")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
+SET(ANDROID_API_LEVEL 24)
 project(sdk)
 
 message(STATUS "ANDROID_ABI=${ANDROID_ABI}")
@@ -24,17 +25,40 @@ set(C_SOURCE_FILE ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/build/generated/
         ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/java_map_keyid_identitypublickey.cpp
         ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/context_provider.cpp)
 
-# Define the pre-built Rust library
-set(RUST_LIBRARY ${CMAKE_SOURCE_DIR}/../rust/target/${RUST_TARGET_TRIPLE}/release/librssdkbindings.a)
+# Define the Rust libraryn config
+set(RUST_LIB_NAME "dash_sdk_bindings")
+set(RUST_LIB_FILE "lib${RUST_LIB_NAME}.a")
+set(RUST_LIB_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/../rust/target/${RUST_TARGET_TRIPLE}/release/${RUST_LIB_FILE}")
+set(RUST_SOURCE_DIR "${CMAKE_SOURCE_DIR}/../rust")
+file(
+    GLOB_RECURSE
+    RUST_PROJECT_FILES "${RUST_SOURCE_DIR}/*.rs"
+                       "${RUST_SOURCE_DIR}/src/*.rs"
+                       "${RUST_SOURCE_DIR}/Cargo.toml"
+)
+# Command to build the Rust Bindings Library
+add_custom_command(
+    OUTPUT ${RUST_LIB_OUTPUT_PATH}
+    COMMAND ${CMAKE_COMMAND} -E touch ${RUST_SOURCE_DIR}/Cargo.toml
+    COMMAND cargo +nightly ndk -t ${RUST_TARGET_TRIPLE} -p ${ANDROID_API_LEVEL} build --release -Zbuild-std
+    WORKING_DIRECTORY ${RUST_SOURCE_DIR}
+    COMMENT "Building Rust library with cargo ndk"
+    DEPENDS ${RUST_PROJECT_FILES}
+    VERBATIM
+)
+add_custom_target(BuildRustLib ALL
+    DEPENDS ${RUST_LIB_OUTPUT_PATH}
+)
 
+# Java
 set(JAVA_AWT_LIBRARY NotNeeded)
 set(JAVA_JVM_LIBRARY NotNeeded)
 set(JAVA_INCLUDE_PATH2 NotNeeded)
 set(JAVA_AWT_INCLUDE_PATH NotNeeded)
 find_package(JNI REQUIRED)
 
+# Create the shared library that links C++ and Rust code
 include_directories(${JNI_INCLUDE_DIRS}, ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp)
-
-# Create a shared library that links C++ and Rust code
 add_library(sdklib SHARED ${C_SOURCE_FILE})
-target_link_libraries(sdklib PRIVATE ${RUST_LIBRARY})
+add_dependencies(sdklib BuildRustLib)
+target_link_libraries(sdklib PRIVATE ${RUST_LIB_OUTPUT_PATH})

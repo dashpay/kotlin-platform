@@ -1,8 +1,7 @@
 [package]
-name = "rs-sdk-bindings"
+name = "dash-sdk-bindings"
 version = "0.1.0"
 edition = "2021"
-#build = "build.rs"
 
 [dependencies]
 rs-sdk = { path = "../../../../../platform/packages/rs-sdk" }
@@ -34,5 +33,4 @@ tower = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexM
 rs-x11-hash = { path = "../../../../../rs-x11-hash" }
 
 [lib]
-name = "rssdkbindings"
 crate-type = ["staticlib"]
