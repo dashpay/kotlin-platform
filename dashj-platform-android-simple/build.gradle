@@ -49,7 +49,6 @@ android {
 
 task buildRustRelease() {
     doLast {
-        String ndkPath = android.ndkDirectory.getPath()
         String outputPath = "$projectDir/src/main/jniLibs" // Adjust the output path as necessary
         def abis = [
                 "armv7-linux-androideabi",
@@ -58,21 +57,14 @@ task buildRustRelease() {
                 "x86_64-linux-android"
         ]
 
-        // Detect the host OS for setting the correct sysroot path
-        String hostOs = System.getProperty("os.name").toLowerCase()
-        String osFolder = hostOs.contains("windows") ? "windows-x86_64" :
-                hostOs.contains("mac") ? "darwin-x86_64" :
-                        "linux-x86_64"
-
         abis.each { abi ->
             exec {
                 workingDir 'src/main/rust' // Adjust to the path of your Rust project relative to your Android project
                 environment "CARGO_TARGET_DIR", "target"
-                //environment "CARGO_FEATURE_STD", 1 // do we need this?
-                environment "CFLAGS", "--sysroot=$ndkPath/toolchains/llvm/prebuilt/$osFolder/sysroot"
-                commandLine 'cargo', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std'
+                //environment "CARGO_FEATURE_STD", 1 // this is to trick indexmap, among others
+                commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std'
                 // Uncomment the next line if you need verbose output for debugging
-                // commandLine 'cargo', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std', '-vv'
+                // commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std', '-vv'
             }
         }
     }

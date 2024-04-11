@@ -2,11 +2,23 @@
 name = "rs-sdk-bindings"
 version = "0.1.0"
 edition = "2021"
+#build = "build.rs"
 
 [dependencies]
 #rs-sdk = { git = "https://github.com/dashpay/platform.git", branch="v1.0-dev" }
-#rs-sdk = { path = "../../../../../platform/packages/rs-sdk" }
-bls-signatures = { path = "../../../../../bls-signatures/rust-bindings/bls-signatures"}
+rs-sdk = { path = "../../../../../platform-upstream/packages/rs-sdk" }
+# bls-signatures = { path = "../../../../../bls-signatures/rust-bindings/bls-signatures"}
 [lib]
 name = "rssdkbindings"
 crate-type = ["cdylib"]
+
+#[build-dependencies]
+#autocfg = "1"
+
+[patch.crates-io]
+tower-service = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
+tower-layer = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
+tower = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
+rs-x11-hash = { path = "../../../../../rs-x11-hash" }
+#bls-signatures = { path = "../../../../../bls-signatures/rust-bindings/bls-signatures" }
+#bls-dash-sys = { path = "../../../../../bls-signatures/rust-bindings/bls-dash-sys" }
