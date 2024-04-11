@@ -6,6 +6,10 @@ edition = "2021"
 
 [dependencies]
 rs-sdk = { path = "../../../../../platform/packages/rs-sdk" }
+#rs-sdk = { git = "https://github.com/dashpay/platform.git", branch="v1.0-dev" }
+#rs-sdk = { path = "../../../../../platform-upstream/packages/rs-sdk" }
+# bls-signatures = { path = "../../../../../bls-signatures/rust-bindings/bls-signatures"}
+
 
 #ferment-interfaces = { path = "../../../../../ferment/ferment-interfaces" }
 #ferment-macro = { path = "../../../../../ferment/ferment-macro" }
@@ -18,11 +22,16 @@ rs-sdk = { path = "../../../../../platform/packages/rs-sdk" }
 #rs-dapi-client = { path = "../../../../../platform/packages/rs-dapi-client" }
 #platform-version = { path = "../../../../../platform/packages/rs-platform-version" }
 
-
 [build-dependencies]
 cbindgen = "0.26.0"
 ferment = { path = "../../../../../ferment/ferment" }
 #toml = "0.8.8"
+
+[patch.crates-io]
+tower-service = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
+tower-layer = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
+tower = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
+rs-x11-hash = { path = "../../../../../rs-x11-hash" }
 
 [lib]
 name = "rssdkbindings"
