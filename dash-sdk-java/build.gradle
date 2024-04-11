@@ -94,7 +94,7 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             artifactId = 'dash-sdk-java'
-            version "$version"
+            version project.rootProject.ext.version
             from components.java
             artifact sourcesJar
             artifact javadocJar

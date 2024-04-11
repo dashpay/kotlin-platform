@@ -12,6 +12,8 @@ android {
     defaultConfig {
         minSdk 24
         targetSdk 32
+        versionCode 1
+        versionName project.rootProject.ext.version
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -161,7 +163,7 @@ afterEvaluate {
             release(MavenPublication) {
                 groupId group
                 artifactId 'dash-sdk-android'
-                version "$version"
+                version project.rootProject.ext.version
                 from components.release
 
                 pom {
