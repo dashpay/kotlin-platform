@@ -26,6 +26,7 @@ cmake {
     sourceFolder=file("$projectDir/src/main/cpp")
 }
 
+// TODO: move this to the cmake project
 task generateSWIG(type: Exec) {
     // Define the input directory where your .i files are located
     def swigInputDir = "${projectDir}/src/main/swig"

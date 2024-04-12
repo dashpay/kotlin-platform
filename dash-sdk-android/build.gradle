@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.library'
-    //id "org.mozilla.rust-android-gradle.rust-android" version "0.9.3"
     id 'maven-publish'
     id 'signing'
 }
@@ -42,6 +41,7 @@ android {
         }
     }
 
+    // 64bit only due to some things in the rust crate `platform-mobile`
     defaultConfig {
         ndk {
             abiFilters 'arm64-v8a', 'x86_64'
@@ -59,33 +59,7 @@ repositories {
     mavenCentral()
 }
 
-//cmake {
-//    sourceFolder=file("$projectDir/src/main/cpp")
-//}
-
-//cargo {
-//    module  = "./src/main/rust"       // Or whatever directory contains your Cargo.toml
-//    libname = "rssdkbindings"          // Or whatever matches Cargo.toml's [package] name.
-//    targets = ["arm", "arm64", "x86", "x86_64"]  // See bellow for a longer list of options
-//    prebuiltToolchains = true
-//    profile = 'release'
-//    verbose = false
-//    rustupChannel = "nightly"
-//    targetDirectory = './build/rust'
-//    targetIncludes = ['librssdkbindings.so']
-//    extraCargoBuildArguments = ['-Zbuild-std']
-//}
-
-//task buildRustRelease(type: Exec) {
-//    workingDir 'src/main/rust' // Adjust this to the path of your Rust project relative to your Android project
-//    commandLine 'cargo', '+nightly', 'build', '--release', '--target=armv7-linux-androideabi', '-Zbuild-std'
-//    environment "CARGO_TARGET_DIR", "target"
-//    environment "CC", android.ndkDirectory.getPath() + "/toolchains/llvm/prebuilt/darwin-x86_64/bin/armv7a-linux-androideabi31-clang"
-//    environment "AR", android.ndkDirectory.getPath() + "/toolchains/llvm/prebuilt/darwin-x86_64/bin/armv7a-linux-androideabi31-ar"
-//    environment "CFLAGS", "--sysroot=" +android.ndkDirectory.getPath() + '/toolchains/llvm/prebuilt/darwin-x86_64/sysroot'
-//    // Set additional environment variables as needed
-//}
-
+// This has been replaced by the cmake project.  Only 64 bit is supported
 task buildRustRelease() {
     doLast {
         String outputPath = "$projectDir/src/main/jniLibs" // Adjust the output path as necessary
@@ -100,7 +74,7 @@ task buildRustRelease() {
             exec {
                 workingDir 'src/main/rust' // Adjust to the path of your Rust project relative to your Android project
                 environment "CARGO_TARGET_DIR", "target"
-                //environment "CARGO_FEATURE_STD", 1 // this is to trick indexmap, among others
+                //environment "CARGO_FEATURE_STD", 1 // this is to trick indexmap v1.9.3, among others
                 commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '--platform', '24', 'build', '--release', '-Zbuild-std'
                 // Uncomment the next line if you need verbose output for debugging
                 // commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std', '-vv'
@@ -125,8 +99,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
-//group 'org.dashj.android'
-//version '1.0-SNAPSHOT'
 
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
