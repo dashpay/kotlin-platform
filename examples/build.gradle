@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':java-sdk-bindings')
+    implementation project(':dash-sdk-java')
     implementation project(':dpp')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.dashj:dashj-core:$dashj_version"

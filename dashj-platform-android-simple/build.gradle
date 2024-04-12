@@ -1,0 +1,74 @@
+plugins {
+    id 'com.android.library'
+    //id "org.mozilla.rust-android-gradle.rust-android" version "0.9.3"
+    id 'maven-publish'
+}
+
+android {
+    namespace "org.dashj.platform"
+    compileSdk 32
+
+    defaultConfig {
+        minSdk 24
+        targetSdk 32
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
+
+    ndkVersion "25.2.9519653"
+}
+
+task buildRustRelease() {
+    doLast {
+        String outputPath = "$projectDir/src/main/jniLibs" // Adjust the output path as necessary
+        def abis = [
+                "armv7-linux-androideabi",
+                "aarch64-linux-android",
+                "i686-linux-android",
+                "x86_64-linux-android"
+        ]
+
+        abis.each { abi ->
+            exec {
+                workingDir 'src/main/rust' // Adjust to the path of your Rust project relative to your Android project
+                environment "CARGO_TARGET_DIR", "target"
+                //environment "CARGO_FEATURE_STD", 1 // this is to trick indexmap, among others
+                commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std'
+                // Uncomment the next line if you need verbose output for debugging
+                // commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std', '-vv'
+            }
+        }
+    }
+}
+
+//tasks.whenTaskAdded { task ->
+//    if ((task.name == 'javaPreCompileDebug' || task.name == 'javaPreCompileRelease')) {
+//        task.dependsOn 'buildRustRelease'
+//    }
+//}
+
+preBuild.dependsOn "buildRustRelease"
+
+dependencies {
+    //testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
+
+assemble.dependsOn(publishToMavenLocal)

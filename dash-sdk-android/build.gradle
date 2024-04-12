@@ -1,0 +1,184 @@
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
+    id 'signing'
+}
+
+android {
+    namespace "org.dashj.platform"
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 24
+        targetSdk 32
+        versionCode 1
+        versionName project.rootProject.ext.version
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
+
+    ndkVersion = "23.1.7779620"
+    externalNativeBuild {
+        cmake {
+            path 'src/main/cpp/CMakeLists.txt'
+            version '3.22.1'
+        }
+    }
+
+    // 64bit only due to some things in the rust crate `platform-mobile`
+    defaultConfig {
+        ndk {
+            abiFilters 'arm64-v8a', 'x86_64'
+        }
+    }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+// This has been replaced by the cmake project.  Only 64 bit is supported
+task buildRustRelease() {
+    doLast {
+        String outputPath = "$projectDir/src/main/jniLibs" // Adjust the output path as necessary
+        def abis = [
+                //armv7-linux-androideabi",
+                "aarch64-linux-android",
+                //"i686-linux-android",
+                "x86_64-linux-android"
+        ]
+
+        abis.each { abi ->
+            exec {
+                workingDir 'src/main/rust' // Adjust to the path of your Rust project relative to your Android project
+                environment "CARGO_TARGET_DIR", "target"
+                //environment "CARGO_FEATURE_STD", 1 // this is to trick indexmap v1.9.3, among others
+                commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '--platform', '24', 'build', '--release', '-Zbuild-std'
+                // Uncomment the next line if you need verbose output for debugging
+                // commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std', '-vv'
+            }
+        }
+    }
+}
+
+
+//tasks.whenTaskAdded { task ->
+//    if ((task.name == 'javaPreCompileDebug' || task.name == 'javaPreCompileRelease')) {
+//        task.dependsOn 'cargoBuild'
+//    }
+//}
+
+//preBuild.dependsOn "cargoBuild"
+
+dependencies {
+    implementation project(':dash-sdk-java')
+    //implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+assemble.dependsOn(publishToMavenLocal)
+
+//test {
+//   useJUnitPlatform()
+//}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+assemble.dependsOn(publishToMavenLocal)
+assemble.dependsOn(sourcesJar)
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId group
+                artifactId 'dash-sdk-android'
+                version project.rootProject.ext.version
+                from components.release
+
+                pom {
+                    name = 'Dash-SDK-Android'
+                    description = 'Dash SDK Android Library'
+                    url = 'https://dashj.org'
+
+                    licenses {
+                        license {
+                            name = 'MIT'
+                            url = 'https://opensource.org/licenses/MIT'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'hashengineering'
+                            name = 'HashEngineering'
+                            email = 'hashengineeringsolutions@gmail.com'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com/HashEngineering/kotlin-platform.git'
+                        developerConnection = 'scm:git:ssh://github.com/HashEngineering/kotlin-platform.git'
+                        url = 'http://github.com/HashEngineering/kotlin-platform.git'
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                // change URLs to point to your repos, e.g. http://my.org/repo
+                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                credentials {
+                    username = project.hasProperty('ossrhUsername') ? project.findProperty('ossrhUsername') : ''
+                    password = project.hasProperty('ossrhPassword') ? project.findProperty('ossrhPassword') : ''
+                }
+            }
+        }
+    }
+    signing {
+        required { gradle.taskGraph.hasTask("publish") }
+        sign publishing.publications.release
+    }
+}
