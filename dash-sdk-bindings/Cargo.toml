@@ -12,7 +12,7 @@ platform-mobile = { path = "../../platform-mobile"}
 platform-value = { path = "../../platform/packages/rs-platform-value" }
 #data-contracts = { path = "../../platform/packages/data-contracts" }
 dpp = { path = "../../platform/packages/rs-dpp" }
-rs-sdk = { path = "../../platform/packages/rs-sdk"}
+dash-sdk = { path = "../../platform/packages/rs-sdk"}
 #rs-dapi-client = { path = "../../platform/packages/rs-dapi-client", default-features = false}
 #platform-version = { path = "../../platform/packages/rs-platform-version" }
 
