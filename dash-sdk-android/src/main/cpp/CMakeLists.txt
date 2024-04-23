@@ -32,7 +32,7 @@ set(RUST_LIB_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/../rust/target/${RUST_TARGET_TRIPL
 set(RUST_SOURCE_DIR "${CMAKE_SOURCE_DIR}/../rust")
 file(
     GLOB_RECURSE
-    RUST_PROJECT_FILES "${RUST_SOURCE_DIR}/*.rs"
+    RUST_PROJECT_FILES "${RUST_SOURCE_DIR}/build.rs"
                        "${RUST_SOURCE_DIR}/src/*.rs"
                        "${RUST_SOURCE_DIR}/Cargo.toml"
 )
