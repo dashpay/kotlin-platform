@@ -15,7 +15,7 @@ fn main() {
              "platform-value",
              "dpp",
              // "platform-version",
-             "rs-sdk",
+             "dash-sdk",
              "rs-dapi-client",
               "platform-mobile"
           ]

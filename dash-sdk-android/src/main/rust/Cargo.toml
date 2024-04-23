@@ -4,7 +4,7 @@ version = "1.0.0"
 edition = "2021"
 
 [dependencies]
-rs-sdk = { path = "../../../../../platform/packages/rs-sdk" }
+dash-sdk = { path = "../../../../../platform/packages/rs-sdk" }
 #rs-sdk = { git = "https://github.com/dashpay/platform.git", branch="v1.0-dev" }
 #rs-sdk = { path = "../../../../../platform-upstream/packages/rs-sdk" }
 # bls-signatures = { path = "../../../../../bls-signatures/rust-bindings/bls-signatures"}

@@ -1,1 +1,1 @@
-DEFINE_CLASS_1(PublicKeyHash, rs_sdk_platform_types_identity_PublicKeyHash, uint8_t (* value)[20]);
+DEFINE_CLASS_1(PublicKeyHash, dash_sdk_platform_types_identity_PublicKeyHash, uint8_t (* value)[20]);

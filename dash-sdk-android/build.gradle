@@ -169,7 +169,7 @@ afterEvaluate {
                 // change URLs to point to your repos, e.g. http://my.org/repo
                 def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                 def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                url = project.rootProject.ext.version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
                 credentials {
                     username = project.hasProperty('ossrhUsername') ? project.findProperty('ossrhUsername') : ''
                     password = project.hasProperty('ossrhPassword') ? project.findProperty('ossrhPassword') : ''

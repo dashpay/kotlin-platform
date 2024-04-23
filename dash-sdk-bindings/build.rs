@@ -4,7 +4,7 @@ extern crate ferment;
 use std::process::Command;
 use ferment::builder::{Builder, Crate};
 
-pub const SELF_NAME: &str = "rs_sdk_bindings";
+pub const SELF_NAME: &str = "dash_sdk_bindings";
 fn main() {
 
    let c_header = format!("target/{}.h", SELF_NAME);
@@ -15,7 +15,7 @@ fn main() {
              "platform-value",
              "dpp",
              // "platform-version",
-             "rs-sdk",
+             "dash-sdk",
              "rs-dapi-client",
               "platform-mobile"
           ]

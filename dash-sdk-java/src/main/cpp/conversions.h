@@ -6,7 +6,7 @@
 #define SDK_CONVERSIONS_H
 
 #include <jni.h>
-#include "../../../../dash-sdk-bindings/target/rs_sdk_bindings.h"
+#include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 
 typedef std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey FermentMapKeyIDIdentityPublicKey;
 jobject fermented_tree_to_java_map_KeyID_IdentityPublicKey(JNIEnv * jenv, FermentMapKeyIDIdentityPublicKey * input);

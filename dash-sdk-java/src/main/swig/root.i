@@ -2,7 +2,7 @@
 
 %{
 //extern "C" {
-#include "../../../../dash-sdk-bindings/target/rs_sdk_bindings.h"
+#include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 //}
 #include <stdlib.h>
 #include "dpp.h"
@@ -73,6 +73,6 @@ import org.dashj.platform.sdk.base.BaseObject;
 %include "ignore.i"
 
 //extern "C" {
-%include "../../../../dash-sdk-bindings/target/rs_sdk_bindings.h"
+%include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 //}
 %include "src/main/cpp/dpp.h"

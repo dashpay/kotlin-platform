@@ -32,7 +32,7 @@ set(RUST_LIB_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/../rust/target/${RUST_TARGET_TRIPL
 set(RUST_SOURCE_DIR "${CMAKE_SOURCE_DIR}/../rust")
 file(
     GLOB_RECURSE
-    RUST_PROJECT_FILES "${RUST_SOURCE_DIR}/*.rs"
+    RUST_PROJECT_FILES "${RUST_SOURCE_DIR}/build.rs"
                        "${RUST_SOURCE_DIR}/src/*.rs"
                        "${RUST_SOURCE_DIR}/Cargo.toml"
 )
@@ -49,6 +49,9 @@ add_custom_command(
 add_custom_target(BuildRustLib ALL
     DEPENDS ${RUST_LIB_OUTPUT_PATH}
 )
+set_target_properties(BuildRustLib PROPERTIES
+    LOCATION ${RUST_LIB_OUTPUT_PATH}
+)
 
 # Java
 set(JAVA_AWT_LIBRARY NotNeeded)
@@ -56,9 +59,13 @@ set(JAVA_JVM_LIBRARY NotNeeded)
 set(JAVA_INCLUDE_PATH2 NotNeeded)
 set(JAVA_AWT_INCLUDE_PATH NotNeeded)
 find_package(JNI REQUIRED)
+# required for android log
+# find_library(LOG_LIB log)
+# find_library(ANDROID_LIB android)
 
 # Create the shared library that links C++ and Rust code
 include_directories(${JNI_INCLUDE_DIRS}, ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp)
 add_library(sdklib SHARED ${C_SOURCE_FILE})
 add_dependencies(sdklib BuildRustLib)
 target_link_libraries(sdklib PRIVATE ${RUST_LIB_OUTPUT_PATH})
+# target_link_libraries(sdklib PRIVATE ${RUST_LIB_OUTPUT_PATH} ${LOG_LIB} ${ANDROID_LIB})

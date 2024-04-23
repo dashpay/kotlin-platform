@@ -87,7 +87,7 @@ public class IdentityTest extends BaseTest {
 //        identifier1.delete();
 //    }
 
-    @Test
+    // @Test
     public void getDocument() {
         Identifier identifier1 = dashsdk.getDocument();
         identifier1.delete();

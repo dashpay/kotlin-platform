@@ -16,7 +16,7 @@ import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.Identifier
 import org.dashj.platform.sdk.Identity
 import org.dashj.platform.sdk.callbacks.ContextProvider;
-import org.dashj.platform.sdk.example
+import org.dashj.platform.sdk.dashsdk
 
 import java.io.File
 import java.io.FileInputStream
@@ -142,9 +142,9 @@ object PlatformExplorer {
             }
         }
 
-        val identifier = example.platformMobileFetchIdentityGetDocumentWithCallbacks(BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
-        println(Base58.encode(identifier._0._0))
-
+        //val identifier = example.platformMobileFetchIdentityGetDocumentWithCallbacks(BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
+        //println(Base58.encode(identifier._0._0))
+        println("4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF")
         val scanner = Scanner(System.`in`)
         var quit = false
         while (!quit) {
@@ -164,7 +164,7 @@ object PlatformExplorer {
 
                     println(" > $idString")
 
-                    val value = example.fetchIdentity(
+                    val value = dashsdk.fetchIdentity(
                         Identifier(Base58.decode(idString)),
                         BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
                         BigInteger.ZERO
@@ -184,7 +184,7 @@ object PlatformExplorer {
 
                     println(" > $publicKeyHashString")
 
-                    val value = example.getIdentityByPublicKeyHash(
+                    val value = dashsdk.getIdentityByPublicKeyHash(
                         Converters.fromHex(publicKeyHashString),
                         BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
                         BigInteger.ZERO
@@ -203,7 +203,7 @@ object PlatformExplorer {
                     println(" > $publicKeyString")
                     println(" > ${publicKey.pubKeyHash.toHex()}")
 
-                    val value = example.getIdentityByPublicKeyHash(
+                    val value = dashsdk.getIdentityByPublicKeyHash(
                         publicKey.pubKeyHash,
                         BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
                         BigInteger.ZERO
