@@ -1,5 +1,6 @@
 
 #include <jni.h>
+#include "config.h"
 #include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 #include <cstring>
 // fetchIdentity4
