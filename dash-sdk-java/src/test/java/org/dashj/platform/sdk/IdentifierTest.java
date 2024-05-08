@@ -53,7 +53,7 @@ public class IdentifierTest extends BaseTest {
     @Test
     public void cloneTest() {
         Identifier id = new Identifier(identifier);
-        Identifier idClone = dashsdk.identifierClone(id);
+        Identifier idClone = dashsdk.platformMobileIdentityIdentifierClone(id);
         assertArrayEquals(id.get_0().get_0(), idClone.get_0().get_0());
         id.delete();
         idClone.delete();

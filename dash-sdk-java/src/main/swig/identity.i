@@ -10,7 +10,7 @@
         dpp_prelude_Revision *revision
     ) {
         return dpp_identity_v0_IdentityV0_ctor(
-            Identifier_clone(identifier),
+            platform_mobile_identity_Identifier_clone(identifier),
             platform_mobile_identity_std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey_clone(public_keys),
             balance,
             dpp_prelude_Revision_ctor(revision->_0)
@@ -66,7 +66,7 @@
 
 %newobject platform_mobile_identity_get_identity2(platform_value_types_identifier_Identifier *);
 %newobject platform_mobile_identity_get_an_identity(void);
-%newobject platform_mobile_identity_create_basic_identity(uint8_t (*)[32]);
+%newobject platform_mobile_identity_create_basic_identity(Arr_u8_32 *id);
 %newobject platform_mobile_identity_get_identity_contract_bounds(platform_value_types_identifier_Identifier *identifier, platform_value_types_identifier_Identifier *contract_identifier);
 %newobject platform_mobile_fetch_identity_fetch_identity3(platform_value_types_identifier_Identifier *identifier);
 %newobject platform_mobile_fetch_identity_fetch_identity(platform_value_types_identifier_Identifier *identifier);
@@ -77,10 +77,10 @@
 %rename (fetchIdentity2) platform_mobile_fetch_identity_fetch_identity2(platform_value_types_identifier_Identifier *identifier);
 %rename (fetchIdentity3) platform_mobile_fetch_identity_fetch_identity3(platform_value_types_identifier_Identifier *identifier);
 %rename (getDocument) platform_mobile_fetch_identity_get_document();
-%rename (createBasicIdentity) platform_mobile_identity_create_basic_identity(uint8_t (*id)[32]);
+%rename (createBasicIdentity) platform_mobile_identity_create_basic_identity(Arr_u8_32 * identifier);
 %rename (getIdentityContractBounds) platform_mobile_identity_get_identity_contract_bounds(platform_value_types_identifier_Identifier *identifier, platform_value_types_identifier_Identifier *contract_identifier);
 %rename (getIdentity2) platform_mobile_identity_get_identity2(platform_value_types_identifier_Identifier *);
-%rename (getIdentityByPublicKeyHash) platform_mobile_fetch_identity_fetch_identity_with_keyhash(uint8_t (*key_hash)[20], uint64_t quorum_public_key_callback, uint64_t data_contract_callback);
+%rename (getIdentityByPublicKeyHash) platform_mobile_fetch_identity_fetch_identity_with_keyhash(Arr_u8_20 *key_hash, uint64_t quorum_public_key_callback, uint64_t data_contract_callback);
 // %rename (IdentityResult) Result_ok_dpp_identity_identity_Identity_err_String;
 // %extend Result_ok_dpp_identity_identity_Identity_err_String {
 //     ~Result_ok_dpp_identity_identity_Identity_err_String() {

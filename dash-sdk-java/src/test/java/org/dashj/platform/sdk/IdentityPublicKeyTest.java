@@ -125,7 +125,7 @@ public class IdentityPublicKeyTest extends BaseTest {
         assertArrayEquals(publicKey, ipkv0.getData().get_0());
         assertEquals(timestampMillis, ipkv0.getDisabled_at());
         assertEquals(singleContract.getTag(), ipkv0.getContract_bounds().getTag());
-        assertArrayEquals(singleContract.getSingle_contract().getId().get_0().get_0(), ipkv0.getContract_bounds().getSingle_contract().getId().get_0().get_0());
+        assertEquals(singleContract.getSingle_contract().getId(), ipkv0.getContract_bounds().getSingle_contract().getId());
         assertFalse(ipkv0.getRead_only());
 
 
@@ -146,7 +146,7 @@ public class IdentityPublicKeyTest extends BaseTest {
         );
         assertEquals(singleContractDocumentType.getTag(), ipkv0a.getContract_bounds().getTag());
         assertEquals(singleContractDocumentType.getSingle_contract_document_type().getDocument_type_name(), ipkv0a.getContract_bounds().getSingle_contract_document_type().getDocument_type_name());
-        assertArrayEquals(singleContractDocumentType.getSingle_contract_document_type().getId().get_0().get_0(), ipkv0a.getContract_bounds().getSingle_contract_document_type().getId().get_0().get_0());
+        assertEquals(singleContractDocumentType.getSingle_contract_document_type().getId(), ipkv0a.getContract_bounds().getSingle_contract_document_type().getId());
 
         ipkv0.delete(); // this still crashes, why?
         ipkv0a.delete();
