@@ -5,4 +5,7 @@ typedef unsigned __int128 u128;
 
 
 struct platform_mobile_MyValue;
+struct platform_mobile_MyValueMap;
+struct platform_value_Value;
+struct platform_value_ValueMap;
 #endif

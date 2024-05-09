@@ -10,6 +10,7 @@ project(sdk)
 # Define the C source file
 set(C_SOURCE_FILE ${CMAKE_SOURCE_DIR}/../../../build/generated/cpp/sdk.cpp
         java_map_keyid_identitypublickey.cpp
+        java_map_valuemap.cpp
         context_provider.cpp)
 
 # Define the pre-built Rust library

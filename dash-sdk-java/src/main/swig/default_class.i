@@ -15,6 +15,18 @@
  }
 %enddef
 
+%define START_CLASS(CLASS_NAME, CTYPE)
+%rename (CLASS_NAME) CTYPE;
+%extend CTYPE {
+     ~CTYPE() {
+         CTYPE##_destroy($self);
+     }
+%enddef
+
+%define END_CLASS()
+}
+%enddef
+
 %define DEFINE_CLASS_1(CLASS_NAME, CTYPE, PARAM)
 %rename (CLASS_NAME) CTYPE;
 %extend CTYPE {
