@@ -37,6 +37,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 // Identity Related Structures
 %include "binary_data.i"
 %include "contract_bounds.i"
+%include "document_properties.i"
 %include "hash.i"
 %include "identifier.i"
 %include "identity.i"
@@ -50,6 +51,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "enums.i"
 %include "Arr_u8_32.i"
 %include "Arr_u8_20.i"
+%include "platform_value.i"
 // modules and crates
 %include "dpp.i"
 %include "rs_sdk.i"

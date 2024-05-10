@@ -16,4 +16,9 @@ FermentMapKeyIDIdentityPublicKey * java_map_KeyID_IdentityPublicKey_to_fermented
 typedef Vec_Tuple_platform_value_Value_platform_value_Value FermentVectorValueMapTuple;
 FermentVectorValueMapTuple * java_map_Value_Value_to_fermented_ValueMap(JNIEnv * jenv, jobject input);
 jobject fermented_tree_to_java_map_Value_Value(JNIEnv * jenv, FermentVectorValueMapTuple * input);
+
+typedef std_collections_Map_keys_String_values_platform_value_Value FermentMapStringPlatformValue;
+FermentMapStringPlatformValue * java_map_String_Value_to_fermented_ValueMap(JNIEnv * jenv, jobject input);
+jobject fermented_tree_to_java_map_String_Value(JNIEnv * jenv, FermentMapStringPlatformValue * input);
+
 #endif //SDK_CONVERSIONS_H

@@ -17,6 +17,18 @@ public abstract class BaseObject {
     }
 
     public int hashCode() {
+        try {
+            Method method = getClass().getMethod("objectHashCode");
+            Object result = method.invoke(this);
+            if (result instanceof Integer)
+                return (Integer) result;
+        } catch (NoSuchMethodException e) {
+            // swallow
+        } catch (IllegalAccessException e) {
+            // swallow
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
         return (int)getCPointer();
     }
 
