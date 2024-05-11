@@ -60,7 +60,7 @@ jobject fermented_vec_to_java_list_Value(JNIEnv * jenv, Vec_platform_value_Value
     jclass valueClass = jenv->FindClass("org/dashj/platform/sdk/PlatformValue");
     jmethodID valueConstructor = jenv->GetMethodID(valueClass, "<init>", "(JZ)V");
     //printf("PlatformValue: %lx, %lx\n", valueClass, valueConstructor);
-    printf("input = 0x%lx, count: %d\n", input, input->count);
+    printf("processing list input = 0x%lx, count: %d\n", input, input->count);
     for (uintptr_t i = 0; i < input->count; ++i) {
         printf("%d, %lx, %lx\n", i, input, input->values);
         jobject value = jenv->NewObject(valueClass, valueConstructor,

@@ -104,7 +104,7 @@ public class ValueTest extends BaseTest {
         v6.delete();
     }
 
-    // @Test
+    @Test
     public void createPlatformValueMapTest() {
         PlatformValue key = new PlatformValue("key");
         PlatformValue listKey = new PlatformValue("listKey");
@@ -131,10 +131,10 @@ public class ValueTest extends BaseTest {
                 System.out.printf("%s", v.getText().get_0());
             } else if (v.getTag() == PlatformValue.Tag.Array) {
                 System.out.print("[");
-                value.getArray().get_0().forEach(item -> {
+                v.getArray().get_0().forEach(item -> {
                     System.out.printf("%s,", item.getText().get_0());
                 });
-                System.out.print("[");
+                System.out.print("]");
             }
             System.out.println();
         });
