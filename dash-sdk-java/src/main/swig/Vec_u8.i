@@ -36,7 +36,7 @@ struct Vec_u8;
 %typemap(out) Vec_u8 * {
     printf("typemap(out) Vec_u8* %lx\n", (long)$1);
     if (!$1) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Vec_u8* null array");
+      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Vec_u8* null array ");
       return $null;
     }
     if (!$1->values) {

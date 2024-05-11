@@ -13,6 +13,15 @@
         CTYPE clone = CLONE_FN(value); \
         return platform_value_Value_##RTYPE##_ctor(clone); \
     }
+
+#define VALUE_GET(RTYPE, CTYPE, cvalue) \
+CTYPE get##RTYPE() { \
+    if ($self->tag != platform_value_Value::Tag::RTYPE) { \
+        throw std::invalid_argument("Value is not " #RTYPE); \
+    } \
+    return $self->cvalue._0; \
+}
+
 //DEFINE_CLASS(PlatformValue, platform_value_Value)
 %rename (PlatformValue) platform_value_Value;
 %extend platform_value_Value {
@@ -75,7 +84,86 @@
     int objectHashCode() {
         return platform_mobile_operators_Value_hash($self);
     }
+
+//     char * getText() {
+//         if ($self->tag != platform_value_Value::Tag::Text) {
+//             //SWIG_JavaThrowException(jenv, SWIG_JavaIllegalArgumentException, "Value is not Text");
+//             return NULL;
+//         }
+//         return $self->text._0;
+//     }
+    VALUE_GET(Text, char *, text)
+
+    VALUE_GET(Bool, bool, bool_)
+    VALUE_GET(I8, int8_t, i8)
+    VALUE_GET(I16, int16_t, i16)
+    VALUE_GET(I32, int32_t, i32)
+    VALUE_GET(I64, int64_t, i64)
+    VALUE_GET(I128, __int128, i128)
+
+    VALUE_GET(U8, uint8_t, u8)
+    VALUE_GET(U16, uint16_t, u16)
+    VALUE_GET(U32, uint32_t, u32)
+    VALUE_GET(U64, int64_t, u64)
+    VALUE_GET(U128, uint128_t, u128)
+
+    VALUE_GET(Float, double, float_)
+
+    VALUE_GET(Bytes, Vec_u8*, bytes)
+    VALUE_GET(Bytes20, Arr_u8_20*, bytes20)
+    VALUE_GET(Bytes32, Arr_u8_32*, bytes32)
+    VALUE_GET(Bytes36, Arr_u8_36*, bytes36)
+
+    VALUE_GET(Array, Vec_platform_value_Value*, array)
+    VALUE_GET(Map, platform_value_value_map_ValueMap*, map)
 }
+
+%ignore platform_value_Value::text;
+%ignore platform_value_Value::bool_;
+%ignore platform_value_Value::i8;
+%ignore platform_value_Value::i16;
+%ignore platform_value_Value::i32;
+%ignore platform_value_Value::i64;
+%ignore platform_value_Value::i128;
+
+%ignore platform_value_Value::u8;
+%ignore platform_value_Value::u16;
+%ignore platform_value_Value::u32;
+%ignore platform_value_Value::u64;
+%ignore platform_value_Value::u128;
+%ignore platform_value_Value::float_;
+
+%ignore platform_value_Value::bytes;
+%ignore platform_value_Value::bytes20;
+%ignore platform_value_Value::bytes32;
+%ignore platform_value_Value::bytes36;
+
+%ignore platform_value_Value::array;
+%ignore platform_value_Value::map;
+
+// %ignore platform_value_Value::text;
+// %ignore platform_value_Value::bool_;
+// %ignore platform_value_Value::i8;
+// %ignore platform_value_Value::i16;
+// %ignore platform_value_Value::i32;
+// %ignore platform_value_Value::i64;
+// %ignore platform_value_Value::i128;
+//
+// %ignore platform_value_Value::u8;
+// %ignore platform_value_Value::u16;
+// %ignore platform_value_Value::u32;
+// %ignore platform_value_Value::u64;
+// %ignore platform_value_Value::u128;
+// %ignore platform_value_Value::float_;
+
+%ignore platform_value_Value::Bytes_Body;
+%ignore platform_value_Value::Bytes20_Body;
+// %ignore platform_value_Value::bytes32;
+// %ignore platform_value_Value::bytes36;
+//
+// %ignore platform_value_Value::array;
+// %ignore platform_value_Value::map;
+
 START_CLASS(PlatformValueMap, platform_value_value_map_ValueMap)
     platform_value_value_map_ValueMap(Vec_Tuple_platform_value_Value_platform_value_Value * valueMap) {
         return platform_value_value_map_ValueMap_ctor(valueMap);

@@ -25,6 +25,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %rename("%(lowercamelcase)s", %$isfunction) "";
 
 %ignore Vec_u8;
+%ignore Arr_u8_36;
 %ignore Arr_u8_32;
 %ignore Arr_u8_20;
 
@@ -33,6 +34,8 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "stdint.i"
 // %include "arrays_java.i"
 %include "default_class.i"
+
+%include "myexception.i"
 
 // Identity Related Structures
 %include "binary_data.i"
@@ -49,6 +52,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "uint8_array_20.i"
 %include "timestamp_millis.i"
 %include "enums.i"
+%include "Arr_u8_36.i"
 %include "Arr_u8_32.i"
 %include "Arr_u8_20.i"
 %include "platform_value.i"
@@ -62,6 +66,8 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 
 %ignore FeatureVersion;
 %ignore Vec_ferment_example_nested_FeatureVersion;
+%ignore platform_mobile_MyValue;
+%ignore platform_mobile_MyValueMap;
 
 // typemaps
 %include "Vec_u8.i"

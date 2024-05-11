@@ -25,11 +25,11 @@ public class DocumentTest extends BaseTest {
             String str = null;
             PlatformValue.Tag t = v.getTag();
             if (t == PlatformValue.Tag.Bool) {
-                str = String.valueOf(v.getBool_().get_0());
+                str = String.valueOf(v.getBool());
             } else if (t == PlatformValue.Tag.Text) {
-                str = v.getText().get_0();
+                str = v.getText();
             } else if (t == PlatformValue.Tag.Map) {
-                str = v.getMap().get_0().get_0().toString();
+                str = v.getMap().get_0().toString();
             } else {
                 str = "unknown";
             }
