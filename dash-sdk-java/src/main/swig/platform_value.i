@@ -7,6 +7,12 @@
         CTYPE clone = CLONE_FN(value); \
         return platform_value_Value_##RTYPE##_ctor(clone); \
     }
+
+#define CTOR_SIZE_CLONE(RTYPE, CTYPE, CLONE_FN) \
+    platform_value_Value(CTYPE value, int size) { \
+        CTYPE clone = CLONE_FN(value); \
+        return platform_value_Value_##RTYPE##_ctor(clone); \
+    }
 //DEFINE_CLASS(PlatformValue, platform_value_Value)
 %rename (PlatformValue) platform_value_Value;
 %extend platform_value_Value {
@@ -16,18 +22,37 @@
     CTOR_CLONE(Text, char *, memoryFactory.clone)
     CTOR(U128, u128)
     CTOR(I128, i128)
-    CTOR(U64, uint64_t)
+    //CTOR(U64, uint64_t)
     CTOR(I64, int64_t)
-    CTOR(U32, uint32_t) // ignored by SWIG
+    //CTOR(U32, uint32_t) // ignored by SWIG
     CTOR(I32, int32_t)
-    CTOR(U16, uint16_t)
+    //CTOR(U16, uint16_t)
     CTOR(I16, int16_t)
-    CTOR(U8, uint8_t)
+    //CTOR(U8, uint8_t)
     CTOR(I8, int8_t)
-    CTOR(Bytes, Vec_u8*)
-    CTOR(Bytes20, Arr_u8_20*)
-    CTOR(Bytes32, Arr_u8_32*)
-    CTOR(Bytes36, Arr_u8_36*)
+    platform_value_Value(Vec_u8 * value, bool slice) {
+        if (!slice) {
+            return platform_value_Value_Bytes_ctor(value);
+        }
+        switch (value->count) {
+            case 20: {
+                Arr_u8_20 * bytes20 = Arr_u8_20_ctor(value->count, value->values);
+                return platform_value_Value_Bytes20_ctor(bytes20);
+            }
+            case 32: {
+                Arr_u8_32 * bytes32 = Arr_u8_32_ctor(value->count, value->values);
+                return platform_value_Value_Bytes32_ctor(bytes32);
+            }
+            case 36: {
+                Arr_u8_36 * bytes36 = Arr_u8_36_ctor(value->count, value->values);
+                return platform_value_Value_Bytes36_ctor(bytes36);
+            }
+            default: {
+                //Vec_u8 * bytes = Vec_u8_ctor(size, value);
+                return platform_value_Value_Bytes_ctor(value);
+            }
+        }
+    }
     // CTOR(EnumU8, Vec_u8) // the problem here that Bytes uses Vec_u8
     CTOR(EnumString, Vec_String*)
     CTOR(Identifier, platform_value_Hash256*)

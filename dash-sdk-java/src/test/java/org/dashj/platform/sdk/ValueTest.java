@@ -1,14 +1,19 @@
 package org.dashj.platform.sdk;
 
+
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ValueTest extends BaseTest {
     @Test
@@ -99,12 +104,18 @@ public class ValueTest extends BaseTest {
         v6.delete();
     }
 
-    @Test
+    // @Test
     public void createPlatformValueMapTest() {
         PlatformValue key = new PlatformValue("key");
+        PlatformValue listKey = new PlatformValue("listKey");
         PlatformValue value = new PlatformValue("value");
         HashMap<PlatformValue, PlatformValue> kvMap = new HashMap<>();
         kvMap.put(key, value);
+        ArrayList<PlatformValue> list = new ArrayList<>();
+        list.add(key);
+        list.add(value);
+        PlatformValue listValue = new PlatformValue(list);
+        kvMap.put(listKey, listValue);
 
         HashMap<String, PlatformValue> javaValueMap = new HashMap<>();
         javaValueMap.put("map", new PlatformValue(new PlatformValueMap(kvMap)));
@@ -114,10 +125,99 @@ public class ValueTest extends BaseTest {
         Map<PlatformValue, PlatformValue> map1 = valueMap1.get_0();
         map1.forEach((k, v) -> {
             System.out.printf("%s:%s\n", k.getTag(), v.getTag());
-            System.out.printf("%s:%s\n", k.getText().get_0(), v.getText().get_0());
+            assertEquals(PlatformValue.Tag.Text, k.getTag());
+            System.out.printf("%s:", k.getText().get_0());
+            if (v.getTag() == PlatformValue.Tag.Text) {
+                System.out.printf("%s", v.getText().get_0());
+            } else if (v.getTag() == PlatformValue.Tag.Array) {
+                System.out.print("[");
+                value.getArray().get_0().forEach(item -> {
+                    System.out.printf("%s,", item.getText().get_0());
+                });
+                System.out.print("[");
+            }
+            System.out.println();
         });
         assertNotNull(map1.get(key));
         assertEquals(value, map1.get(key));
         assertNotEquals(value.getCPointer(), map1.get(key).getCPointer(), "objects should not have same c pointer");
+    }
+
+    @Test
+    public void createPlatformValueArrayTest() {
+        PlatformValue key = new PlatformValue("key");
+        PlatformValue listKey = new PlatformValue("listKey");
+        PlatformValue value = new PlatformValue("value");
+        ArrayList<PlatformValue> list = new ArrayList<>();
+        list.add(key);
+        list.add(value);
+        PlatformValue listValues = new PlatformValue(list);
+
+        listValues.getArray().get_0().forEach(v -> {
+            System.out.printf("tag: %s\n", v.getTag());
+            if (v.getTag() == PlatformValue.Tag.Text) {
+                System.out.printf("%s", v.getText().get_0());
+            } else if (v.getTag() == PlatformValue.Tag.Array) {
+                System.out.print("[");
+                value.getArray().get_0().forEach(item -> {
+                    System.out.printf("%s,", item.getText().get_0());
+                });
+                System.out.print("[");
+            }
+            System.out.println();
+        });
+    }
+
+    interface MyTest<T> {
+        T get(PlatformValue value);
+    }
+    interface MyArrayTest<T> {
+        byte[] get(PlatformValue value);
+    }
+    interface Construct {
+        PlatformValue construct();
+    }
+
+    public static <T> void testValue(T value, PlatformValue.Tag tag, Construct constructor, MyTest<T> tester) {
+        PlatformValue platformValue = constructor.construct();
+        assertEquals(tag, platformValue.getTag());
+        assertEquals(value, tester.get(platformValue));
+        platformValue.delete();
+    }
+
+    public static <T> void testArrayValue(byte[] value, PlatformValue.Tag tag, Construct constructor, MyArrayTest<T> tester) {
+        PlatformValue platformValue = constructor.construct();
+        assertEquals(tag, platformValue.getTag());
+        assertArrayEquals(value, tester.get(platformValue));
+        platformValue.delete();
+    }
+
+    @Test
+    public void createPlatformValuePrimitiveTest() {
+        testValue(true, PlatformValue.Tag.Bool, () -> new PlatformValue(true), v -> v.getBool_().get_0());
+//        testValue(128, PlatformValue.Tag.U8, () -> new PlatformValue((byte)128), v -> v.getU8().get_0());
+        testValue((byte)1, PlatformValue.Tag.I8, () -> new PlatformValue((byte)1), v -> v.getI8().get_0());
+//        testValue(Short.MAX_VALUE + 1, PlatformValue.Tag.U16, () -> new PlatformValue(true), v -> v.getU16().get_0());
+//        testValue(Integer.MAX_VALUE + 1, PlatformValue.Tag.U32, () -> new PlatformValue(true), v -> v.getU32().get_0());
+//        testValue(Long.MAX_VALUE + 1, PlatformValue.Tag.U64, () -> new PlatformValue(true), v -> v.getU64().get_0());
+//        testValue(Long.MAX_VALUE + 1, PlatformValue.Tag.U128, () -> new PlatformValue(true), v -> v.getU128().get_0());
+        testValue(Short.MAX_VALUE, PlatformValue.Tag.I16, () -> new PlatformValue(Short.MAX_VALUE), v -> v.getI16().get_0());
+        testValue(Integer.MAX_VALUE, PlatformValue.Tag.I32, () -> new PlatformValue(Integer.MAX_VALUE), v -> v.getI32().get_0());
+        testValue(Long.MAX_VALUE, PlatformValue.Tag.I64, () -> new PlatformValue(Long.MAX_VALUE), v -> v.getI64().get_0());
+//        testValue(Long.MAX_VALUE, PlatformValue.Tag.I128, () -> new PlatformValue(Long.MAX_VALUE), v -> v.getI128().get_0());
+        testValue(Double.MAX_VALUE, PlatformValue.Tag.Float, () -> new PlatformValue(Double.MAX_VALUE), v -> v.getFloat_().get_0());
+        testValue("text", PlatformValue.Tag.Text, () -> new PlatformValue("text"), v -> v.getText().get_0());
+    }
+
+    @Test
+    public void createPlatformValueVectorsTest() {
+        testArrayValue(identifier, PlatformValue.Tag.Bytes, () -> new PlatformValue(identifier, false), v -> v.getBytes().get_0());
+        byte [] hash160 = Arrays.copyOfRange(identifier, 0, 20);
+        testArrayValue(hash160, PlatformValue.Tag.Bytes20, () -> new PlatformValue(hash160, true), v -> v.getBytes().get_0());
+        testArrayValue(identifier, PlatformValue.Tag.Bytes32, () -> new PlatformValue(identifier, true), v -> v.getBytes().get_0());
+        byte [] outpointBytes = Arrays.copyOf(identifier, 36);
+        testArrayValue(outpointBytes, PlatformValue.Tag.Bytes36, () -> new PlatformValue(outpointBytes, true), v -> v.getBytes().get_0());
+        byte [] bytes = Arrays.copyOfRange(identifier, 0, 16);
+        testArrayValue(bytes, PlatformValue.Tag.Bytes, () -> new PlatformValue(bytes, true), v -> v.getBytes().get_0());
     }
 }

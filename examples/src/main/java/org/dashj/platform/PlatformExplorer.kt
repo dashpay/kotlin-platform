@@ -15,8 +15,10 @@ import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.Identifier
 import org.dashj.platform.sdk.Identity
+import org.dashj.platform.sdk.PlatformValue
 import org.dashj.platform.sdk.callbacks.ContextProvider;
 import org.dashj.platform.sdk.dashsdk
+import org.dashj.platform.sdk.dpp_document_Document
 
 import java.io.File
 import java.io.FileInputStream
@@ -155,6 +157,7 @@ object PlatformExplorer {
             println("1. Query Identity from id")
             println("2. Query Identity from public key hash")
             println("3. Query Identity from public key")
+            println("4. Query a random DPNS document")
             println("q. Quit")
             val menuItem = scanner.nextLine()
             when (menuItem) {
@@ -216,6 +219,31 @@ object PlatformExplorer {
                         println("fetch identity error: ${value.unwrapError()}")
                     }
                 }
+                "4" -> {
+                    val doc = dashsdk.getDocument()
+                    if (doc.tag == dpp_document_Document.Tag.V0) {
+                        val docv0 = doc.v0._0
+                        println("Document")
+                        println("---------")
+                        println("id:         ${Base58.encode(docv0.id._0._0)}")
+                        println("ownerId:    ${Base58.encode(docv0.owner_id._0._0)}")
+                        println("rev:        ${docv0.revision.toLong()}")
+                        docv0.created_at?.let {
+                            println("created:    ${Date(docv0.created_at.toLong())}")
+                        }
+                        docv0.updated_at?.let {
+                            println("updated:    ${Date(docv0.updated_at.toLong())}")
+                        }
+                        println("properties: {")
+                        docv0.properties.forEach { (key, value) ->
+                            val strValue = printValue(value)
+                            println("  $key:$strValue")
+                        }
+                        println("}")
+                    } else {
+                        println("returned document is of an unknown version");
+                    }
+                }
                 "q", "Q" -> {
                     quit = true
                 }
@@ -242,5 +270,30 @@ object PlatformExplorer {
                 println("This version is not support")
             }
         }
+    }
+
+    private fun printValue(value: PlatformValue, indent: Int = 2): String {
+        val indentStr = " ".repeat(indent)
+        val strValue = when(value.tag) {
+            PlatformValue.Tag.Bool -> value.bool_._0.toString()
+            PlatformValue.Tag.Text -> value.text._0
+            PlatformValue.Tag.Identifier -> Base58.encode(value.identifier._0.get0())
+            PlatformValue.Tag.Map -> {
+                " {\n$indentStr" +
+                value.map._0._0.map { (k, v) ->
+                    printValue(k, indent + 2) + ":" + printValue(v, indent + 2)
+                }.joinToString("\n") +
+                "\n$indentStr}"
+            }
+            PlatformValue.Tag.Array -> {
+                " [\n$indentStr" +
+                        value.array._0.joinToString(",\n") { v ->
+                            printValue(v, indent + 2)
+                        } +
+                        "\n$indentStr]"
+            }
+            else -> value.toString()
+        }
+        return "$indentStr$strValue"
     }
 }

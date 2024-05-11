@@ -5,6 +5,7 @@
 #include "conversions.h"
 
 // TODO: This function needs to handle all of the variants
+// TODO: there is a bug with handling some types such as lists
 FermentVectorValueMapTuple * java_map_Value_Value_to_fermented_ValueMap(JNIEnv * jenv, jobject input) {
 // Get the Set of entries from the Map
     jclass mapClass = jenv->FindClass("java/util/Map");

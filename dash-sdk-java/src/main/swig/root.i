@@ -52,6 +52,8 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "Arr_u8_32.i"
 %include "Arr_u8_20.i"
 %include "platform_value.i"
+%include "platform_value_array.i"
+
 // modules and crates
 %include "dpp.i"
 %include "rs_sdk.i"

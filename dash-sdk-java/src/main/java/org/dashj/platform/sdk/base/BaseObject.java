@@ -32,6 +32,23 @@ public abstract class BaseObject {
         return (int)getCPointer();
     }
 
+    @Override
+    public String toString() {
+        try {
+            Method method = getClass().getMethod("objectToString");
+            Object result = method.invoke(this);
+            if (result instanceof String)
+                return (String) result;
+        } catch (NoSuchMethodException e) {
+            // swallow
+        } catch (IllegalAccessException e) {
+            // swallow
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+        return super.toString();
+    }
+
     // call the function "objectEquals" in the derived class if it exists.
     protected boolean baseObjectEquals(BaseObject obj) {
         try {
