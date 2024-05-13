@@ -28,6 +28,8 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %ignore Arr_u8_36;
 %ignore Arr_u8_32;
 %ignore Arr_u8_20;
+%ignore __int128;
+%ignore i128;
 
 //%ignore platform_value_types_identifier_IdentifierBytes32;
 //%rename("%(lowercamelcase)s") "";
@@ -38,6 +40,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "myexception.i"
 
 // Identity Related Structures
+%include "i128.i"
 %include "binary_data.i"
 %include "contract_bounds.i"
 %include "document_properties.i"

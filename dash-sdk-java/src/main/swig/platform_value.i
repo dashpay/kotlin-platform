@@ -30,7 +30,7 @@ CTYPE get##RTYPE() { \
 //     }
     CTOR_CLONE(Text, char *, memoryFactory.clone)
     CTOR(U128, u128)
-    CTOR(I128, i128)
+    CTOR(I128, __int128)
     //CTOR(U64, uint64_t)
     CTOR(I64, int64_t)
     //CTOR(U32, uint32_t) // ignored by SWIG

@@ -3,6 +3,7 @@ package org.dashj.platform.sdk;
 
 import org.junit.jupiter.api.Test;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -196,7 +197,8 @@ public class ValueTest extends BaseTest {
     @Test
     public void createPlatformValuePrimitiveTest() {
         testValue(true, PlatformValue.Tag.Bool, () -> new PlatformValue(true), PlatformValue::getBool);
-//        testValue(128, PlatformValue.Tag.U8, () -> new PlatformValue((byte)128), v -> v.getU8());
+        BigInteger i128Value = BigInteger.valueOf(Long.MAX_VALUE).multiply(BigInteger.TWO);
+        testValue(i128Value, PlatformValue.Tag.I128, () -> new PlatformValue(i128Value), PlatformValue::getI128);
         testValue((byte)1, PlatformValue.Tag.I8, () -> new PlatformValue((byte)1), PlatformValue::getI8);
 //        testValue(Short.MAX_VALUE + 1, PlatformValue.Tag.U16, () -> new PlatformValue(true), v -> v.getU16().get_0());
 //        testValue(Integer.MAX_VALUE + 1, PlatformValue.Tag.U32, () -> new PlatformValue(true), v -> v.getU32().get_0());
