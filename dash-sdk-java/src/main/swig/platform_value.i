@@ -85,13 +85,6 @@ CTYPE get##RTYPE() { \
         return platform_mobile_operators_Value_hash($self);
     }
 
-//     char * getText() {
-//         if ($self->tag != platform_value_Value::Tag::Text) {
-//             //SWIG_JavaThrowException(jenv, SWIG_JavaIllegalArgumentException, "Value is not Text");
-//             return NULL;
-//         }
-//         return $self->text._0;
-//     }
     VALUE_GET(Text, char *, text)
 
     VALUE_GET(Bool, bool, bool_)
@@ -114,55 +107,46 @@ CTYPE get##RTYPE() { \
     VALUE_GET(Bytes32, Arr_u8_32*, bytes32)
     VALUE_GET(Bytes36, Arr_u8_36*, bytes36)
 
+    VALUE_GET(EnumString, Vec_String *, enum_string)
+    VALUE_GET(Identifier, platform_value_Hash256*, identifier)
+
     VALUE_GET(Array, Vec_platform_value_Value*, array)
     VALUE_GET(Map, platform_value_value_map_ValueMap*, map)
 }
 
-%ignore platform_value_Value::text;
-%ignore platform_value_Value::bool_;
-%ignore platform_value_Value::i8;
-%ignore platform_value_Value::i16;
-%ignore platform_value_Value::i32;
-%ignore platform_value_Value::i64;
-%ignore platform_value_Value::i128;
+%define VALUE_IGNORE(FIELD, STRUCT)
+%ignore platform_value_Value::FIELD;
+%ignore platform_value_Value::STRUCT##_Body;
+%enddef
 
-%ignore platform_value_Value::u8;
-%ignore platform_value_Value::u16;
-%ignore platform_value_Value::u32;
-%ignore platform_value_Value::u64;
-%ignore platform_value_Value::u128;
-%ignore platform_value_Value::float_;
 
-%ignore platform_value_Value::bytes;
-%ignore platform_value_Value::bytes20;
-%ignore platform_value_Value::bytes32;
-%ignore platform_value_Value::bytes36;
 
-%ignore platform_value_Value::array;
-%ignore platform_value_Value::map;
+VALUE_IGNORE(text, Text);
+VALUE_IGNORE(bool_, Bool);
+VALUE_IGNORE(i8, I8);
+VALUE_IGNORE(i16, I16);
+VALUE_IGNORE(i32, I32);
+VALUE_IGNORE(i64, I64);
+VALUE_IGNORE(i128, I128);
+VALUE_IGNORE(u8, U8);
+VALUE_IGNORE(u16, U16);
+VALUE_IGNORE(u32, U32);
+VALUE_IGNORE(u64, U64);
+VALUE_IGNORE(u128, U128);
+VALUE_IGNORE(float_, Float);
 
-// %ignore platform_value_Value::text;
-// %ignore platform_value_Value::bool_;
-// %ignore platform_value_Value::i8;
-// %ignore platform_value_Value::i16;
-// %ignore platform_value_Value::i32;
-// %ignore platform_value_Value::i64;
-// %ignore platform_value_Value::i128;
-//
-// %ignore platform_value_Value::u8;
-// %ignore platform_value_Value::u16;
-// %ignore platform_value_Value::u32;
-// %ignore platform_value_Value::u64;
-// %ignore platform_value_Value::u128;
-// %ignore platform_value_Value::float_;
+VALUE_IGNORE(bytes, Bytes);
+VALUE_IGNORE(bytes20, Bytes20);
+VALUE_IGNORE(bytes32, Bytes32);
+VALUE_IGNORE(bytes36, Bytes36);
 
-%ignore platform_value_Value::Bytes_Body;
-%ignore platform_value_Value::Bytes20_Body;
-// %ignore platform_value_Value::bytes32;
-// %ignore platform_value_Value::bytes36;
-//
-// %ignore platform_value_Value::array;
-// %ignore platform_value_Value::map;
+VALUE_IGNORE(enum_u8, EnumU8);
+VALUE_IGNORE(identifier, Identifier);
+VALUE_IGNORE(enum_string, EnumString);
+
+VALUE_IGNORE(array, Array);
+VALUE_IGNORE(map, Map);
+
 
 START_CLASS(PlatformValueMap, platform_value_value_map_ValueMap)
     platform_value_value_map_ValueMap(Vec_Tuple_platform_value_Value_platform_value_Value * valueMap) {

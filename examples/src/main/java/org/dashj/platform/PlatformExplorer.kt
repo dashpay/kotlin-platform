@@ -275,19 +275,19 @@ object PlatformExplorer {
     private fun printValue(value: PlatformValue, indent: Int = 2): String {
         val indentStr = " ".repeat(indent)
         val strValue = when(value.tag) {
-            PlatformValue.Tag.Bool -> value.bool_._0.toString()
-            PlatformValue.Tag.Text -> value.text._0
-            PlatformValue.Tag.Identifier -> Base58.encode(value.identifier._0.get0())
+            PlatformValue.Tag.Bool -> value.bool.toString()
+            PlatformValue.Tag.Text -> value.text
+            PlatformValue.Tag.Identifier -> Base58.encode(value.identifier.bytes)
             PlatformValue.Tag.Map -> {
                 " {\n$indentStr" +
-                value.map._0._0.map { (k, v) ->
+                value.map._0.map { (k, v) ->
                     printValue(k, indent + 2) + ":" + printValue(v, indent + 2)
                 }.joinToString("\n") +
                 "\n$indentStr}"
             }
             PlatformValue.Tag.Array -> {
                 " [\n$indentStr" +
-                        value.array._0.joinToString(",\n") { v ->
+                        value.array.joinToString(",\n") { v ->
                             printValue(v, indent + 2)
                         } +
                         "\n$indentStr]"

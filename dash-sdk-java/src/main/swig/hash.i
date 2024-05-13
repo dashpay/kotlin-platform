@@ -16,7 +16,7 @@
         return $self->_0->count == other->_0->count && memcmp($self->_0->values, other->_0->values, $self->_0->count) == 0;
     }
 
-    Arr_u8_32 * get_0() {
+    Arr_u8_32 * getBytes() {
         return $self->_0;
     }
 };

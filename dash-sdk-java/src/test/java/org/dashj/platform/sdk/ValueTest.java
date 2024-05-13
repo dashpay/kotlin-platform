@@ -212,28 +212,35 @@ public class ValueTest extends BaseTest {
 
     @Test
     public void createPlatformValueVectorsTest() {
-        testArrayValue(identifier, PlatformValue.Tag.Bytes, () -> new PlatformValue(identifier, false), v -> v.getBytes());
+        testArrayValue(identifier, PlatformValue.Tag.Bytes, () -> new PlatformValue(identifier, false), PlatformValue::getBytes);
         byte [] hash160 = Arrays.copyOfRange(identifier, 0, 20);
-        testArrayValue(hash160, PlatformValue.Tag.Bytes20, () -> new PlatformValue(hash160, true), v -> v.getBytes20());
-        testArrayValue(identifier, PlatformValue.Tag.Bytes32, () -> new PlatformValue(identifier, true), v -> v.getBytes32());
+        testArrayValue(hash160, PlatformValue.Tag.Bytes20, () -> new PlatformValue(hash160, true), PlatformValue::getBytes20);
+        testArrayValue(identifier, PlatformValue.Tag.Bytes32, () -> new PlatformValue(identifier, true), PlatformValue::getBytes32);
         byte [] outpointBytes = Arrays.copyOf(identifier, 36);
-        testArrayValue(outpointBytes, PlatformValue.Tag.Bytes36, () -> new PlatformValue(outpointBytes, true), v -> v.getBytes36());
+        testArrayValue(outpointBytes, PlatformValue.Tag.Bytes36, () -> new PlatformValue(outpointBytes, true), PlatformValue::getBytes36);
         byte [] bytes = Arrays.copyOfRange(identifier, 0, 16);
-        testArrayValue(bytes, PlatformValue.Tag.Bytes, () -> new PlatformValue(bytes, true), v -> v.getBytes());
+        testArrayValue(bytes, PlatformValue.Tag.Bytes, () -> new PlatformValue(bytes, true), PlatformValue::getBytes);
+        testArrayValue(identifier, PlatformValue.Tag.Identifier, () -> new PlatformValue(new Hash256(identifier)), v -> v.getIdentifier().getBytes());
     }
 
     @Test
     public void accessInvalidTypeTest() {
         PlatformValue platformValue = new PlatformValue("text");
         platformValue.getText(); // should not throw an exception
+        assertThrows(IllegalArgumentException.class, platformValue::getI128);
         assertThrows(IllegalArgumentException.class, platformValue::getI64);
         assertThrows(IllegalArgumentException.class, platformValue::getI32);
         assertThrows(IllegalArgumentException.class, platformValue::getI8);
+        assertThrows(IllegalArgumentException.class, platformValue::getFloat);
         assertThrows(IllegalArgumentException.class, platformValue::getArray);
         assertThrows(IllegalArgumentException.class, platformValue::getMap);
         assertThrows(IllegalArgumentException.class, platformValue::getBytes);
         assertThrows(IllegalArgumentException.class, platformValue::getBytes20);
         assertThrows(IllegalArgumentException.class, platformValue::getBytes32);
         assertThrows(IllegalArgumentException.class, platformValue::getBytes36);
+        assertThrows(IllegalArgumentException.class, platformValue::getIdentifier);
+        assertThrows(IllegalArgumentException.class, platformValue::getEnumString);
+        assertThrows(IllegalArgumentException.class, platformValue::getArray);
+        assertThrows(IllegalArgumentException.class, platformValue::getMap);
     }
 }
