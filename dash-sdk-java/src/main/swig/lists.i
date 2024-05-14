@@ -1,0 +1,63 @@
+%define LIST_STRUCT_TYPEMAP(STRUCT_TYPE, ITEM_TYPE, SHORT_TYPE)
+%typemap(javaclassname) STRUCT_TYPE* "java.util.List<SHORT_TYPE>"
+%typemap(javatype) STRUCT_TYPE* "java.util.List<SHORT_TYPE>"
+%typemap(jtype) STRUCT_TYPE* "java.util.List<SHORT_TYPE>"
+%typemap(jstype) STRUCT_TYPE* "java.util.List<SHORT_TYPE>"
+%typemap(jni) STRUCT_TYPE* "jobject"
+
+%typemap(javain) STRUCT_TYPE * "$javainput"
+
+%typemap(javaout) STRUCT_TYPE * {
+    return $jnicall;
+  }
+
+
+%typemap(throws) STRUCT_TYPE *
+%{ SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "null "##STRUCT_TYPE);
+   return $null; %}
+
+%typemap(in) STRUCT_TYPE* {
+    if (!$input) {
+        SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "List is null");
+        return $null;
+    }
+
+    jclass listClass = jenv->GetObjectClass($input);
+    jmethodID sizeMethod = jenv->GetMethodID(listClass, "size", "()I");
+    jint size = jenv->CallIntMethod($input, sizeMethod);
+
+    ITEM_TYPE ** values = new ITEM_TYPE*[size];
+    $1 = STRUCT_TYPE##_ctor(size, values);
+
+    jmethodID getMethod = jenv->GetMethodID(listClass, "get", "(I)Ljava/lang/Object;");
+    for (jint i = 0; i < size; ++i) {
+        jobject elementObj = jenv->CallObjectMethod($input, getMethod, i);
+        jclass keyIDClass = jenv->FindClass("org/dashj/platform/sdk/" #SHORT_TYPE);
+        jmethodID getNativePtrMethod = jenv->GetMethodID(keyIDClass, "getCPointer", "()J");
+        jlong nativePtr = jenv->CallLongMethod(elementObj, getNativePtrMethod);
+
+        auto *ipk = reinterpret_cast<dpp_document_Document *>(nativePtr);
+        $1->values[i] = platform_mobile_clone_Document_clone(ipk);
+    }
+}
+
+%typemap(out) STRUCT_TYPE* {
+    jclass listClass = jenv->FindClass("java/util/ArrayList");
+    jmethodID ctor = jenv->GetMethodID(listClass, "<init>", "()V");
+    jmethodID addMethod = jenv->GetMethodID(listClass, "add", "(Ljava/lang/Object;)Z");
+    jobject listObj = jenv->NewObject(listClass, ctor);
+    jclass valueClass = jenv->FindClass("org/dashj/platform/sdk/" #SHORT_TYPE);
+    jmethodID valueConstructor = jenv->GetMethodID(valueClass, "<init>", "(JZ)V");
+
+    for (uintptr_t i = 0; i < $1->count; ++i) {
+        jobject elementObj = jenv->NewObject(valueClass, valueConstructor, $1->values[i], false);
+        jenv->CallBooleanMethod(listObj, addMethod, elementObj);
+        jenv->DeleteLocalRef(elementObj);
+    }
+    $result = listObj;
+}
+
+%apply struct STRUCT_TYPE {struct STRUCT_TYPE};
+%ignore STRUCT_TYPE;
+
+%enddef

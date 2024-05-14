@@ -38,11 +38,14 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "default_class.i"
 
 %include "myexception.i"
+// generics
+%include "lists.i"
 
 // Identity Related Structures
 %include "i128.i"
 %include "binary_data.i"
 %include "contract_bounds.i"
+%include "document.i"
 %include "document_properties.i"
 %include "hash.i"
 %include "identifier.i"
