@@ -4,7 +4,7 @@
 //     dpp_document_Document **values;
 // };
 
-LIST_STRUCT_TYPEMAP(Vec_dpp_document_Document, dpp_document_Document, Document);
+LIST_STRUCT_TYPEMAP(Vec_dpp_document_Document, dpp_document_Document, Document, platform_mobile_clone_Document_clone);
 %ignore Vec_dpp_document_Document;
 
 START_CLASS(Document, dpp_document_Document);

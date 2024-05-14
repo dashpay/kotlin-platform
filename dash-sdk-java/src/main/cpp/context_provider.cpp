@@ -36,29 +36,21 @@ uint8_t * get_quorum_public_key(int quorum_type, char * quorum_hash, int core_ch
     if (quorum_public_key == nullptr) {
         memcpy(native_array, invalid_key, 48);
     } else {
-        //auto result = (uint8_t*)malloc(48);
-        //int size = jenv->GetArrayLength(quorum_public_key);
-        //jenv->GetByteArrayRegion(quorum_public_key, 0, 48, reinterpret_cast<jbyte*>(result));
         jbyte* elements = jenv->GetByteArrayElements(quorum_public_key, nullptr);
         if (elements == nullptr) {
-            // Handling error in case GetByteArrayElements failed.
             return nullptr;
         }
         jsize length = jenv->GetArrayLength(quorum_public_key);
 
-        // Copy the data from the Java array to the native array.
         memcpy(native_array, elements, length);
-
-        // Release the elements. If you made changes to `elements` and want them to reflect back in Java array, use 0 or JNI_COMMIT
-        jenv->ReleaseByteArrayElements(quorum_public_key, elements, JNI_ABORT); // Use JNI_ABORT to indicate no changes are to be reflected back.
-
+        jenv->ReleaseByteArrayElements(quorum_public_key, elements, JNI_ABORT);
         jenv->DeleteLocalRef(quorum_public_key);
         printf("C++ is reurning this:  ");
         for(int i = 0; i < 5; i++)
             printf("%d, ", native_array[i]);
         printf("\n");
-        //return native_array;
     }
+    return native_array;
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_dashj_platform_sdk_callbacks_ContextProvider_getQuorumPublicKeyCallback(JNIEnv * env, jclass provider) {
@@ -68,7 +60,6 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_dashj_platform_sdk_callbacks_Context
         contextProvider = nullptr;
     }
 
-    // Create a new global reference for the ContextProvider instance
     contextProvider = env->NewGlobalRef(provider);
     if (contextProvider == nullptr) {
         printf("Failed to create global reference for ContextProvider\n");

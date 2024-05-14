@@ -50,6 +50,14 @@ public class DocumentTest extends BaseTest {
     }
 
     @Test
+    public void getDocumentMapTest() {
+        Identifier domainId = new Identifier(dpnsContractId);
+        List<Document> docs = dashsdk.platformMobileFetchDocumentGetDocuments(domainId, "domain", BigInteger.ZERO, BigInteger.ZERO);
+        assertTrue(!docs.isEmpty());
+    }
+
+
+    @Test
     public void documentListTest() {
         // don't have a way to create a document yet
     }

@@ -38,26 +38,26 @@ FermentVectorValueMapTuple * java_map_Value_Value_to_fermented_ValueMap(JNIEnv *
    jmethodID getNativePtrMethod = jenv->GetMethodID(valueClass, "getCPointer", "()J");
 
    jint i = 0;
-   printf("ready for the loop to process map: %lx\n", result);
+   //printf("ready for the loop to process map: %lx\n", result);
    while (jenv->CallBooleanMethod(iterator, hasNextMethod)) {
-        printf(" item %d\n", i);
+       // printf(" item %d\n", i);
        jobject entry = jenv->CallObjectMethod(iterator, nextMethod);
 
        jobject keyObject = jenv->CallObjectMethod(entry, getKeyMethod);
        jobject valueObject = jenv->CallObjectMethod(entry, getValueMethod);
-        printf(" get objects %d\n", i);
+       // printf(" get objects %d\n", i);
 
        auto *keyID = (platform_value_Value *) jenv->CallLongMethod(
                keyObject, getNativePtrMethod);
-               printf(" key %d - get ptr = %lx\n", i, keyID);
+      //         printf(" key %d - get ptr = %lx\n", i, keyID);
        auto keyClone = platform_mobile_clone_Value_clone(keyID);
-                      printf(" key %d - clone = %lx\n", i, keyClone);
+       //               printf(" key %d - clone = %lx\n", i, keyClone);
 
        jlong nativePtr = jenv->CallLongMethod(valueObject, getNativePtrMethod);
        auto * valuePtr = reinterpret_cast<platform_value_Value *>(nativePtr);
        auto * valueClone = platform_mobile_clone_Value_clone(valuePtr);
        result->values[i] = Tuple_platform_value_Value_platform_value_Value_ctor(keyClone, valueClone);
-        printf(" value %d - original %lx(%d), clone %lx(%d)\n", i, valuePtr, valuePtr->tag, valueClone, valueClone->tag);
+       // printf(" value %d - original %lx(%d), clone %lx(%d)\n", i, valuePtr, valuePtr->tag, valueClone, valueClone->tag);
 
        i++;
    }
@@ -77,9 +77,9 @@ jobject fermented_tree_to_java_map_Value_Value(JNIEnv * jenv, FermentVectorValue
     jclass valueClass = jenv->FindClass("org/dashj/platform/sdk/PlatformValue");
     jmethodID valueConstructor = jenv->GetMethodID(valueClass, "<init>", "(JZ)V");
 
-    printf("ready to process map of size %d: %lx\n", input->count, input);
+    // printf("ready to process map of size %d: %lx\n", input->count, input);
     for (uintptr_t i = 0; i < input->count; ++i) {
-        printf("map item %d: %lx (%d)\n", i, input->values[i], input->values[i]->o_1->tag);
+        //printf("map item %d: %lx (%d)\n", i, input->values[i], input->values[i]->o_1->tag);
         jobject key = jenv->NewObject(valueClass, valueConstructor, (jlong) input->values[i]->o_0, false);
         jobject value = jenv->NewObject(valueClass, valueConstructor,
                                         (jlong) input->values[i]->o_1, false);

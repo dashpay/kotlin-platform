@@ -28,18 +28,18 @@ Vec_platform_value_Value * java_list_Value_to_fermented_vec_Value(JNIEnv * jenv,
    jmethodID getNativePtrMethod = jenv->GetMethodID(valueClass, "getCPointer", "()J");
 
    jint i = 0;
-   printf("ready for the loop to process List: 0x%lx, count: %d\n", result, result->count);
+   //printf("ready for the loop to process List: 0x%lx, count: %d\n", result, result->count);
    while (jenv->CallBooleanMethod(iterator, hasNextMethod)) {
-        printf(" item %d\n", i);
+        //printf(" item %d\n", i);
        jobject valueObject = jenv->CallObjectMethod(iterator, nextMethod);
 
-        printf(" get objects %d\n", i);
+        //printf(" get objects %d\n", i);
 
        jlong nativePtr = jenv->CallLongMethod(valueObject, getNativePtrMethod);
        auto * valuePtr = reinterpret_cast<platform_value_Value *>(nativePtr);
        auto * valueClone = platform_mobile_clone_Value_clone(valuePtr);
        result->values[i] = valueClone;
-       printf(" value %d - %lx\n", i, result->values[i]);
+       //printf(" value %d - %lx\n", i, result->values[i]);
 
        i++;
    }

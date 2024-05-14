@@ -1,4 +1,4 @@
-%define LIST_STRUCT_TYPEMAP(STRUCT_TYPE, ITEM_TYPE, SHORT_TYPE)
+%define LIST_STRUCT_TYPEMAP(STRUCT_TYPE, ITEM_TYPE, SHORT_TYPE, CLONE_FN)
 %typemap(javaclassname) STRUCT_TYPE* "java.util.List<SHORT_TYPE>"
 %typemap(javatype) STRUCT_TYPE* "java.util.List<SHORT_TYPE>"
 %typemap(jtype) STRUCT_TYPE* "java.util.List<SHORT_TYPE>"
@@ -36,8 +36,8 @@
         jmethodID getNativePtrMethod = jenv->GetMethodID(keyIDClass, "getCPointer", "()J");
         jlong nativePtr = jenv->CallLongMethod(elementObj, getNativePtrMethod);
 
-        auto *ipk = reinterpret_cast<dpp_document_Document *>(nativePtr);
-        $1->values[i] = platform_mobile_clone_Document_clone(ipk);
+        auto *ipk = reinterpret_cast<ITEM_TYPE *>(nativePtr);
+        $1->values[i] = CLONE_FN(ipk);
     }
 }
 
