@@ -13,12 +13,8 @@ import org.bitcoinj.utils.BriefLogFormatter
 import org.bitcoinj.utils.Threading
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
-import org.dashj.platform.sdk.Identifier
-import org.dashj.platform.sdk.Identity
-import org.dashj.platform.sdk.PlatformValue
+import org.dashj.platform.sdk.*
 import org.dashj.platform.sdk.callbacks.ContextProvider;
-import org.dashj.platform.sdk.dashsdk
-import org.dashj.platform.sdk.dpp_document_Document
 
 import java.io.File
 import java.io.FileInputStream
@@ -26,8 +22,44 @@ import java.io.FileNotFoundException
 import java.math.BigInteger
 import java.util.*
 
-object PlatformExplorer {
 
+
+
+object PlatformExplorer {
+    var dpnsContractId: ByteArray = byteArrayOf(
+        230.toByte(),
+        104,
+        198.toByte(),
+        89,
+        175.toByte(),
+        102,
+        174.toByte(),
+        225.toByte(),
+        231.toByte(),
+        44,
+        24,
+        109,
+        222.toByte(),
+        123,
+        91,
+        126,
+        10,
+        29,
+        113,
+        42,
+        9,
+        196.toByte(),
+        13,
+        87,
+        33,
+        246.toByte(),
+        34,
+        191.toByte(),
+        83,
+        197.toByte(),
+        49,
+        85
+    )
     val quitFuture = SettableFuture.create<Boolean>()
     init {
         System.loadLibrary("sdklib")
@@ -158,6 +190,8 @@ object PlatformExplorer {
             println("2. Query Identity from public key hash")
             println("3. Query Identity from public key")
             println("4. Query a random DPNS document")
+            println("5. Query all DPNS DOMAIN documents")
+            println("6. Query DPNS DOMAIN documents starting with")
             println("q. Quit")
             val menuItem = scanner.nextLine()
             when (menuItem) {
@@ -220,8 +254,8 @@ object PlatformExplorer {
                     }
                 }
                 "4" -> {
-                    val doc = dashsdk.getDocument()
-                    if (doc.tag == dpp_document_Document.Tag.V0) {
+                    val doc = dashsdk.platformMobileFetchDocumentGetDocument()
+                    if (doc.tag == Document.Tag.V0) {
                         val docv0 = doc.v0._0
                         println("Document")
                         println("---------")
@@ -244,12 +278,72 @@ object PlatformExplorer {
                         println("returned document is of an unknown version");
                     }
                 }
+                "5" -> {
+                    val docs = dashsdk.platformMobileFetchDocumentGetDocuments(
+                        Identifier(dpnsContractId),
+                        "domain",
+                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+                        BigInteger.ZERO)
+                    docs.forEach { doc ->
+                        printDomainDocument(doc)
+                    }
+                }
                 "q", "Q" -> {
                     quit = true
                 }
             }
         }
         quitFuture.set(true)
+    }
+
+    private fun printDocument(doc: Document) {
+        if (doc.tag == Document.Tag.V0) {
+            val docv0 = doc.v0._0
+            println("Document")
+            println("---------")
+            println("id:         ${Base58.encode(docv0.id._0._0)}")
+            println("ownerId:    ${Base58.encode(docv0.owner_id._0._0)}")
+            println("rev:        ${docv0.revision.toLong()}")
+            docv0.created_at?.let {
+                println("created:    ${Date(docv0.created_at.toLong())}")
+            }
+            docv0.updated_at?.let {
+                println("updated:    ${Date(docv0.updated_at.toLong())}")
+            }
+            println("properties: {")
+            docv0.properties.forEach { (key, value) ->
+                val strValue = printValue(value)
+                println("  $key:$strValue")
+            }
+            println("}")
+        } else {
+            println("returned document is of an unknown version");
+        }
+    }
+
+    private fun printDomainDocument(doc: Document) {
+        if (doc.tag == Document.Tag.V0) {
+            val docv0 = doc.v0._0
+            print(Base58.encode(docv0.owner_id._0._0))
+            print(" ")
+            val properties = docv0.properties
+            val label = properties["label"]?.text
+            print("$label ")
+            val records = properties["records"]
+            val recordsMap = records?.map?._0
+            val record = recordsMap?.keys?.first()?.text
+            if (record == "dashAliasIdentityId") {
+                print("alias ->")
+                print(Base58.encode(recordsMap.values.first().identifier.bytes))
+            } else if (record == "dashUniqueIdentityId") {
+                print("unique ")
+                print(Base58.encode(recordsMap.values.first().identifier.bytes))
+
+            }
+            println()
+        } else {
+            println("returned document is of an unknown version");
+        }
     }
 
     private fun print(identity: Identity) {

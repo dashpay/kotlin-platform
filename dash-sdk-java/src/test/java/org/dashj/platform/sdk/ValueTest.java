@@ -18,45 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ValueTest extends BaseTest {
-//    @Test
-//    public void getMyValueTest() {
-//        platform_mobile_MyValue value = dashsdk.platformMobileGetValue();
-//        assertEquals(value.getTag(), platform_mobile_MyValue.Tag.Bool);
-//
-//        assertEquals(false, value.getBool_().get_0());
-//        value.delete();
-//    }
-//
-//    @Test
-//    public void getMyValueMapTest() {
-//        platform_mobile_MyValueMap valueMap = dashsdk.platformMobileGetValueMap();
-//        Vec_Tuple_platform_mobile_MyValue_platform_mobile_MyValue tuple = valueMap.get_0();
-//
-//        valueMap.delete();
-//    }
-//
-//    @Test
-//    public void getMyValueWithMapTest() {
-//        platform_mobile_MyValue value = dashsdk.platformMobileGetValueWithMap();
-//        assertEquals(value.getTag(), platform_mobile_MyValue.Tag.Map);
-//        platform_mobile_MyValueMap valueMap = value.getMap().get_0();
-//        Vec_Tuple_platform_mobile_MyValue_platform_mobile_MyValue tuple = valueMap.get_0();
-//
-//        value.delete();
-//    }
-//
-//    public void getValueTest() {
-//        platform_mobile_MyValue value = dashsdk.platformMobileGetValueWithMap();
-//        assertEquals(value.getTag(), platform_mobile_MyValue.Tag.Bool);
-//
-//        assertEquals(false, value.getBool_().get_0());
-//        value.delete();
-//    }
-
     @Test
     public void getPlatformValueTest() {
         PlatformValue value = dashsdk.platformMobileGetPlatformValue();
-        assertEquals(value.getTag(), PlatformValue.Tag.Bool);
+        assertEquals(PlatformValue.Tag.Bool, value.getTag());
 
         value.delete();
     }
@@ -64,7 +29,7 @@ public class ValueTest extends BaseTest {
     @Test
     public void getPlatformValueMapTest() {
         PlatformValue value = dashsdk.platformMobileGetPlatformValueWithMap();
-        assertEquals(value.getTag(), PlatformValue.Tag.Map);
+        assertEquals(PlatformValue.Tag.Map, value.getTag());
         PlatformValueMap valueMap = value.getMap();
         Map<PlatformValue, PlatformValue> map = valueMap.get_0();
         assertNotNull(map);

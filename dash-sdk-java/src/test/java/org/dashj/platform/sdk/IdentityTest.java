@@ -88,12 +88,6 @@ public class IdentityTest extends BaseTest {
 //    }
 
     @Test
-    public void getDocument() {
-        Identifier identifier1 = dashsdk.platformMobileFetchIdentityGetDocumentIdentifier();
-        identifier1.delete();
-    }
-
-    @Test
     public void getIdentityTest() {
         Identifier identifier = new Identifier(contractIdentifier);
         Identity identity = dashsdk.getIdentity2(identifier);
