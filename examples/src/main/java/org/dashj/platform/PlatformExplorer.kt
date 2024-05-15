@@ -11,10 +11,14 @@ import org.bitcoinj.params.TestNet3Params
 import org.bitcoinj.quorums.LLMQParameters
 import org.bitcoinj.utils.BriefLogFormatter
 import org.bitcoinj.utils.Threading
+import org.bitcoinj.wallet.*
+import org.bitcoinj.wallet.authentication.AuthenticationGroupExtension
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.*
+import org.dashj.platform.sdk.base.Result
 import org.dashj.platform.sdk.callbacks.ContextProvider;
+import org.dashj.platform.sdk.callbacks.Signer
 
 import java.io.File
 import java.io.FileInputStream
@@ -65,6 +69,9 @@ object PlatformExplorer {
         System.loadLibrary("sdklib")
     };
 
+    lateinit var signer: Signer
+    lateinit var kit: WalletAppKit
+    lateinit var authenticationGroupExtension: AuthenticationGroupExtension
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -97,7 +104,28 @@ object PlatformExplorer {
         }
 
         // Start up a basic app using a class that automates some boilerplate.
-        val kit = object : WalletAppKit(params, File("."), filePrefix) {
+        kit = object : WalletAppKit(params, File("."), filePrefix) {
+            override fun createWallet(): Wallet {
+                val wallet =  super.createWallet()
+                // create the wallet
+                authenticationGroupExtension = AuthenticationGroupExtension(params)
+                wallet.addExtension(authenticationGroupExtension)
+                authenticationGroupExtension.addKeyChains(
+                    params, wallet.keyChainSeed,
+                    EnumSet.of(
+                        AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY,
+                        AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY_FUNDING,
+                        AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY_TOPUP,
+                        AuthenticationKeyChain.KeyChainType.INVITATION_FUNDING
+                    )
+                )
+                return wallet
+            }
+
+            override fun provideWalletExtensions(): MutableList<WalletExtension> {
+                return mutableListOf(AuthenticationGroupExtension(params))
+            }
+
             override fun onSetupCompleted() {
                 //TODO: init auth keychains using AuthenticationGroupExtension
                 peerGroup().maxConnections = 6 // for small devnets
@@ -105,6 +133,14 @@ object PlatformExplorer {
                 peerGroup()
                     .setDropPeersAfterBroadcast(params.dropPeersAfterBroadcast)
                 wallet().context.isDebugMode = false
+
+                signer = object : Signer() {
+                    override fun sign(key: ByteArray?, data: ByteArray?): ByteArray {
+
+                        return ByteArray(65)
+                    }
+                }
+                authenticationGroupExtension = wallet().getKeyChainExtension(AuthenticationGroupExtension.EXTENSION_ID) as AuthenticationGroupExtension
             }
         }
         kit.setDiscovery(
@@ -193,7 +229,9 @@ object PlatformExplorer {
             println("5. Query all DPNS DOMAIN documents")
             println("6. Query DOMAIN documents for id")
             println("7. Query DPNS DOMAIN documents starting with")
+            println("8. Create Identity")
 
+            println("w. Wallet info")
             println("q. Quit")
             val menuItem = scanner.nextLine()
             when (menuItem) {
@@ -296,6 +334,31 @@ object PlatformExplorer {
                     docs.forEach { doc ->
                         printDomainDocument(doc)
                     }
+                }
+                "8" -> {
+                    var currentKey = authenticationGroupExtension.currentKey(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY)
+                    val identityResult = dashsdk.getIdentityByPublicKeyHash(
+                        currentKey.pubKeyHash,
+                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+                        BigInteger.ZERO
+                    )
+
+                    try {
+                        identityResult.unwrap()
+                        currentKey = authenticationGroupExtension.freshKey(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY)
+                    } catch (e: Exception) {
+                        // do nothing
+                    }
+
+                    val identity = dashsdk.getIdentity2(Identifier(ByteArray(32)))
+                    val result = dashsdk.platformMobilePutPutIdentityCreate(identity, BigInteger.valueOf(signer.signerCallback))
+                    print(result)
+                }
+                "w" -> {
+                    println("Wallet")
+                    println("--------")
+                    println("balance:         ${kit.wallet().balance.toFriendlyString()}")
+                    println("current address: ${kit.wallet().currentReceiveAddress()}")
                 }
                 "q", "Q" -> {
                     quit = true

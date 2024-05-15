@@ -9,6 +9,7 @@
 #include "dpp.h"
 #include "conversions.h"
 #include <ctime>
+#include "wrapper.h"
 MemoryFactory * MemoryFactory::instance = new MemoryFactory();
 MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %}
