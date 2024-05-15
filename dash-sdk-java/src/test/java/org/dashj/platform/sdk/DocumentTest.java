@@ -3,6 +3,7 @@ package org.dashj.platform.sdk;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -86,5 +87,32 @@ public class DocumentTest extends BaseTest {
             Map<String, PlatformValue> props = document.getV0().get_0().getProperties();
             System.out.println(props.get("label").getText());
         });
+    }
+
+    @Test
+    public void createDocumentTest() {
+        Identifier docId = new Identifier(identifier);
+        Identifier ownerId = new Identifier(identifier);
+        Revision revision = new Revision(2);
+
+        HashMap<String, PlatformValue> map = new HashMap<>();
+        map.put("text", new PlatformValue("value"));
+        DocumentV0 documentV0 = new DocumentV0(
+                docId, ownerId, map, revision
+        );
+        Document document = new Document(documentV0);
+        assertEquals(Document.Tag.V0, document.getTag());
+        DocumentV0 docv0 = document.getV0().get_0();
+        assertEquals(docId, docv0.getId());
+        assertEquals(ownerId, docv0.getOwner_id());
+        assertEquals(new Revision(2), docv0.getRevision());
+        Map<String, PlatformValue> properties = docv0.getProperties();
+        assertEquals(1, properties.size());
+        assertEquals("text", properties.keySet().stream().findFirst().get());
+        assertEquals("value", properties.values().stream().findFirst().get().getText());
+        document.delete();
+        document.delete();
+        docId.delete();
+        ownerId.delete();
     }
 }

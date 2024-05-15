@@ -10,6 +10,7 @@
 #include "conversions.h"
 #include <ctime>
 #include "wrapper.h"
+#include "clone.h"
 MemoryFactory * MemoryFactory::instance = new MemoryFactory();
 MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %}
@@ -92,6 +93,7 @@ import org.dashj.platform.sdk.base.BaseObject;
 %}
 
 %include "ignore.i"
+
 
 //extern "C" {
 %include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
