@@ -191,7 +191,9 @@ object PlatformExplorer {
             println("3. Query Identity from public key")
             println("4. Query a random DPNS document")
             println("5. Query all DPNS DOMAIN documents")
-            println("6. Query DPNS DOMAIN documents starting with")
+            println("6. Query DOMAIN documents for id")
+            println("7. Query DPNS DOMAIN documents starting with")
+
             println("q. Quit")
             val menuItem = scanner.nextLine()
             when (menuItem) {
@@ -255,33 +257,40 @@ object PlatformExplorer {
                 }
                 "4" -> {
                     val doc = dashsdk.platformMobileFetchDocumentGetDocument()
-                    if (doc.tag == Document.Tag.V0) {
-                        val docv0 = doc.v0._0
-                        println("Document")
-                        println("---------")
-                        println("id:         ${Base58.encode(docv0.id._0._0)}")
-                        println("ownerId:    ${Base58.encode(docv0.owner_id._0._0)}")
-                        println("rev:        ${docv0.revision.toLong()}")
-                        docv0.created_at?.let {
-                            println("created:    ${Date(docv0.created_at.toLong())}")
-                        }
-                        docv0.updated_at?.let {
-                            println("updated:    ${Date(docv0.updated_at.toLong())}")
-                        }
-                        println("properties: {")
-                        docv0.properties.forEach { (key, value) ->
-                            val strValue = printValue(value)
-                            println("  $key:$strValue")
-                        }
-                        println("}")
-                    } else {
-                        println("returned document is of an unknown version");
-                    }
+                    printDocument(doc)
                 }
                 "5" -> {
                     val docs = dashsdk.platformMobileFetchDocumentGetDocuments(
                         Identifier(dpnsContractId),
                         "domain",
+                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+                        BigInteger.ZERO)
+                    docs.forEach { doc ->
+                        printDomainDocument(doc)
+                    }
+                }
+                "6" -> {
+                    println("Enter an id:")
+                    val id = scanner.nextLine()
+                    val identifier = Identifier(Base58.decode(id))
+                    println(" > $id")
+                    val docs = dashsdk.platformMobileFetchDocumentGetDomainDocument(
+                        identifier,
+                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+                        BigInteger.ZERO
+                    )
+                    docs.forEach { doc ->
+                        printDomainDocument(doc)
+                    }
+                }
+                "7" -> {
+                    println("Enter the start of a username:")
+                    val startsWith = scanner.nextLine()
+
+                    println(" > $startsWith")
+
+                    val docs = dashsdk.platformMobileFetchDocumentGetDomainDocumentStartsWith(
+                        startsWith,
                         BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
                         BigInteger.ZERO)
                     docs.forEach { doc ->

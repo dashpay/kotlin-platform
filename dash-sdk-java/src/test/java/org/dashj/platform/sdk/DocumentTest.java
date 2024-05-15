@@ -8,16 +8,17 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DocumentTest extends BaseTest {
     @Test
     public void getDocumentTest() {
-        Document value = dashsdk.platformMobileFetchDocumentGetDocument();
-        assertEquals(Document.Tag.V0, value.getTag());
+        Document document = dashsdk.platformMobileFetchDocumentGetDocument();
+        assertEquals(Document.Tag.V0, document.getTag());
 
-        DocumentV0 doc = value.getV0().get_0();
+        DocumentV0 doc = document.getV0().get_0();
         assertEquals(new Revision(1), doc.getRevision());
         //assertArrayEquals(identifier, doc.getOwner_id().get_0().get_0());
         Map<String, PlatformValue> map = doc.getProperties();
@@ -38,8 +39,8 @@ public class DocumentTest extends BaseTest {
             }
             System.out.printf("%s\n", str);
         });
-        System.out.printf("to_string: %s\n", dashsdk.platformMobileFetchDocumentDocumentToString(value));
-        value.delete();
+        System.out.printf("to_string: %s\n", dashsdk.platformMobileFetchDocumentDocumentToString(document));
+        document.delete();
     }
 
     @Test
@@ -60,5 +61,30 @@ public class DocumentTest extends BaseTest {
     @Test
     public void documentListTest() {
         // don't have a way to create a document yet
+    }
+
+    @Test
+    public void getDocumentWithIDTest() {
+        Identifier domainId = new Identifier(dpnsContractId);
+        List<Document> all = dashsdk.platformMobileFetchDocumentGetDocuments(domainId, "domain", BigInteger.ZERO, BigInteger.ZERO);
+        Identifier id = null;
+        for (Document d : all) {
+            PlatformValue value = d.getV0().get_0().getProperties().get("records").getMap().get_0().get(new PlatformValue("dashUniqueIdentityId"));
+            if (value != null)
+                id = new Identifier(value.getIdentifier().getBytes());
+        }
+        assertNotNull(id);
+        List<Document> docs = dashsdk.platformMobileFetchDocumentGetDomainDocument(id, BigInteger.ZERO, BigInteger.ZERO);
+        assertFalse(docs.isEmpty());
+    }
+
+    @Test
+    public void getDocumentStartsWithTest() {
+        List<Document> docs = dashsdk.platformMobileFetchDocumentGetDomainDocumentStartsWith("dq-", BigInteger.ZERO, BigInteger.ZERO);
+        assertFalse(docs.isEmpty());
+        docs.forEach(document -> {
+            Map<String, PlatformValue> props = document.getV0().get_0().getProperties();
+            System.out.println(props.get("label").getText());
+        });
     }
 }
