@@ -32,8 +32,16 @@
     jmethodID getMethod = jenv->GetMethodID(listClass, "get", "(I)Ljava/lang/Object;");
     for (jint i = 0; i < size; ++i) {
         jobject elementObj = jenv->CallObjectMethod($input, getMethod, i);
-        jclass keyIDClass = jenv->FindClass("org/dashj/platform/sdk/" #SHORT_TYPE);
-        jmethodID getNativePtrMethod = jenv->GetMethodID(keyIDClass, "getCPointer", "()J");
+        jclass valueClass = jenv->FindClass("org/dashj/platform/sdk/" #SHORT_TYPE);
+        if (valueClass == nullptr) {
+            SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "class not found: org/dashj/platform/sdk/" #SHORT_TYPE);
+            return $null;
+        }
+        jmethodID getNativePtrMethod = jenv->GetMethodID(valueClass, "getCPointer", "()J");
+        if (getNativePtrMethod == nullptr) {
+            SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "getCPointer not found: org/dashj/platform/sdk/" #SHORT_TYPE);
+            return $null;
+        }
         jlong nativePtr = jenv->CallLongMethod(elementObj, getNativePtrMethod);
 
         auto *ipk = reinterpret_cast<ITEM_TYPE *>(nativePtr);
@@ -47,8 +55,15 @@
     jmethodID addMethod = jenv->GetMethodID(listClass, "add", "(Ljava/lang/Object;)Z");
     jobject listObj = jenv->NewObject(listClass, ctor);
     jclass valueClass = jenv->FindClass("org/dashj/platform/sdk/" #SHORT_TYPE);
+    if (valueClass == nullptr) {
+        SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "class not found: org/dashj/platform/sdk/" #SHORT_TYPE);
+        return $null;
+    }
     jmethodID valueConstructor = jenv->GetMethodID(valueClass, "<init>", "(JZ)V");
-
+    if (valueConstructor == nullptr) {
+        SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "constructor not found: org/dashj/platform/sdk/" #SHORT_TYPE);
+        return $null;
+    }
     for (uintptr_t i = 0; i < $1->count; ++i) {
         jobject elementObj = jenv->NewObject(valueClass, valueConstructor, $1->values[i], false);
         jenv->CallBooleanMethod(listObj, addMethod, elementObj);

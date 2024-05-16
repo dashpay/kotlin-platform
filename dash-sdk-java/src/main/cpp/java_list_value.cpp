@@ -4,7 +4,7 @@
 #include <jni.h>
 #include "conversions.h"
 
-// TODO: This function needs to handle all of the variants
+// TODO: These functions are probably obsolete
 Vec_platform_value_Value * java_list_Value_to_fermented_vec_Value(JNIEnv * jenv, jobject input) {
     jclass listClass = jenv->FindClass("java/util/List");
 
