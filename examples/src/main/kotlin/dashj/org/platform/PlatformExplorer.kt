@@ -1,4 +1,4 @@
-package org.dashj.platform
+package dashj.org.platform
 
 import com.google.common.util.concurrent.SettableFuture
 import org.bitcoinj.core.*
