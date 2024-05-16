@@ -3,6 +3,9 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.8.22' // Use a compatible version
     id 'com.google.protobuf'
     id('io.gitlab.arturbosch.detekt').version("1.19.0")
+    id 'maven-publish'
+    //id 'maven'
+    id 'signing'
 }
 
 group 'org.dashj.platform'
@@ -77,6 +80,76 @@ sourceSets {
 
 test {
     useJUnitPlatform()
+    systemProperty "java.library.path", "../dash-sdk-kotlin/build/cmake"
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // or DuplicatesStrategy.WARN
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+signing {
+    required { gradle.taskGraph.hasTask("publish") }
+    sign configurations.archives
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'dash-sdk-kotlin'
+            version project.rootProject.ext.version
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            pom {
+                name = 'Higher level Dash SDK for Kotlin'
+                description = 'High Level Dash SDK Java Library for Platform'
+                url = 'httsp://dashj.org'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'hashengineering'
+                        name = 'HashEngineering'
+                        email = 'hashengineeringsolutions@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/HashEngineering/kotlin-platform.git'
+                    developerConnection = 'scm:git:ssh://github.com/HashEngineering/kotlin-platform.git'
+                    url = 'http://github.com/HashEngineering/kotlin-platform.git'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            // change URLs to point to your repos, e.g. http://my.org/repo
+            def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            url = project.rootProject.ext.version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = project.hasProperty('ossrhUsername')?project.findProperty('ossrhUsername'):''
+                password = project.hasProperty('ossrhPassword')?project.findProperty('ossrhPassword'):''
+            }
+        }
+    }
 }
 
 // apply from: 'ktlint.gradle'
