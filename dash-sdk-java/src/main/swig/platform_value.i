@@ -160,6 +160,7 @@ END_CLASS()
 START_CLASS(PlatformError, platform_value_error_Error)
 END_CLASS()
 
+// for the ValueMap Vec Tuple
 %typemap(javaclassname) Vec_Tuple_platform_value_Value_platform_value_Value* "java.util.Map<PlatformValue, PlatformValue>"
 %typemap(javatype) Vec_Tuple_platform_value_Value_platform_value_Value* "java.util.Map<PlatformValue, PlatformValue>"
 %typemap(jtype) Vec_Tuple_platform_value_Value_platform_value_Value* "java.util.Map<PlatformValue, PlatformValue>"

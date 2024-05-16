@@ -1,4 +1,4 @@
-%define LIST_STRUCT_TYPEMAP(STRUCT_TYPE, KEY_TYPE, KEY_TYPE_JAVA, KEY_CLONE_FN, VALUE_TYPE, VALUE_TYPE_JAVA, VALUE_CLONE_FN)
+%define MAP_STRUCT_TYPEMAP(STRUCT_TYPE, KEY_TYPE, KEY_TYPE_JAVA, VALUE_TYPE, VALUE_TYPE_JAVA)
 
 %typemap(javaclassname) STRUCT_TYPE* "java.util.Map<KEY_TYPE_JAVA, VALUE_TYPE_JAVA>"
 %typemap(javatype) STRUCT_TYPE* "java.util.Map<KEY_TYPE_JAVA, VALUE_TYPE_JAVA>"
@@ -16,14 +16,14 @@
     jmethodID putMethod = jenv->GetMethodID(hashMapClass, "put",
                                             "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
-    jclass keyIDClass = jenv->FindClass("org/dashj/platform/sdk/" #KEY_TYPE_JAVA);
-    jmethodID keyIDConstructor = jenv->GetMethodID(keyIDClass, "<init>", "(JZ)V");
+    jclass keyClass = jenv->FindClass("org/dashj/platform/sdk/" #KEY_TYPE_JAVA);
+    jmethodID keyConstructor = jenv->GetMethodID(keyClass, "<init>", "(JZ)V");
     jclass valueClass = jenv->FindClass("org/dashj/platform/sdk/" #VALUE_TYPE_JAVA);
-    jmethodID jmethodID_IdentityPublicKey_constructor = jenv->GetMethodID(valueClass, "<init>", "(JZ)V");
+    jmethodID valueConstructor = jenv->GetMethodID(valueClass, "<init>", "(JZ)V");
 
-    for (uintptr_t i = 0; i < input->count; ++i) {
-        jobject key = jenv->NewObject(keyIDClass, keyIDConstructor, (jlong) $1->keys[i], false);
-        jobject value = jenv->NewObject(jclass_IdentityPublicKey, jmethodID_IdentityPublicKey_constructor,
+    for (uintptr_t i = 0; i < $1->count; ++i) {
+        jobject key = jenv->NewObject(keyClass, keyConstructor, (jlong) $1->keys[i], false);
+        jobject value = jenv->NewObject(valueClass, valueConstructor,
                                         (jlong) $1->values[i], false);
         jenv->CallObjectMethod(hashMapInstance, putMethod, key, value);
         jenv->DeleteLocalRef(key);
@@ -64,9 +64,9 @@
     FermentMapKeyIDIdentityPublicKey * result = STRUCT_TYPE##_ctor(count, keys, values);
 
     jclass keyClass = jenv->FindClass("org/dashj/platform/sdk/" #KEY_TYPE_JAVA);
-    jmethodID keyIDPtrMethod = jenv->GetMethodID(keyClass, "getCPointer", "()J");
+    jmethodID keyPtrMethod = jenv->GetMethodID(keyClass, "getCPointer", "()J");
     jclass valueClass = jenv->FindClass("org/dashj/platform/sdk/" #VALUE_TYPE_JAVA);
-    jmethodID getNativePtrMethod = jenv->GetMethodID(valueClass, "getCPointer", "()J");
+    jmethodID valuePtrMethod = jenv->GetMethodID(valueClass, "getCPointer", "()J");
 
     jint i = 0;
     while (jenv->CallBooleanMethod(iterator, hasNextMethod)) {
@@ -76,13 +76,13 @@
         jobject valueObject = jenv->CallObjectMethod(entry, getValueMethod);
 
         auto *keyID = (KEY_TYPE *) jenv->CallLongMethod(
-                keyObject, keyIDPtrMethod);
-        result->keys[i] = KEY_CLONE_FN(keyID);
+                keyObject, keyPtrMethod);
+        result->keys[i] = clone(keyID);
 
 
-        jlong nativePtr = jenv->CallLongMethod(valueObject, getNativePtrMethod);
+        jlong nativePtr = jenv->CallLongMethod(valueObject, valuePtrMethod);
         auto *ipk = reinterpret_cast<VALUE_TYPE *>(nativePtr);
-        result->values[i] = VALUE_CLONE_FN(ipk);
+        result->values[i] = clone(ipk);
 
         i++;
     }

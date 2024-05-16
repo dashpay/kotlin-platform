@@ -33,7 +33,6 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %ignore __int128;
 %ignore i128;
 
-//%ignore platform_value_types_identifier_IdentifierBytes32;
 //%rename("%(lowercamelcase)s") "";
 %include "stdint.i"
 // %include "arrays_java.i"
@@ -41,7 +40,9 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 
 %include "myexception.i"
 // generics
-%include "lists.i"
+%include "generics/lists.i"
+%include "generics/maps.i"
+%include "generics/result.i"
 
 // Identity Related Structures
 %include "i128.i"
