@@ -96,45 +96,51 @@ struct std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dp
 
 %include "stdint.i"
 
-%typemap(javaclassname) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* "java.util.Map<KeyID, IdentityPublicKey>"
-%typemap(javatype) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* "java.util.Map<KeyID, IdentityPublicKey>"
-%typemap(jtype) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* "java.util.Map<KeyID, IdentityPublicKey>"
-%typemap(jstype) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* "java.util.Map<KeyID, IdentityPublicKey>"
-%typemap(jni) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* "jobject"
+MAP_STRUCT_TYPEMAP(
+    std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey,
+    dpp_identity_identity_public_key_KeyID,
+    KeyID,
+    dpp_identity_identity_public_key_IdentityPublicKey,
+    IdentityPublicKey
+);
 
-%typemap(out) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* {
-    $result = fermented_tree_to_java_map_KeyID_IdentityPublicKey(jenv, $1);
-}
-
-%typemap(in) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* {
-    $1 = java_map_KeyID_IdentityPublicKey_to_fermented_tree(jenv, $input);
-}
-
-%typemap(freearg) struct std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* {
-    free($1.keys);
-    free($1.values);
-}
-
-%typemap(javain) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey * "$javainput"
-
-%typemap(javaout) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey * {
-    return $jnicall;
-  }
-
-
-%typemap(throws) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *
-%{ SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "null std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey");
-   return $null; %}
-
-%apply struct std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey {struct std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey};
-%ignore std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey;
-%ignore dpp_identity_v0_IdentityV0_ctor(platform_value_types_identifier_Identifier *id,
-                                                                    std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *public_keys,
-                                                                    uint64_t balance,
-                                                                    dpp_prelude_Revision *revision);
-%ignore dpp_identity_v0_IdentityV0_get_public_keys(const dpp_identity_v0_IdentityV0 *obj);
-%ignore dpp_identity_v0_IdentityV0_set_public_keys(dpp_identity_v0_IdentityV0 *obj,
-                                                std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *value);
-%ignore std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey_destroy(std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *ffi);
-
-%include "result.i"
+// %typemap(javaclassname) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* "java.util.Map<KeyID, IdentityPublicKey>"
+// %typemap(javatype) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* "java.util.Map<KeyID, IdentityPublicKey>"
+// %typemap(jtype) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* "java.util.Map<KeyID, IdentityPublicKey>"
+// %typemap(jstype) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* "java.util.Map<KeyID, IdentityPublicKey>"
+// %typemap(jni) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* "jobject"
+//
+// %typemap(out) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* {
+//     $result = fermented_tree_to_java_map_KeyID_IdentityPublicKey(jenv, $1);
+// }
+//
+// %typemap(in) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* {
+//     $1 = java_map_KeyID_IdentityPublicKey_to_fermented_tree(jenv, $input);
+// }
+//
+// %typemap(freearg) struct std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey* {
+//     free($1.keys);
+//     free($1.values);
+// }
+//
+// %typemap(javain) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey * "$javainput"
+//
+// %typemap(javaout) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey * {
+//     return $jnicall;
+//   }
+//
+//
+// %typemap(throws) std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *
+// %{ SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "null std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey");
+//    return $null; %}
+//
+// %apply struct std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey {struct std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey};
+// %ignore std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey;
+// %ignore dpp_identity_v0_IdentityV0_ctor(platform_value_types_identifier_Identifier *id,
+//                                                                     std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *public_keys,
+//                                                                     uint64_t balance,
+//                                                                     dpp_prelude_Revision *revision);
+// %ignore dpp_identity_v0_IdentityV0_get_public_keys(const dpp_identity_v0_IdentityV0 *obj);
+// %ignore dpp_identity_v0_IdentityV0_set_public_keys(dpp_identity_v0_IdentityV0 *obj,
+//                                                 std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *value);
+// %ignore std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey_destroy(std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *ffi);

@@ -11,12 +11,14 @@ import org.bitcoinj.params.TestNet3Params
 import org.bitcoinj.quorums.LLMQParameters
 import org.bitcoinj.utils.BriefLogFormatter
 import org.bitcoinj.utils.Threading
+import org.bitcoinj.wallet.*
+import org.bitcoinj.wallet.authentication.AuthenticationGroupExtension
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
-import org.dashj.platform.sdk.Identifier
-import org.dashj.platform.sdk.Identity
+import org.dashj.platform.sdk.*
+import org.dashj.platform.sdk.base.Result
 import org.dashj.platform.sdk.callbacks.ContextProvider;
-import org.dashj.platform.sdk.dashsdk
+import org.dashj.platform.sdk.callbacks.Signer
 
 import java.io.File
 import java.io.FileInputStream
@@ -24,13 +26,52 @@ import java.io.FileNotFoundException
 import java.math.BigInteger
 import java.util.*
 
-object PlatformExplorer {
 
+
+
+object PlatformExplorer {
+    var dpnsContractId: ByteArray = byteArrayOf(
+        230.toByte(),
+        104,
+        198.toByte(),
+        89,
+        175.toByte(),
+        102,
+        174.toByte(),
+        225.toByte(),
+        231.toByte(),
+        44,
+        24,
+        109,
+        222.toByte(),
+        123,
+        91,
+        126,
+        10,
+        29,
+        113,
+        42,
+        9,
+        196.toByte(),
+        13,
+        87,
+        33,
+        246.toByte(),
+        34,
+        191.toByte(),
+        83,
+        197.toByte(),
+        49,
+        85
+    )
     val quitFuture = SettableFuture.create<Boolean>()
     init {
         System.loadLibrary("sdklib")
     };
 
+    lateinit var signer: Signer
+    lateinit var kit: WalletAppKit
+    lateinit var authenticationGroupExtension: AuthenticationGroupExtension
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -63,7 +104,28 @@ object PlatformExplorer {
         }
 
         // Start up a basic app using a class that automates some boilerplate.
-        val kit = object : WalletAppKit(params, File("."), filePrefix) {
+        kit = object : WalletAppKit(params, File("."), filePrefix) {
+            override fun createWallet(): Wallet {
+                val wallet =  super.createWallet()
+                // create the wallet
+                authenticationGroupExtension = AuthenticationGroupExtension(params)
+                wallet.addExtension(authenticationGroupExtension)
+                authenticationGroupExtension.addKeyChains(
+                    params, wallet.keyChainSeed,
+                    EnumSet.of(
+                        AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY,
+                        AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY_FUNDING,
+                        AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY_TOPUP,
+                        AuthenticationKeyChain.KeyChainType.INVITATION_FUNDING
+                    )
+                )
+                return wallet
+            }
+
+            override fun provideWalletExtensions(): MutableList<WalletExtension> {
+                return mutableListOf(AuthenticationGroupExtension(params))
+            }
+
             override fun onSetupCompleted() {
                 //TODO: init auth keychains using AuthenticationGroupExtension
                 peerGroup().maxConnections = 6 // for small devnets
@@ -71,6 +133,14 @@ object PlatformExplorer {
                 peerGroup()
                     .setDropPeersAfterBroadcast(params.dropPeersAfterBroadcast)
                 wallet().context.isDebugMode = false
+
+                signer = object : Signer() {
+                    override fun sign(key: ByteArray?, data: ByteArray?): ByteArray {
+
+                        return ByteArray(65)
+                    }
+                }
+                authenticationGroupExtension = wallet().getKeyChainExtension(AuthenticationGroupExtension.EXTENSION_ID) as AuthenticationGroupExtension
             }
         }
         kit.setDiscovery(
@@ -155,6 +225,13 @@ object PlatformExplorer {
             println("1. Query Identity from id")
             println("2. Query Identity from public key hash")
             println("3. Query Identity from public key")
+            println("4. Query a random DPNS document")
+            println("5. Query all DPNS DOMAIN documents")
+            println("6. Query DOMAIN documents for id")
+            println("7. Query DPNS DOMAIN documents starting with")
+            println("8. Create Identity")
+
+            println("w. Wallet info")
             println("q. Quit")
             val menuItem = scanner.nextLine()
             when (menuItem) {
@@ -216,12 +293,129 @@ object PlatformExplorer {
                         println("fetch identity error: ${value.unwrapError()}")
                     }
                 }
+                "4" -> {
+                    val doc = dashsdk.platformMobileFetchDocumentGetDocument()
+                    printDocument(doc)
+                }
+                "5" -> {
+                    val docs = dashsdk.platformMobileFetchDocumentGetDocuments(
+                        Identifier(dpnsContractId),
+                        "domain",
+                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+                        BigInteger.ZERO)
+                    docs.forEach { doc ->
+                        printDomainDocument(doc)
+                    }
+                }
+                "6" -> {
+                    println("Enter an id:")
+                    val id = scanner.nextLine()
+                    val identifier = Identifier(Base58.decode(id))
+                    println(" > $id")
+                    val docs = dashsdk.platformMobileFetchDocumentGetDomainDocument(
+                        identifier,
+                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+                        BigInteger.ZERO
+                    )
+                    docs.forEach { doc ->
+                        printDomainDocument(doc)
+                    }
+                }
+                "7" -> {
+                    println("Enter the start of a username:")
+                    val startsWith = scanner.nextLine()
+
+                    println(" > $startsWith")
+
+                    val docs = dashsdk.platformMobileFetchDocumentGetDomainDocumentStartsWith(
+                        startsWith,
+                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+                        BigInteger.ZERO)
+                    docs.forEach { doc ->
+                        printDomainDocument(doc)
+                    }
+                }
+                "8" -> {
+                    var currentKey = authenticationGroupExtension.currentKey(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY)
+                    val identityResult = dashsdk.getIdentityByPublicKeyHash(
+                        currentKey.pubKeyHash,
+                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+                        BigInteger.ZERO
+                    )
+
+                    try {
+                        identityResult.unwrap()
+                        currentKey = authenticationGroupExtension.freshKey(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY)
+                    } catch (e: Exception) {
+                        // do nothing
+                    }
+
+                    val identity = dashsdk.getIdentity2(Identifier(ByteArray(32)))
+                    val result = dashsdk.platformMobilePutPutIdentityCreate(identity, BigInteger.valueOf(signer.signerCallback))
+                    print(result)
+                }
+                "w" -> {
+                    println("Wallet")
+                    println("--------")
+                    println("balance:         ${kit.wallet().balance.toFriendlyString()}")
+                    println("current address: ${kit.wallet().currentReceiveAddress()}")
+                }
                 "q", "Q" -> {
                     quit = true
                 }
             }
         }
         quitFuture.set(true)
+    }
+
+    private fun printDocument(doc: Document) {
+        if (doc.tag == Document.Tag.V0) {
+            val docv0 = doc.v0._0
+            println("Document")
+            println("---------")
+            println("id:         ${Base58.encode(docv0.id._0._0)}")
+            println("ownerId:    ${Base58.encode(docv0.owner_id._0._0)}")
+            println("rev:        ${docv0.revision.toLong()}")
+            docv0.created_at?.let {
+                println("created:    ${Date(docv0.created_at.toLong())}")
+            }
+            docv0.updated_at?.let {
+                println("updated:    ${Date(docv0.updated_at.toLong())}")
+            }
+            println("properties: {")
+            docv0.properties.forEach { (key, value) ->
+                val strValue = printValue(value)
+                println("  $key:$strValue")
+            }
+            println("}")
+        } else {
+            println("returned document is of an unknown version");
+        }
+    }
+
+    private fun printDomainDocument(doc: Document) {
+        if (doc.tag == Document.Tag.V0) {
+            val docv0 = doc.v0._0
+            print(Base58.encode(docv0.owner_id._0._0))
+            print(" ")
+            val properties = docv0.properties
+            val label = properties["label"]?.text
+            print("$label ")
+            val records = properties["records"]
+            val recordsMap = records?.map?._0
+            val record = recordsMap?.keys?.first()?.text
+            if (record == "dashAliasIdentityId") {
+                print("alias ->")
+                print(Base58.encode(recordsMap.values.first().identifier.bytes))
+            } else if (record == "dashUniqueIdentityId") {
+                print("unique ")
+                print(Base58.encode(recordsMap.values.first().identifier.bytes))
+
+            }
+            println()
+        } else {
+            println("returned document is of an unknown version");
+        }
     }
 
     private fun print(identity: Identity) {
@@ -242,5 +436,30 @@ object PlatformExplorer {
                 println("This version is not support")
             }
         }
+    }
+
+    private fun printValue(value: PlatformValue, indent: Int = 2): String {
+        val indentStr = " ".repeat(indent)
+        val strValue = when(value.tag) {
+            PlatformValue.Tag.Bool -> value.bool.toString()
+            PlatformValue.Tag.Text -> value.text
+            PlatformValue.Tag.Identifier -> Base58.encode(value.identifier.bytes)
+            PlatformValue.Tag.Map -> {
+                " {\n$indentStr" +
+                value.map._0.map { (k, v) ->
+                    printValue(k, indent + 2) + ":" + printValue(v, indent + 2)
+                }.joinToString("\n") +
+                "\n$indentStr}"
+            }
+            PlatformValue.Tag.Array -> {
+                " [\n$indentStr" +
+                        value.array.joinToString(",\n") { v ->
+                            printValue(v, indent + 2)
+                        } +
+                        "\n$indentStr]"
+            }
+            else -> value.toString()
+        }
+        return "$indentStr$strValue"
     }
 }

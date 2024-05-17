@@ -15,12 +15,12 @@ struct Arr_u8_32;
      int size_$1 = (jenv)->GetArrayLength($input);
      uint8_t * byteArray_$1 = (uint8_t *)memoryFactory.alloc(size_$1);
      memcpy(byteArray_$1, _buffer_$1, size_$1);
-     printf("typemap(in) Arr_u8_32 *: %ld, [%lx]%d\n", size_$1, (long)_buffer_$1, _buffer_$1[0]);
+//     printf("typemap(in) Arr_u8_32 *: %ld, [%lx]%d\n", size_$1, (long)_buffer_$1, _buffer_$1[0]);
      $1 = Arr_u8_32_ctor(size_$1, byteArray_$1);
-     printf("typemap(in) Arr_u8_32 *: %lx\n", $1);
-     printf("typemap(in) Arr_u8_32 *: count: %ld\n", $1->count);
-     printf("typemap(in) Arr_u8_32 *: count: %ld, values: [%lx]\n", $1->count, (long)$1->values);
-     printf("typemap(in) Arr_u8_32 *: count: %ld, values: [%lx]%d\n", $1->count, (long)$1->values, $1->values[0]);
+//      printf("typemap(in) Arr_u8_32 *: %lx\n", $1);
+//      printf("typemap(in) Arr_u8_32 *: count: %ld\n", $1->count);
+//      printf("typemap(in) Arr_u8_32 *: count: %ld, values: [%lx]\n", $1->count, (long)$1->values);
+//      printf("typemap(in) Arr_u8_32 *: count: %ld, values: [%lx]%d\n", $1->count, (long)$1->values, $1->values[0]);
 %}
 
 %typemap(argout) Arr_u8_32 *

@@ -2,13 +2,15 @@
 
 %{
 //extern "C" {
+#include "config.h"
 #include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 //}
 #include <stdlib.h>
 #include "dpp.h"
 #include "conversions.h"
 #include <ctime>
-
+#include "wrapper.h"
+#include "clone.h"
 MemoryFactory * MemoryFactory::instance = new MemoryFactory();
 MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %}
@@ -25,18 +27,29 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %rename("%(lowercamelcase)s", %$isfunction) "";
 
 %ignore Vec_u8;
+%ignore Arr_u8_36;
 %ignore Arr_u8_32;
 %ignore Arr_u8_20;
+%ignore __int128;
+%ignore i128;
 
-//%ignore platform_value_types_identifier_IdentifierBytes32;
 //%rename("%(lowercamelcase)s") "";
 %include "stdint.i"
 // %include "arrays_java.i"
 %include "default_class.i"
 
+%include "myexception.i"
+// generics
+%include "generics/lists.i"
+%include "generics/maps.i"
+%include "generics/result.i"
+
 // Identity Related Structures
+%include "i128.i"
 %include "binary_data.i"
 %include "contract_bounds.i"
+%include "document.i"
+%include "document_properties.i"
 %include "hash.i"
 %include "identifier.i"
 %include "identity.i"
@@ -48,8 +61,12 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "uint8_array_20.i"
 %include "timestamp_millis.i"
 %include "enums.i"
+%include "Arr_u8_36.i"
 %include "Arr_u8_32.i"
 %include "Arr_u8_20.i"
+%include "platform_value.i"
+%include "platform_value_array.i"
+
 // modules and crates
 %include "dpp.i"
 %include "rs_sdk.i"
@@ -58,6 +75,8 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 
 %ignore FeatureVersion;
 %ignore Vec_ferment_example_nested_FeatureVersion;
+%ignore platform_mobile_MyValue;
+%ignore platform_mobile_MyValueMap;
 
 // typemaps
 %include "Vec_u8.i"
@@ -75,6 +94,7 @@ import org.dashj.platform.sdk.base.BaseObject;
 %}
 
 %include "ignore.i"
+
 
 //extern "C" {
 %include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"

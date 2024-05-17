@@ -10,7 +10,11 @@ project(sdk)
 # Define the C source file
 set(C_SOURCE_FILE ${CMAKE_SOURCE_DIR}/../../../build/generated/cpp/sdk.cpp
         java_map_keyid_identitypublickey.cpp
-        context_provider.cpp)
+        java_list_value.cpp
+        java_map_string_value.cpp
+        java_map_valuemap.cpp
+        context_provider.cpp
+        wrapper.h)
 
 # Define the pre-built Rust library
 set(RUST_LIBRARY ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-bindings/target/debug/libdash_sdk_bindings.a)

@@ -8,3 +8,5 @@ build/
 *.mnlist
 *.spvchain
 *.wallet
+
+.DS_Store

@@ -15,6 +15,12 @@ public class BaseTest {
             (byte) 173, (byte) 219, 54, (byte) 205, 100, (byte) 183, (byte) 245, 16, 103, 15, 42, 53, 26,
             67, 4, (byte) 181, (byte) 246, (byte) 153, 65, 68, 40, 110, (byte) 253, (byte) 172 };
 
+    static byte [] dpnsContractId = new byte [] {
+            (byte) 230, 104, (byte) 198, 89, (byte) 175, 102, (byte) 174, (byte) 225, (byte) 231, 44, 24, 109, (byte) 222,
+            123, 91, 126, 10, 29, 113, 42, 9, (byte) 196, 13, 87, 33, (byte) 246, 34,
+            (byte) 191, 83, (byte) 197, 49, 85
+    };
+
     static MemoryFactory memoryFactory = MemoryFactory.getInstance();
 
     @BeforeAll

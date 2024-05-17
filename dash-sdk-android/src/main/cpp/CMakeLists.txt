@@ -23,6 +23,7 @@ endif()
 # Define the C source file
 set(C_SOURCE_FILE ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/build/generated/cpp/sdk.cpp
         ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/java_map_keyid_identitypublickey.cpp
+        ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/java_map_valuemap.cpp
         ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/context_provider.cpp)
 
 # Define the Rust libraryn config

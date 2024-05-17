@@ -17,7 +17,36 @@ public abstract class BaseObject {
     }
 
     public int hashCode() {
+        try {
+            Method method = getClass().getMethod("objectHashCode");
+            Object result = method.invoke(this);
+            if (result instanceof Integer)
+                return (Integer) result;
+        } catch (NoSuchMethodException e) {
+            // swallow
+        } catch (IllegalAccessException e) {
+            // swallow
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
         return (int)getCPointer();
+    }
+
+    @Override
+    public String toString() {
+        try {
+            Method method = getClass().getMethod("objectToString");
+            Object result = method.invoke(this);
+            if (result instanceof String)
+                return (String) result;
+        } catch (NoSuchMethodException e) {
+            // swallow
+        } catch (IllegalAccessException e) {
+            // swallow
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+        return super.toString();
     }
 
     // call the function "objectEquals" in the derived class if it exists.

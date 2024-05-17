@@ -53,12 +53,6 @@
 
 %apply struct CTYPE {struct CTYPE};
 %ignore CTYPE;
-// %rename (RETURN_TYPE##Result) CTYPE;
-// %extend CTYPE {
-//      ~CTYPE() {
-//          CTYPE##_destroy($self);
-//      }
-//  }
 %enddef
 
 DEFINE_RESULT(Identity, String, Result_ok_dpp_identity_identity_Identity_err_String, platform_mobile_identity_Identity_clone);
