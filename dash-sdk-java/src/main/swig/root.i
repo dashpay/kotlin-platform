@@ -25,6 +25,8 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %rename("%(lowercamelcase)s", %$isfunction) "";
 
 %ignore Vec_u8;
+%ignore Arr_u8_32;
+%ignore Arr_u8_20;
 
 //%ignore platform_value_types_identifier_IdentifierBytes32;
 //%rename("%(lowercamelcase)s") "";
@@ -35,6 +37,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 // Identity Related Structures
 %include "binary_data.i"
 %include "contract_bounds.i"
+%include "hash.i"
 %include "identifier.i"
 %include "identity.i"
 %include "identity_public_key.i"
@@ -45,7 +48,8 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "uint8_array_20.i"
 %include "timestamp_millis.i"
 %include "enums.i"
-
+%include "Arr_u8_32.i"
+%include "Arr_u8_20.i"
 // modules and crates
 %include "dpp.i"
 %include "rs_sdk.i"

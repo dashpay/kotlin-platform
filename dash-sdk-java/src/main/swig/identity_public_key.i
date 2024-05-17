@@ -25,10 +25,10 @@
         dpp_identity_identity_public_key_contract_bounds_ContractBounds * contract_bounds_copy = nullptr;
         if (contract_bounds != nullptr) {
             if (contract_bounds->tag == dpp_identity_identity_public_key_contract_bounds_ContractBounds::Tag::SingleContract) {
-                contract_bounds_copy = dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContract_ctor(Identifier_clone(contract_bounds->single_contract.id));
+                contract_bounds_copy = dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContract_ctor(platform_mobile_identity_Identifier_clone(contract_bounds->single_contract.id));
             } else if (contract_bounds->tag == dpp_identity_identity_public_key_contract_bounds_ContractBounds::Tag::SingleContractDocumentType) {
                 char * typeCopy = memoryFactory.clone(contract_bounds->single_contract_document_type.document_type_name);
-                contract_bounds_copy = dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContractDocumentType_ctor(Identifier_clone(contract_bounds->single_contract_document_type.id), typeCopy);
+                contract_bounds_copy = dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContractDocumentType_ctor(platform_mobile_identity_Identifier_clone(contract_bounds->single_contract_document_type.id), typeCopy);
             }
         }
         //printf("  ->contract_bounds(%lx): %d\n", (long)contract_bounds, contract_bounds != nullptr ? contract_bounds->tag : -1);

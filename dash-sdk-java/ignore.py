@@ -1,7 +1,7 @@
 # ignore _ctor and _destroy functions
 import re
 
-header_file_path = '../rs-sdk/target/rs_sdk_bindings.h'
+header_file_path = '../dash-sdk-bindings/target/dash_sdk_bindings.h'
 output_file_path = 'src/main/swig/ignore.i'
 
 def is_complete_declaration(line):
@@ -14,9 +14,12 @@ def format_arguments(args_str):
     formatted_args = [ ' '.join(arg.strip().split()) for arg in args ]
     return ', '.join(formatted_args)
 
+def should_ignore(declaration):
+    return '_ctor' in declaration or '_destroy' in declaration #or '_set_0' in declaration or '_get_0' in declaration
+
 def process_declaration(declaration):
     """Process a complete function declaration to extract relevant ignore directives."""
-    if '_ctor' in declaration or '_destroy' in declaration:
+    if should_ignore(declaration):
         # Simplified extraction process
         parts = declaration.split('(')
         pre_args = parts[0].split()

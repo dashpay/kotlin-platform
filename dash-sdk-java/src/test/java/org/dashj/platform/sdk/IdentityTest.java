@@ -55,7 +55,7 @@ public class IdentityTest extends BaseTest {
         assertEquals(Identity.Tag.V0, identity.getTag());
         IdentityV0 identityV0 = identity.getV0().get_0();
         assertNotNull(identityV0);
-        assertArrayEquals(contractIdentifier, identityV0.getId().get_0().get_0());
+        assertEquals(identifier1, identityV0.getId());
         assertEquals(0L, identityV0.getRevision().toLong());
         assertEquals(0L, identityV0.getBalance());
         assertNotNull(identityV0.getPublicKey(0));
@@ -106,8 +106,8 @@ public class IdentityTest extends BaseTest {
         assertEquals(1, identityV0.getRevision().toLong());
         assertEquals(2, identityV0.getPublicKeyCount());
 
-        assertNotNull(identityV0.getId().get_0().get_0());
-        assertArrayEquals(identifier.get_0().get_0(), identityV0.getId().get_0().get_0());
+        assertNotNull(identityV0.getId());
+        assertEquals(identifier, identityV0.getId());
 
         Map<KeyID, IdentityPublicKey> map = identityV0.getPublicKeys();
         map.values().forEach(ipk -> {
@@ -155,8 +155,10 @@ public class IdentityTest extends BaseTest {
         assertEquals(1, identityV0.getRevision().toLong());
         assertEquals(2, identityV0.getPublicKeyCount());
 
-        assertNotNull(identityWithBounds.getV0().get_0().getId().get_0().get_0());
-        assertArrayEquals(identifier, identityWithBounds.getV0().get_0().getId().get_0().get_0());
+        assertNotNull(identityWithBounds.getV0().get_0().getId());
+        Identifier myId = new Identifier(identifier);
+        assertEquals(myId, identityWithBounds.getV0().get_0().getId());
+        myId.delete();
 
         for (int i = 0; i < identityV0.getPublicKeyCount(); ++i) {
             IdentityPublicKeyV0 ipkv0 = identityV0.getPublicKey(i);
@@ -169,7 +171,7 @@ public class IdentityTest extends BaseTest {
             assertEquals(33, ipkv0.getData().get_0().length);
             assertNotNull(ipkv0.getContract_bounds());
             Assertions.assertEquals(ContractBounds.Tag.SingleContract, ipkv0.getContract_bounds().getTag());
-            assertArrayEquals(contractIdentifier, ipkv0.getContract_bounds().getSingle_contract_document_type().getId().get_0().get_0());
+            assertEquals(idContract, ipkv0.getContract_bounds().getSingle_contract_document_type().getId());
         }
 
         IdentityPublicKeyV0 ipkv0 = identityV0.getPublicKey(0);

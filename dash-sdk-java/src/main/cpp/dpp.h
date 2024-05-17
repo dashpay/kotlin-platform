@@ -180,20 +180,20 @@ dpp_identity_identity_public_key_purpose_Purpose * intToPurpose(dpp_identity_ide
      }
 }
 
-platform_value_types_identifier_Identifier * Identifier_clone(platform_value_types_identifier_Identifier * id) {
-     uint8_t * bytesCopy = (uint8_t*)memoryFactory.alloc(32);
-     memcpy(bytesCopy, id->_0->_0, 32);
-     return platform_value_types_identifier_Identifier_ctor(platform_value_types_identifier_IdentifierBytes32_ctor((uint8_t (*)[32])bytesCopy));
-}
+//platform_value_types_identifier_Identifier * Identifier_clone(platform_value_types_identifier_Identifier * id) {
+//     uint8_t * bytesCopy = (uint8_t*)memoryFactory.alloc(32);
+//     memcpy(bytesCopy, id->_0->_0, 32);
+//     return platform_value_types_identifier_Identifier_ctor(platform_value_types_identifier_IdentifierBytes32_ctor((uint8_t (*)[32])bytesCopy));
+//}
 
 dpp_identity_identity_public_key_contract_bounds_ContractBounds * singleContract(platform_value_types_identifier_Identifier * id) {
-    platform_value_types_identifier_Identifier * idCopy = Identifier_clone(id);
+    platform_value_types_identifier_Identifier * idCopy = platform_mobile_identity_Identifier_clone(id);
     dpp_identity_identity_public_key_contract_bounds_ContractBounds * cb = dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContract_ctor(idCopy);
     return cb;
 }
 
 static dpp_identity_identity_public_key_contract_bounds_ContractBounds * singleContractDocument(platform_value_types_identifier_Identifier * id, char * type) {
-    platform_value_types_identifier_Identifier * idCopy = Identifier_clone(id);
+    platform_value_types_identifier_Identifier * idCopy = platform_mobile_identity_Identifier_clone(id);
     char * typeCopy = memoryFactory.clone(type);
     return dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContractDocumentType_ctor(idCopy, typeCopy);
 }
