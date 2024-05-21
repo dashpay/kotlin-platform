@@ -17,6 +17,10 @@ dash-sdk = { path = "../../platform/packages/rs-sdk"}
 #platform-version = { path = "../../platform/packages/rs-platform-version" }
 
 
+drive = { path = "../../platform/packages/rs-drive", default-features = false, features = [
+    "verify",
+    "serde",
+] }
 [build-dependencies]
 cbindgen = "0.26.0"
 ferment = { path = "../../ferment/ferment" }
@@ -30,3 +34,7 @@ rs-x11-hash = { path = "../../rs-x11-hash" }
 
 [lib]
 crate-type = ["staticlib"]
+
+[features]
+default = ["verify"]
+verify = []
