@@ -15,7 +15,7 @@ MemoryFactory * MemoryFactory::instance = new MemoryFactory();
 MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %}
 //%include "enumsimple.swg"
-
+%include "enums.swg"
 %ignore dpp_identity_identity_IdentityFactory_TraitObject::object;
 %ignore dpp_identity_identity_IdentityFactory_TraitObject::vtable;
 %ignore IdentityFactory_VTable;
