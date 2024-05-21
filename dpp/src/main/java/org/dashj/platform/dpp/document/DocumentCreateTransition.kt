@@ -14,7 +14,7 @@ open class DocumentCreateTransition(rawStateTransition: MutableMap<String, Any?>
     DataDocumentTransition(rawStateTransition, dataContract) {
 
     companion object {
-        const val INITIAL_REVISION = 1
+        const val INITIAL_REVISION = 1L
     }
 
     override val action = Action.CREATE

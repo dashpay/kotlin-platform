@@ -397,7 +397,7 @@ class BlockchainIdentity {
         val coreHeight = if (assetLockTransaction!!.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
             assetLockTransaction!!.confidence.appearedAtChainHeight
         } else {
-            // this is not supported
+            // this is not supported, how can we get the height?
             TODO()
 //            val txInfo = platform.client.getTransaction(assetLockTransaction!!.txId.toString())
 //            txInfo?.height ?: -1
@@ -786,7 +786,8 @@ class BlockchainIdentity {
         val transitionMap = hashMapOf<String, List<Document>?>(
             "create" to usernamePreorderDocuments
         )
-        return platform.dpp.document.createStateTransition(transitionMap)
+        //return platform.dpp.document.createStateTransition(transitionMap)
+        return null
     }
 
     fun createDomainTransition(unregisteredUsernames: List<String>): DocumentsBatchTransition? {
@@ -795,7 +796,8 @@ class BlockchainIdentity {
         val transitionMap = hashMapOf<String, List<Document>?>(
             "create" to usernameDomainDocuments
         )
-        return platform.dpp.document.createStateTransition(transitionMap)
+        //return platform.dpp.document.createStateTransition(transitionMap)
+        return null
     }
 
     // MARK: Usernames
@@ -1464,14 +1466,15 @@ class BlockchainIdentity {
         avatarUrl: String? = null,
         avatarHash: ByteArray? = null,
         avatarFingerprint: ByteArray?
-    ): DocumentsBatchTransition {
+    ): DocumentsBatchTransition? {
         checkIdentity()
         val profileDocument = profiles.createProfileDocument(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint, identity!!)
         lastProfileDocument = profileDocument
         val transitionMap = hashMapOf<String, List<Document>?>(
             "create" to listOf(profileDocument)
         )
-        return platform.dpp.document.createStateTransition(transitionMap)
+        //return platform.dpp.document.createStateTransition(transitionMap)
+        return null
     }
 
     fun registerProfile(
@@ -1489,9 +1492,9 @@ class BlockchainIdentity {
             replaceProfileTransition(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint)
         }
 
-        signStateTransition(transition, keyParameter)
-
-        platform.broadcastStateTransition(transition)
+//        signStateTransition(transition, keyParameter)
+//
+//        platform.broadcastStateTransition(transition)
         return Profile(lastProfileDocument!!)
     }
 
@@ -1501,7 +1504,7 @@ class BlockchainIdentity {
         avatarUrl: String? = null,
         avatarHash: ByteArray? = null,
         avatarFingerprint: ByteArray? = null
-    ): DocumentsBatchTransition {
+    ): DocumentsBatchTransition? {
         // first obtain the current document
         val currentProfile = getProfileFromPlatform()
 
@@ -1542,7 +1545,8 @@ class BlockchainIdentity {
         val transitionMap = hashMapOf<String, List<Document>?>(
             "replace" to listOf(profileDocument)
         )
-        return platform.dpp.document.createStateTransition(transitionMap)
+        //return platform.dpp.document.createStateTransition(transitionMap)
+        return null
     }
 
     fun updateProfile(
@@ -1555,9 +1559,9 @@ class BlockchainIdentity {
     ): Profile {
         val transition = replaceProfileTransition(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint)
 
-        signStateTransition(transition, keyParameter)
-
-        platform.broadcastStateTransition(transition)
+//        signStateTransition(transition, keyParameter)
+//
+//        platform.broadcastStateTransition(transition)
 
         return Profile(lastProfileDocument!!)
     }
@@ -2020,15 +2024,15 @@ class BlockchainIdentity {
     fun deleteDocument(typeLocator: String, documentId: Identifier, keyParameter: KeyParameter?): Boolean {
         val documentsToDelete = platform.documents.get(typeLocator, DocumentQuery.builder().where("\$id", "==", documentId).build())
         return if (documentsToDelete.isNotEmpty()) {
-            val transition = platform.dpp.document.createStateTransition(
-                mapOf(
-                    "delete" to listOf(
-                        documentsToDelete.first()
-                    )
-                )
-            )
-            signStateTransition(transition, keyParameter)
-            platform.client.broadcastStateTransition(transition)
+//            val transition = platform.dpp.document.createStateTransition(
+//                mapOf(
+//                    "delete" to listOf(
+//                        documentsToDelete.first()
+//                    )
+//                )
+//            )
+//            signStateTransition(transition, keyParameter)
+//            platform.client.broadcastStateTransition(transition)
             true
         } else {
             false

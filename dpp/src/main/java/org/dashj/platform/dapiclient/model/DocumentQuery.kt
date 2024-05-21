@@ -9,8 +9,15 @@ package org.dashj.platform.dapiclient.model
 import com.google.common.base.Preconditions
 import org.dashj.platform.dpp.BaseObject
 import org.dashj.platform.dpp.identifier.Identifier
+import org.dashj.platform.dpp.identifier.RustIdentifier
 import org.dashj.platform.dpp.util.Cbor
+import org.dashj.platform.sdk.Hash256
+import org.dashj.platform.sdk.OrderClause
+import org.dashj.platform.sdk.PlatformValue
+import org.dashj.platform.sdk.WhereClause
+import org.dashj.platform.sdk.WhereOperator
 import org.json.JSONArray
+import java.math.BigInteger
 
 /**
  * These options are used by getDocument to filter results
@@ -32,7 +39,15 @@ class DocumentQuery private constructor(
         val emptyByteArray = ByteArray(0)
         const val ascending = "asc"
         const val descending = "desc"
-        val operators = listOf("<", "<=", "==", ">=", ">", "in", "startsWith", "elementMatch", "length", "contains")
+        val operators = mapOf(
+            "<" to WhereOperator.LessThan,
+            "<=" to WhereOperator.LessThanOrEquals,
+            "==" to WhereOperator.Equal,
+            ">=" to WhereOperator.GreaterThanOrEquals,
+            ">" to WhereOperator.GreaterThan,
+            "in" to WhereOperator.In,
+            "startsWith" to WhereOperator.StartsWith
+        )
         const val WHERE_CLAUSE_SIZE = 3
 
         fun builder(): Builder { return Builder() }
@@ -123,20 +138,49 @@ class DocumentQuery private constructor(
         return startAfter != null
     }
 
-    fun encodeWhere(): ByteArray {
-        return if (where != null) {
-            Cbor.encode(where!!)
-        } else {
-            emptyByteArray
+    fun encodeWhere(): List<WhereClause> {
+        val whereClauses = where
+        return whereClauses?.map { clause ->
+            when (clause) {
+                is List<*> -> {
+                    val field = clause[0] as String
+                    val operator = operators[clause[1]]
+                    val value = clause[2]
+                    val valueObject = when (value) {
+                        is String -> PlatformValue(value)
+                        is Byte -> PlatformValue(value)
+                        is Short -> PlatformValue(value)
+                        is Int -> PlatformValue(value)
+                        is Long -> PlatformValue(value)
+                        is BigInteger -> PlatformValue(value)
+                        is ByteArray -> PlatformValue(value, false)
+                        is Identifier -> PlatformValue(Hash256(value.toBuffer()))
+                        is RustIdentifier -> PlatformValue(Hash256(value._0._0))
+                        //is null -> PlatformValue()
+                        else -> throw IllegalStateException("value $value was not processed")
+                    }
+                    WhereClause(field, operator, valueObject)
+                }
+
+                else -> throw IllegalStateException()
+            }
         }
+            ?: listOf()
     }
 
-    fun encodeOrderBy(): ByteArray {
-        return if (orderBy != null) {
-            Cbor.encode(orderBy!!)
-        } else {
-            emptyByteArray
+
+
+    fun encodeOrderBy(): List<OrderClause> {
+        val orderClauses = orderBy;
+        return orderClauses?.map {
+            val field = it[0]
+            val sortOrder = when (it[1]) {
+                "asc" -> true
+                else -> false
+            }
+            OrderClause(field, sortOrder)
         }
+            ?: listOf()
     }
 
     override fun toObject(): Map<String, Any?> {

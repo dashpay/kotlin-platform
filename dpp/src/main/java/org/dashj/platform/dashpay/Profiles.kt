@@ -44,9 +44,10 @@ class Profiles(
             "create" to listOf(profileDocument)
         )
 
-        val transition = signAndBroadcast(transitionMap, identity, id, signingKey)
-
-        return platform.dpp.document.createFromObject(transition.transitions[0].toObject())
+//        val transition = signAndBroadcast(transitionMap, identity, id, signingKey)
+//
+//        return platform.dpp.document.createFromObject(transition.transitions[0].toObject())
+        return profileDocument
     }
 
     fun replace(
@@ -72,27 +73,28 @@ class Profiles(
         val profileDocument = platform.dpp.document.createFromObject(profileData)
         profileDocument.updatedAt = Date().time
 
-        val transitionMap = hashMapOf(
-            "replace" to listOf(profileDocument)
-        )
-
-        val transition = signAndBroadcast(transitionMap, identity, id, signingKey)
-
-        return platform.dpp.document.createFromObject(transition.transitions[0].toObject())
+//        val transitionMap = hashMapOf(
+//            "replace" to listOf(profileDocument)
+//        )
+//
+//        val transition = signAndBroadcast(transitionMap, identity, id, signingKey)
+//
+//        return platform.dpp.document.createFromObject(transition.transitions[0].toObject())
+        return profileDocument
     }
 
-    private fun signAndBroadcast(
-        transitionMap: HashMap<String, List<Document>>,
-        identity: Identity,
-        id: Int,
-        signingKey: ECKey
-    ): DocumentsBatchTransition {
-        val profileStateTransition =
-            platform.dpp.document.createStateTransition(transitionMap)
-        profileStateTransition.sign(identity.getPublicKeyById(id)!!, signingKey.privateKeyAsHex)
-        platform.broadcastStateTransition(profileStateTransition)
-        return profileStateTransition
-    }
+//    private fun signAndBroadcast(
+//        transitionMap: HashMap<String, List<Document>>,
+//        identity: Identity,
+//        id: Int,
+//        signingKey: ECKey
+//    ): DocumentsBatchTransition? {
+//        val profileStateTransition =
+//            platform.dpp.document.createStateTransition(transitionMap)
+//        profileStateTransition.sign(identity.getPublicKeyById(id)!!, signingKey.privateKeyAsHex)
+//        platform.broadcastStateTransition(profileStateTransition)
+//        return profileStateTransition
+//    }
 
     fun createProfileDocument(
         displayName: String?,
@@ -101,7 +103,7 @@ class Profiles(
         avatarHash: ByteArray?,
         avatarFingerprint: ByteArray?,
         identity: Identity,
-        revision: Int = DocumentCreateTransition.INITIAL_REVISION
+        revision: Long = DocumentCreateTransition.INITIAL_REVISION
     ): Document {
         val document = platform.documents.create(
             DOCUMENT, identity.id,
@@ -113,7 +115,7 @@ class Profiles(
                 "avatarFingerprint" to avatarFingerprint
             )
         )
-        document.revision = revision
+        document.revision = revision.toLong()
         if (revision == DocumentCreateTransition.INITIAL_REVISION) {
             document.createdAt = Date().time
             document.updatedAt = document.createdAt

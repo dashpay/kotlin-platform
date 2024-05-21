@@ -31,7 +31,7 @@ class Platform(val params: NetworkParameters) {
 
     companion object {
         private val log: Logger = LoggerFactory.getLogger(Platform::class.java)
-        private const val MOCK_DAPI = true
+        private const val MOCK_DAPI = false
         fun mockDAPI() = MOCK_DAPI
     }
 
@@ -74,7 +74,8 @@ class Platform(val params: NetworkParameters) {
                 apps["dashwallet"] = ClientAppDefinition("Fds5DDfXoLwpUZ71AAVYZP1uod8S7Ze2bR28JExBvZKR")
             }
         }
-        client = DapiClient(params.defaultHPMasternodeList.toList(), dpp)
+        client = DapiClient(params.defaultHPMasternodeList.toList(), dpp, true)
+        System.loadLibrary("sdklib")
     }
 
     fun getAppList(): List<Identifier> {
@@ -145,11 +146,12 @@ class Platform(val params: NetworkParameters) {
     }
 
     fun useValidNodes() {
-        val mnList = getMnList()
-        val validList = mnList.filter {
-            it["isValid"] == true
-        }
-        client = DapiClient(validList.map { (it["service"] as String).split(":")[0] }, dpp)
+        //val mnList = getMnList()
+        //val validList = mnList.filter {
+        //    it["isValid"] == true
+        //}
+        //client = DapiClient(validList.map { (it["service"] as String).split(":")[0] }, dpp)
+        client = DapiClient(listOf(), dpp, false)
     }
 
     private fun getMnList(): List<Map<String, Any>> {

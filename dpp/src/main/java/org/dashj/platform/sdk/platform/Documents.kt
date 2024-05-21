@@ -35,9 +35,9 @@ class Documents(val platform: Platform) {
             transitionMap["delete"] = delete
         }
 
-        val batch = platform.dpp.document.createStateTransition(transitionMap)
+        //val batch = platform.dpp.document.createStateTransition(transitionMap)
 
-        platform.broadcastStateTransition(batch, identity, privateKey)
+        //platform.broadcastStateTransition(batch, identity, privateKey)
     }
 
     fun create(typeLocator: String, userId: Identifier, opts: MutableMap<String, Any?>): Document {

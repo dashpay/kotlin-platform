@@ -43,7 +43,7 @@ class TxMetadata(
 
         val transition = signAndBroadcast(transitionMap, identity, id, signingKey)
 
-        val rawDocument = transition.transitions[0].toObject().toMutableMap()
+        val rawDocument = transition!!.transitions[0].toObject().toMutableMap()
         rawDocument["\$ownerId"] = transition.ownerId
 
         return platform.dpp.document.createFromObject(rawDocument)
@@ -54,12 +54,13 @@ class TxMetadata(
         identity: Identity,
         id: Int,
         signingKey: ECKey
-    ): DocumentsBatchTransition {
-        val profileStateTransition =
-            platform.dpp.document.createStateTransition(transitionMap)
-        profileStateTransition.sign(identity.getPublicKeyById(id)!!, signingKey.privateKeyAsHex)
-        platform.broadcastStateTransition(profileStateTransition)
-        return profileStateTransition
+    ): DocumentsBatchTransition? {
+//        val profileStateTransition =
+//            platform.dpp.document.createStateTransition(transitionMap)
+//        profileStateTransition.sign(identity.getPublicKeyById(id)!!, signingKey.privateKeyAsHex)
+//        platform.broadcastStateTransition(profileStateTransition)
+//        return profileStateTransition
+        return null
     }
 
     fun createDocument(

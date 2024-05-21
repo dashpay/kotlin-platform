@@ -70,118 +70,118 @@ class DocumentFactory(dpp: DashPlatformProtocol, stateRepository: StateRepositor
         return createFromObject(rawDocument, options)
     }
 
-    fun createStateTransition(documents: Map<String, List<Document>?>): DocumentsBatchTransition {
-        // Check no wrong actions were supplied
-        val allowedKeys = DocumentTransition.Action.getValidNames()
-
-        val actionKeys = documents.keys
-        val filteredKeys = actionKeys.filter { allowedKeys.indexOf(it) == -1 }
-
-        if (filteredKeys.isNotEmpty()) {
-            throw InvalidActionNameError(filteredKeys)
-        }
-
-        val documentsFlattened = ArrayList<Document>()
-
-        for (key in actionKeys) {
-            documentsFlattened.addAll(documents[key] as List<Document>)
-        }
-
-        if (documentsFlattened.isEmpty()) {
-            throw NoDocumentsSuppliedError()
-        }
-
-        // Check that documents are not mixed
-        val aDocument = documentsFlattened[0]
-
-        val ownerId = aDocument.ownerId
-
-        var mismatches = 0
-        documentsFlattened.forEach {
-            if (it.ownerId != ownerId) {
-                mismatches++
-            }
-        }
-
-        if (mismatches > 0) {
-            throw MismatchOwnerIdsError(documentsFlattened)
-        }
-
-        // Convert documents to action transitions
-        val createDocuments = documents["create"] ?: listOf()
-        val replaceDocuments = documents["replace"] ?: listOf()
-        val deleteDocuments = documents["delete"] ?: listOf()
-
-        val rawDocumentCreateTransitions = createDocuments.map {
-            if (it.revision != DocumentCreateTransition.INITIAL_REVISION) {
-                throw InvalidInitialRevisionError(it)
-            }
-
-            val rawTransition = hashMapOf<String, Any>()
-            rawTransition["\$action"] = DocumentTransition.Action.CREATE.value
-            rawTransition["\$id"] = it.id
-            rawTransition["\$type"] = it.type
-            rawTransition["\$dataContractId"] = it.dataContractId
-            rawTransition["\$entropy"] = it.entropy
-            if (it.createdAt != null) {
-                rawTransition["\$createdAt"] = it.createdAt!!
-            }
-            if (it.updatedAt != null) {
-                rawTransition["\$updatedAt"] = it.updatedAt!!
-            }
-
-            val dataKeys = it.data.keys.iterator()
-            while (dataKeys.hasNext()) {
-                val key = dataKeys.next()
-                it.data[key]?.let { value -> rawTransition.put(key, value) }
-            }
-            rawTransition
-        }
-
-        val rawDocumentReplaceTransitions = replaceDocuments.map {
-            val rawTransition = hashMapOf<String, Any>()
-            rawTransition["\$action"] = DocumentTransition.Action.REPLACE.value
-            rawTransition["\$id"] = it.id
-            rawTransition["\$type"] = it.type
-            rawTransition["\$dataContractId"] = it.dataContractId
-            rawTransition["\$revision"] = it.revision + 1
-            if (it.updatedAt != null) {
-                rawTransition["\$updatedAt"] = it.updatedAt!!
-            }
-            val dataKeys = it.data.keys.iterator()
-            while (dataKeys.hasNext()) {
-                val key = dataKeys.next()
-                it.data[key]?.let { value -> rawTransition.put(key, value) }
-            }
-            rawTransition
-        }
-
-        val rawDocumentDeleteTransitions = deleteDocuments.map {
-            val rawTransition = hashMapOf<String, Any>()
-            rawTransition["\$action"] = DocumentTransition.Action.DELETE.value
-            rawTransition["\$id"] = it.id
-            rawTransition["\$type"] = it.type
-            rawTransition["\$dataContractId"] = it.dataContractId
-            rawTransition
-        }
-
-        val rawDocumentTransitions: ArrayList<Any> = arrayListOf()
-        rawDocumentTransitions.addAll(rawDocumentCreateTransitions)
-        rawDocumentTransitions.addAll(rawDocumentReplaceTransitions)
-        rawDocumentTransitions.addAll(rawDocumentDeleteTransitions)
-
-        val rawBatchTransition = hashMapOf<String, Any?>(
-            "\$protocolVersion" to ProtocolVersion.latestVersion,
-            "type" to StateTransition.Types.DOCUMENTS_BATCH.value,
-            "ownerId" to ownerId,
-            "transitions" to rawDocumentTransitions
-        )
-
-        val dataContracts = documentsFlattened.map {
-            document ->
-            document.dataContract
-        }
-
-        return DocumentsBatchTransition(dpp.getNetworkParameters(), rawBatchTransition, dataContracts)
-    }
+//    fun createStateTransition(documents: Map<String, List<Document>?>): DocumentsBatchTransition {
+//        // Check no wrong actions were supplied
+//        val allowedKeys = DocumentTransition.Action.getValidNames()
+//
+//        val actionKeys = documents.keys
+//        val filteredKeys = actionKeys.filter { allowedKeys.indexOf(it) == -1 }
+//
+//        if (filteredKeys.isNotEmpty()) {
+//            throw InvalidActionNameError(filteredKeys)
+//        }
+//
+//        val documentsFlattened = ArrayList<Document>()
+//
+//        for (key in actionKeys) {
+//            documentsFlattened.addAll(documents[key] as List<Document>)
+//        }
+//
+//        if (documentsFlattened.isEmpty()) {
+//            throw NoDocumentsSuppliedError()
+//        }
+//
+//        // Check that documents are not mixed
+//        val aDocument = documentsFlattened[0]
+//
+//        val ownerId = aDocument.ownerId
+//
+//        var mismatches = 0
+//        documentsFlattened.forEach {
+//            if (it.ownerId != ownerId) {
+//                mismatches++
+//            }
+//        }
+//
+//        if (mismatches > 0) {
+//            throw MismatchOwnerIdsError(documentsFlattened)
+//        }
+//
+//        // Convert documents to action transitions
+//        val createDocuments = documents["create"] ?: listOf()
+//        val replaceDocuments = documents["replace"] ?: listOf()
+//        val deleteDocuments = documents["delete"] ?: listOf()
+//
+//        val rawDocumentCreateTransitions = createDocuments.map {
+//            if (it.revision != DocumentCreateTransition.INITIAL_REVISION) {
+//                throw InvalidInitialRevisionError(it)
+//            }
+//
+//            val rawTransition = hashMapOf<String, Any>()
+//            rawTransition["\$action"] = DocumentTransition.Action.CREATE.value
+//            rawTransition["\$id"] = it.id
+//            rawTransition["\$type"] = it.type
+//            rawTransition["\$dataContractId"] = it.dataContractId
+//            rawTransition["\$entropy"] = it.entropy
+//            if (it.createdAt != null) {
+//                rawTransition["\$createdAt"] = it.createdAt!!
+//            }
+//            if (it.updatedAt != null) {
+//                rawTransition["\$updatedAt"] = it.updatedAt!!
+//            }
+//
+//            val dataKeys = it.data.keys.iterator()
+//            while (dataKeys.hasNext()) {
+//                val key = dataKeys.next()
+//                it.data[key]?.let { value -> rawTransition.put(key, value) }
+//            }
+//            rawTransition
+//        }
+//
+//        val rawDocumentReplaceTransitions = replaceDocuments.map {
+//            val rawTransition = hashMapOf<String, Any>()
+//            rawTransition["\$action"] = DocumentTransition.Action.REPLACE.value
+//            rawTransition["\$id"] = it.id
+//            rawTransition["\$type"] = it.type
+//            rawTransition["\$dataContractId"] = it.dataContractId
+//            rawTransition["\$revision"] = it.revision + 1
+//            if (it.updatedAt != null) {
+//                rawTransition["\$updatedAt"] = it.updatedAt!!
+//            }
+//            val dataKeys = it.data.keys.iterator()
+//            while (dataKeys.hasNext()) {
+//                val key = dataKeys.next()
+//                it.data[key]?.let { value -> rawTransition.put(key, value) }
+//            }
+//            rawTransition
+//        }
+//
+//        val rawDocumentDeleteTransitions = deleteDocuments.map {
+//            val rawTransition = hashMapOf<String, Any>()
+//            rawTransition["\$action"] = DocumentTransition.Action.DELETE.value
+//            rawTransition["\$id"] = it.id
+//            rawTransition["\$type"] = it.type
+//            rawTransition["\$dataContractId"] = it.dataContractId
+//            rawTransition
+//        }
+//
+//        val rawDocumentTransitions: ArrayList<Any> = arrayListOf()
+//        rawDocumentTransitions.addAll(rawDocumentCreateTransitions)
+//        rawDocumentTransitions.addAll(rawDocumentReplaceTransitions)
+//        rawDocumentTransitions.addAll(rawDocumentDeleteTransitions)
+//
+//        val rawBatchTransition = hashMapOf<String, Any?>(
+//            "\$protocolVersion" to ProtocolVersion.latestVersion,
+//            "type" to StateTransition.Types.DOCUMENTS_BATCH.value,
+//            "ownerId" to ownerId,
+//            "transitions" to rawDocumentTransitions
+//        )
+//
+//        val dataContracts = documentsFlattened.map {
+//            document ->
+//            document.dataContract!!
+//        }
+//
+//        return DocumentsBatchTransition(dpp.getNetworkParameters(), rawBatchTransition, dataContracts)
+//    }
 }

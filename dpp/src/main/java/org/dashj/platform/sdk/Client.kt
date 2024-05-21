@@ -79,13 +79,13 @@ class Client(private val clientOptions: ClientOptions) {
         // Create the DapiClient with parameters
         platform.client = when {
             clientOptions.dapiAddressListProvider != null -> {
-                DapiClient(clientOptions.dapiAddressListProvider, platform.dpp, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
+                DapiClient(clientOptions.dapiAddressListProvider, platform.dpp, true, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
             }
             clientOptions.dapiAddresses.isNotEmpty() -> {
-                DapiClient(clientOptions.dapiAddresses, platform.dpp, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
+                DapiClient(clientOptions.dapiAddresses, platform.dpp, true, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
             }
             else -> {
-                DapiClient(params.defaultHPMasternodeList.toList(), platform.dpp, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
+                DapiClient(params.defaultHPMasternodeList.toList(), platform.dpp, true, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
             }
         }
 

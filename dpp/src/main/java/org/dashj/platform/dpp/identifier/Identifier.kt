@@ -11,9 +11,12 @@ import org.bitcoinj.core.Base58
 import org.bitcoinj.core.Sha256Hash
 import org.dashj.platform.dpp.identifier.errors.IdentifierException
 import org.dashj.platform.dpp.toBase64
+import org.dashj.platform.dpp.util.Cbor
 //import org.dashj.platform.dpp.util.Cbor
 import org.dashj.platform.dpp.util.Converters
 import java.lang.IllegalStateException
+
+typealias RustIdentifier = org.dashj.platform.sdk.Identifier
 
 data class Identifier(private val buffer: ByteArray) {
 
@@ -35,7 +38,8 @@ data class Identifier(private val buffer: ByteArray) {
                 }
                 is Identifier -> any
                 is Sha256Hash -> Identifier(any.bytes)
-                else -> throw IllegalStateException("any is not String, ByteArray, Identifier or Sha256Hash")
+                is RustIdentifier -> Identifier(any._0._0)
+                else -> throw error("any is not String, ByteArray, Identifier or Sha256Hash")
             }
         }
 
@@ -55,7 +59,7 @@ data class Identifier(private val buffer: ByteArray) {
         }
     }
 
-    constructor(identifier: org.dashj.platform.sdk.Identifier) : this(identifier._0._0)
+    constructor(identifier: RustIdentifier) : this(identifier._0._0)
 
     init {
         if (buffer.size != IDENTIFIER_LENGTH) {
@@ -71,9 +75,9 @@ data class Identifier(private val buffer: ByteArray) {
         return Sha256Hash.wrap(buffer)
     }
 
-//    fun encodeCBOR(): ByteArray {
-//        return Cbor.encode(buffer)
-//    }
+    fun encodeCBOR(): ByteArray {
+        return Cbor.encode(buffer)
+    }
 
     fun toJSON(): String {
         return toString()
@@ -104,5 +108,9 @@ data class Identifier(private val buffer: ByteArray) {
 
     override fun hashCode(): Int {
         return buffer.contentHashCode()
+    }
+
+    fun toNative(): RustIdentifier {
+        return RustIdentifier(buffer)
     }
 }

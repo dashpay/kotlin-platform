@@ -68,11 +68,11 @@ class Names(val platform: Platform) {
             "create" to listOf(preorderDocument)
         )
 
-        val preorderTransition = platform.dpp.document.createStateTransition(map)
-        preorderTransition.sign(identity.getPublicKeyById(0)!!, identityHDPrivateKey.privateKeyAsHex)
+        // val preorderTransition = platform.dpp.document.createStateTransition(map)
+        // preorderTransition.sign(identity.getPublicKeyById(0)!!, identityHDPrivateKey.privateKeyAsHex)
 
         return try {
-            platform.broadcastStateTransition(preorderTransition)
+            //platform.broadcastStateTransition(preorderTransition)
             preorderDocument
         } catch (x: Exception) {
             null
@@ -142,12 +142,12 @@ class Names(val platform: Platform) {
         val map = hashMapOf<String, List<Document>?>(
             "create" to listOf(domainDocument)
         )
-        val domainTransition = platform.dpp.document.createStateTransition(map)
-        domainTransition.sign(identity.getPublicKeyById(1)!!, identityHDPrivateKey.privateKeyAsHex)
+        //val domainTransition = platform.dpp.document.createStateTransition(map)
+        //domainTransition.sign(identity.getPublicKeyById(1)!!, identityHDPrivateKey.privateKeyAsHex)
 
-        log.info("domainTransition: ${domainTransition.toJSON()}")
+        //log.info("domainTransition: ${domainTransition.toJSON()}")
 
-        platform.broadcastStateTransition(domainTransition)
+        //platform.broadcastStateTransition(domainTransition)
 
         return domainDocument
     }

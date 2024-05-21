@@ -12,7 +12,7 @@ import org.dashj.platform.dpp.util.Converters
 
 abstract class AbstractDocument(val document: Document) {
 
-    val dataContractId: Identifier
+    val dataContractId: Identifier?
         get() = document.dataContractId
     val id: String
         get() = document.id.toString()
@@ -20,7 +20,7 @@ abstract class AbstractDocument(val document: Document) {
         get() = document.ownerId
     val protocolVersion: Int
         get() = document.protocolVersion
-    val revision: Int
+    val revision: Long
         get() = document.revision
     val createdAt: Long?
         get() = document.createdAt

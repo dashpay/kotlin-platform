@@ -14,6 +14,7 @@ import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import org.bitcoinj.core.BloomFilter
+import org.bitcoinj.core.Context
 import org.bitcoinj.core.Sha256Hash
 import org.bitcoinj.core.Utils
 import org.bitcoinj.evolution.SimplifiedMasternodeListManager
@@ -45,6 +46,7 @@ import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.document.DocumentsBatchTransition
 import org.dashj.platform.dpp.errors.concensus.ConcensusException
 import org.dashj.platform.dpp.identifier.Identifier
+import org.dashj.platform.dpp.identifier.RustIdentifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.identity.IdentityStateTransition
 import org.dashj.platform.dpp.statetransition.StateTransition
@@ -52,8 +54,12 @@ import org.dashj.platform.dpp.statetransition.StateTransitionIdentitySigned
 import org.dashj.platform.dpp.toBase58
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Cbor
+import org.dashj.platform.sdk.Start
+import org.dashj.platform.sdk.callbacks.ContextProvider
+import org.dashj.platform.sdk.dashsdk
 import org.dashj.platform.sdk.platform.Documents
 import org.slf4j.LoggerFactory
+import java.math.BigInteger
 import java.util.Date
 import java.util.concurrent.Callable
 import java.util.concurrent.CancellationException
@@ -64,10 +70,11 @@ import java.util.concurrent.TimeUnit
 class DapiClient(
     var dapiAddressListProvider: DAPIAddressListProvider,
     val dpp: DashPlatformProtocol,
+    val useContextProvider: Boolean,
     private var timeOut: Long = DEFAULT_TIMEOUT,
     private var retries: Int = DEFAULT_RETRY_COUNT,
     private var banBaseTime: Int = DEFAULT_BASE_BAN_TIME,
-    private var waitForNodes: Int = DEFAULT_WAIT_FOR_NODES
+    private var waitForNodes: Int = DEFAULT_WAIT_FOR_NODES,
 ) {
 
     // gRPC properties
@@ -108,6 +115,35 @@ class DapiClient(
         const val DEFAULT_HTTP_TIMEOUT = 10L
         const val REQUIRED_SUCCESS_RATE = 0.50 // 50%
     }
+    val contextProvider = object : ContextProvider() {
+        override fun getQuorumPublicKey(
+            quorumType: Int,
+            quorumHashBytes: ByteArray?,
+            coreChainLockedHeight: Int
+        ): ByteArray? {
+            val quorumHash = Sha256Hash.wrap(quorumHashBytes)
+            var quorumPublicKey: ByteArray? = null
+            println("searching for quorum: $quorumType, $quorumHash, $coreChainLockedHeight")
+            Context.get().masternodeListManager.getQuorumListAtTip(
+                LLMQParameters.LLMQType.fromValue(
+                    quorumType
+                )
+            ).forEachQuorum(true) {
+                if (it.llmqType.value == quorumType && it.quorumHash == quorumHash) {
+                    quorumPublicKey = it.quorumPublicKey.serialize(false)
+                }
+            }
+            println("searching for quorum: result: ${quorumPublicKey?.toHex()}")
+            return quorumPublicKey
+        }
+
+        override fun getDataContract(identifier: org.dashj.platform.sdk.Identifier?): ByteArray {
+            return byteArrayOf(0)
+        }
+    }
+
+    val contextProviderFunction: Long
+        get() = if (useContextProvider) contextProvider.quorumPublicKeyCallback else 0L
 
     init {
 //        val loggingInterceptor = HttpLoggingInterceptor { msg: String? -> logger.info(msg) }
@@ -134,22 +170,25 @@ class DapiClient(
     constructor(
         masternodeAddress: String,
         dpp: DashPlatformProtocol,
+        useContextProvider: Boolean,
         timeOut: Long = DEFAULT_TIMEOUT,
         retries: Int = DEFAULT_RETRY_COUNT,
         banBaseTime: Int = DEFAULT_BASE_BAN_TIME,
         waitForNodes: Int = DEFAULT_WAIT_FOR_NODES
     ) :
-        this(listOf(masternodeAddress), dpp, timeOut, retries, banBaseTime, waitForNodes)
+        this(listOf(masternodeAddress), dpp, useContextProvider, timeOut, retries, banBaseTime, waitForNodes)
 
     constructor(
         addresses: List<String>,
         dpp: DashPlatformProtocol,
+        useContextProvider: Boolean,
         timeOut: Long = DEFAULT_TIMEOUT,
         retries: Int = DEFAULT_RETRY_COUNT,
         banBaseTime: Int = DEFAULT_BASE_BAN_TIME,
         waitForNodes: Int = DEFAULT_WAIT_FOR_NODES
     ) :
-        this(ListDAPIAddressProvider.fromList(addresses, banBaseTime), dpp, timeOut, retries, banBaseTime, waitForNodes)
+        this(ListDAPIAddressProvider.fromList(addresses, banBaseTime), dpp, useContextProvider, timeOut, retries, banBaseTime, waitForNodes)
+
     /* Platform gRPC methods */
 
     /**
@@ -585,7 +624,26 @@ class DapiClient(
         prove: Boolean = false,
         //retryCallback: GrpcMethodShouldRetryCallback = DefaultGetDocumentsRetryCallback()
     ): List<Document> {
-        return listOf()
+        val contractIdentifier = Identifier(contractId)
+        val rustContractIdentifier = contractIdentifier.toNative()
+        val start = when {
+            documentQuery.startAt != null -> Start(documentQuery.startAt!!.toBuffer(), true)
+            documentQuery.startAfter != null -> Start(documentQuery.startAfter!!.toBuffer(), false)
+            else -> null
+        }
+        val result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQuery(
+            rustContractIdentifier,
+            type,
+            documentQuery.encodeWhere(),
+            documentQuery.encodeOrderBy(),
+            documentQuery.limit.toLong(),
+            start,
+            BigInteger.valueOf(contextProviderFunction),
+            BigInteger.ZERO
+        )
+        return result.unwrap().map {
+            Document(it, contractIdentifier)
+        }
     }
 
     /* Core */

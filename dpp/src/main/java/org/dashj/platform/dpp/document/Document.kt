@@ -14,23 +14,80 @@ import org.dashj.platform.dpp.contract.DataContract
 import org.dashj.platform.dpp.deepCopy
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.sdk.Document.Tag.V0
+import org.dashj.platform.sdk.PlatformValue
 import kotlin.collections.HashMap
 
-class Document(rawDocument: Map<String, Any?>, dataContract: DataContract) : BaseObject() {
+typealias RustDocument = org.dashj.platform.sdk.Document
 
-    val dataContract: DataContract
+fun convertPlatformValue(value: PlatformValue): Any? {
+    return when (value.tag) {
+        PlatformValue.Tag.U128 -> value.u128
+        PlatformValue.Tag.I128 -> value.i128
+        PlatformValue.Tag.U64 -> value.u64
+        PlatformValue.Tag.I64 -> value.i64
+        PlatformValue.Tag.U32 -> value.u32
+        PlatformValue.Tag.I32 -> value.i32
+        PlatformValue.Tag.U16 -> value.u16
+        PlatformValue.Tag.I16 -> value.i16
+        PlatformValue.Tag.U8 -> value.u8
+        PlatformValue.Tag.I8 -> value.i8
+        PlatformValue.Tag.Bytes -> value.bytes
+        PlatformValue.Tag.Bytes20 -> value.bytes20
+        PlatformValue.Tag.Bytes32 -> value.bytes32
+        PlatformValue.Tag.Bytes36 -> value.bytes36
+        //PlatformValue.Tag.EnumU8 -> value.enumU8
+        PlatformValue.Tag.EnumString -> value.enumString
+        PlatformValue.Tag.Identifier -> Identifier(value.identifier.bytes)
+        PlatformValue.Tag.Float -> value.float
+        PlatformValue.Tag.Text -> value.text
+        PlatformValue.Tag.Bool -> value.bool
+        PlatformValue.Tag.Null -> null
+        PlatformValue.Tag.Array -> convertPlatformValueArray(value)
+        PlatformValue.Tag.Map -> convertPlatformValueMap(value)
+        else -> throw error("Unsupported Value ${value.tag}")
+    }
+}
+
+fun convertPlatformValueArray(array: PlatformValue): List<Any?> {
+    require(array.tag == PlatformValue.Tag.Array)
+    return array.array.map { convertPlatformValue(it) }
+}
+
+fun convertPlatformValueMap(map: PlatformValue): Map<String, Any?> {
+    require(map.tag == PlatformValue.Tag.Map)
+    val hashMap = hashMapOf<String, Any?>()
+    map.map._0.forEach { (key, value) ->
+        require(key.tag == PlatformValue.Tag.Text)
+        hashMap[key.text] = convertPlatformValue(value)
+    }
+    return hashMap
+}
+
+fun convertProperties(properties: Map<String, PlatformValue>): Map<String, Any?> {
+    val result = hashMapOf<String, Any?>()
+
+    properties.forEach { (key, value) ->
+        result[key] = convertPlatformValue(value)
+    }
+    return result
+}
+
+class Document : BaseObject {
+
+    var dataContract: DataContract? = null
     var id: Identifier
-    var type: String
-    var dataContractId: Identifier
+    var type: String? = null
+    var dataContractId: Identifier?
     var ownerId: Identifier
     lateinit var entropy: ByteArray
-    var revision: Int = 0
+    var revision: Long = 0
     var data: Map<String, Any?>
     var createdAt: Long?
     var updatedAt: Long?
     var metadata: Metadata? = null
 
-    init {
+    constructor(rawDocument: Map<String, Any?>, dataContract: DataContract) {
         this.dataContract = dataContract
         val data = HashMap(rawDocument)
 
@@ -42,7 +99,7 @@ class Document(rawDocument: Map<String, Any?>, dataContract: DataContract) : Bas
             data.remove("\$revision") as Int
         } else {
             DocumentCreateTransition.INITIAL_REVISION
-        }
+        }.toLong()
         this.createdAt = data.remove("\$createdAt")?.let { it as Long }
         this.updatedAt = data.remove("\$updatedAt")?.let { it as Long }
         this.protocolVersion = if (data.containsKey("\$protocolVersion")) {
@@ -52,6 +109,25 @@ class Document(rawDocument: Map<String, Any?>, dataContract: DataContract) : Bas
         }
 
         this.data = data
+    }
+
+    constructor(document: RustDocument, dataContractId: Identifier) {
+        this.dataContractId = dataContractId
+        when (document.tag) {
+            V0 -> {
+                val doc = document.v0._0
+                val data = convertProperties(doc.properties)
+
+                this.id = Identifier.from(doc.id)
+                this.ownerId = Identifier.from(doc.owner_id)
+                this.revision = doc.revision.toLong()
+                this.createdAt = doc.created_at?.toLong()
+                this.updatedAt = doc.updated_at?.toLong()
+                this.data = data
+            }
+            else -> throw error("Document version not supported: ${document.tag}")
+        }
+
     }
 
     override fun toObject(): Map<String, Any?> {
@@ -76,7 +152,7 @@ class Document(rawDocument: Map<String, Any?>, dataContract: DataContract) : Bas
 
         if (!skipIdentifierConversion) {
             map["\$id"] = id.toBuffer()
-            map["\$dataContractId"] = dataContractId.toBuffer()
+            map["\$dataContractId"] = dataContractId?.toBuffer()
             map["\$ownerId"] = ownerId.toBuffer()
 
             // change binary items items in data to ByteArray
@@ -110,7 +186,7 @@ class Document(rawDocument: Map<String, Any?>, dataContract: DataContract) : Bas
         TODO("set field specified by path to the value")
     }
 
-    fun setRevision(revision: Int): Document {
+    fun setRevision(revision: Long): Document {
         this.revision = revision
         return this
     }

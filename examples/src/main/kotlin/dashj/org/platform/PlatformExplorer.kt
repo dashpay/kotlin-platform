@@ -16,17 +16,13 @@ import org.bitcoinj.wallet.authentication.AuthenticationGroupExtension
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.*
-import org.dashj.platform.sdk.base.Result
-import org.dashj.platform.sdk.callbacks.ContextProvider;
+import org.dashj.platform.sdk.callbacks.ContextProvider
 import org.dashj.platform.sdk.callbacks.Signer
-
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.math.BigInteger
 import java.util.*
-
-
 
 
 object PlatformExplorer {
@@ -319,6 +315,7 @@ object PlatformExplorer {
                     )
                     docs.forEach { doc ->
                         printDomainDocument(doc)
+                        printDocument(doc)
                     }
                 }
                 "7" -> {
@@ -353,6 +350,43 @@ object PlatformExplorer {
                     val identity = dashsdk.getIdentity2(Identifier(ByteArray(32)))
                     val result = dashsdk.platformMobilePutPutIdentityCreate(identity, BigInteger.valueOf(signer.signerCallback))
                     print(result)
+                }
+                "9" -> {
+                    val dpnsContractId = byteArrayOf(
+                        230.toByte(),
+                        104,
+                        198.toByte(),
+                        89,
+                        175.toByte(),
+                        102,
+                        174.toByte(),
+                        225.toByte(),
+                        231.toByte(),
+                        44,
+                        24,
+                        109,
+                        222.toByte(),
+                        123,
+                        91,
+                        126,
+                        10,
+                        29,
+                        113,
+                        42,
+                        9,
+                        196.toByte(),
+                        13,
+                        87,
+                        33,
+                        246.toByte(),
+                        34,
+                        191.toByte(),
+                        83,
+                        197.toByte(),
+                        49,
+                        85
+                    )
+                    println(Base58.encode(dpnsContractId))
                 }
                 "w" -> {
                     println("Wallet")
