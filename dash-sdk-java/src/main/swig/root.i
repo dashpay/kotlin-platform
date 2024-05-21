@@ -48,6 +48,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "i128.i"
 %include "binary_data.i"
 %include "contract_bounds.i"
+%include "drive.i"
 %include "document.i"
 %include "document_properties.i"
 %include "hash.i"
