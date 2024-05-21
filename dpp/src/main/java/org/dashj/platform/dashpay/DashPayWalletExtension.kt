@@ -14,6 +14,10 @@ import org.bitcoinj.wallet.authentication.AuthenticationGroupExtension
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.identity.IdentityPublicKey
+import org.dashj.platform.dpp.identity.value
+import org.dashj.platform.sdk.KeyType
+import org.dashj.platform.sdk.Purpose
+import org.dashj.platform.sdk.SecurityLevel
 import org.dashj.platform.sdk.platform.Platform
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -41,13 +45,12 @@ class DashPayWalletExtension(
             blockchainIdentity?.let {
                 it.identity = Identity(
                     Identifier.from(identityProto.id.toByteArray()),
-                    identityProto.balance,
                     identityProto.publicKeysList.map {
                         val ipk = IdentityPublicKey(
                             it.id,
-                            IdentityPublicKey.Type.getByCode(it.type),
-                            IdentityPublicKey.Purpose.getByCode(it.purpose),
-                            IdentityPublicKey.SecurityLevel.getByCode(it.securityLevel),
+                            KeyType.swigToEnum(it.type),
+                            Purpose.swigToEnum(it.purpose),
+                            SecurityLevel.swigToEnum(it.securityLevel),
                             it.data.toByteArray(),
                             it.readOnly,
                             if (it.disabledAt == -1L) {
@@ -63,6 +66,7 @@ class DashPayWalletExtension(
                         )
                         ipk
                     }.toMutableList(),
+                    identityProto.balance,
                     identityProto.revision,
                     identityProto.protocolVersion
                 )

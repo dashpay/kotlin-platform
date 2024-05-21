@@ -63,6 +63,9 @@ import org.dashj.platform.dpp.statetransition.StateTransitionIdentitySigned
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Cbor
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.sdk.KeyType
+import org.dashj.platform.sdk.Purpose
+import org.dashj.platform.sdk.SecurityLevel
 import org.dashj.platform.sdk.platform.Names
 import org.dashj.platform.sdk.platform.Platform
 import org.slf4j.LoggerFactory
@@ -182,7 +185,7 @@ class BlockchainIdentity {
 
     lateinit var keyInfo: MutableMap<Long, MutableMap<String, Any>>
     var currentMainKeyIndex: Int = 0
-    var currentMainKeyType: IdentityPublicKey.Type = IdentityPublicKey.Type.ECDSA_SECP256K1
+    var currentMainKeyType: KeyType = KeyType.ECDSA_SECP256K1
     var assetLockTransaction: AssetLockTransaction? = null
     lateinit var registrationFundingPrivateKey: ECKey
 
@@ -195,7 +198,7 @@ class BlockchainIdentity {
         this.isLocal = false
         this.keysCreated = 0
         this.currentMainKeyIndex = 0
-        this.currentMainKeyType = IdentityPublicKey.Type.ECDSA_SECP256K1
+        this.currentMainKeyType = KeyType.ECDSA_SECP256K1
         this.usernameStatuses = HashMap()
         this.keyInfo = HashMap()
         this.registrationStatus = RegistrationStatus.REGISTERED
@@ -211,7 +214,7 @@ class BlockchainIdentity {
         this.isLocal = true
         this.keysCreated = 0
         this.currentMainKeyIndex = 0
-        this.currentMainKeyType = IdentityPublicKey.Type.ECDSA_SECP256K1
+        this.currentMainKeyType = KeyType.ECDSA_SECP256K1
         this.index = index
         this.usernameStatuses = HashMap()
         this.keyInfo = HashMap()
@@ -483,36 +486,36 @@ class BlockchainIdentity {
 
     private fun createIdentityPublicKeys(keyParameter: KeyParameter?): Pair<List<ECKey>, List<IdentityPublicKey>> {
         val identityPrivateKey = checkNotNull(
-            privateKeyAtIndex(0, IdentityPublicKey.Type.ECDSA_SECP256K1, keyParameter)
+            privateKeyAtIndex(0, KeyType.ECDSA_SECP256K1, keyParameter)
         ) { "keys must exist" }
 
         val identityPrivateKey2 = checkNotNull(
-            privateKeyAtIndex(1, IdentityPublicKey.Type.ECDSA_SECP256K1, keyParameter)
+            privateKeyAtIndex(1, KeyType.ECDSA_SECP256K1, keyParameter)
         ) { "keys must exist" }
 
         val masterKey = IdentityPublicKey(
             0,
-            IdentityPublicKey.Type.ECDSA_SECP256K1,
-            IdentityPublicKey.Purpose.AUTHENTICATION,
-            IdentityPublicKey.SecurityLevel.MASTER,
+            KeyType.ECDSA_SECP256K1,
+            Purpose.AUTHENTICATION,
+            SecurityLevel.MASTER,
             identityPrivateKey.pubKey,
             false
         )
 
         val highKey = IdentityPublicKey(
             1,
-            IdentityPublicKey.Type.ECDSA_SECP256K1,
-            IdentityPublicKey.Purpose.AUTHENTICATION,
-            IdentityPublicKey.SecurityLevel.HIGH,
+            KeyType.ECDSA_SECP256K1,
+            Purpose.AUTHENTICATION,
+            SecurityLevel.HIGH,
             identityPrivateKey2.pubKey,
             false
         )
 
         val encryptionKey = IdentityPublicKey(
             2,
-            IdentityPublicKey.Type.ECDSA_SECP256K1,
-            IdentityPublicKey.Purpose.ENCRYPTION,
-            IdentityPublicKey.SecurityLevel.MEDIUM,
+            KeyType.ECDSA_SECP256K1,
+            Purpose.ENCRYPTION,
+            SecurityLevel.MEDIUM,
             identityPrivateKey.pubKey,
             false
         )
@@ -879,7 +882,7 @@ class BlockchainIdentity {
     fun signStateTransition(
         transition: StateTransitionIdentitySigned,
         keyIndex: Int,
-        signingAlgorithm: IdentityPublicKey.Type,
+        signingAlgorithm: KeyType,
         keyParameter: KeyParameter? = null
     ) {
         val privateKey = maybeDecryptKey(keyIndex, signingAlgorithm, keyParameter)
@@ -891,13 +894,13 @@ class BlockchainIdentity {
     /**
      * Decrypts the key at the keyIndex if necessary using the keyParameter
      * @param keyIndex Int
-     * @param signingAlgorithm Type
+     * @param signingAlgorithm KeyType
      * @param keyParameter KeyParameter?
      * @return ECKey?
      */
     private fun maybeDecryptKey(
         keyIndex: Int,
-        signingAlgorithm: IdentityPublicKey.Type,
+        signingAlgorithm: KeyType,
         keyParameter: KeyParameter?
     ): ECKey? {
         var privateKey = privateKeyAtIndex(keyIndex, signingAlgorithm, keyParameter)
@@ -936,11 +939,11 @@ class BlockchainIdentity {
         )
     }
 
-    fun derivationPathForType(type: IdentityPublicKey.Type): ImmutableList<ChildNumber>? {
+    fun derivationPathForType(type: KeyType): ImmutableList<ChildNumber>? {
         if (isLocal) {
-            if (type == IdentityPublicKey.Type.ECDSA_SECP256K1) {
+            if (type == KeyType.ECDSA_SECP256K1) {
                 return DerivationPathFactory(wallet!!.params).blockchainIdentityECDSADerivationPath()
-            } else if (type == IdentityPublicKey.Type.BLS12_381) {
+            } else if (type == KeyType.BLS12_381) {
                 return DerivationPathFactory(wallet!!.params).blockchainIdentityBLSDerivationPath()
             }
         }
@@ -955,11 +958,11 @@ class BlockchainIdentity {
      * @param keyParameter the encryption key of the wallet
      * @return the key that matches the input parameters or null
      */
-    private fun privateKeyAtIndex(index: Int, type: IdentityPublicKey.Type, keyParameter: KeyParameter?): ECKey? {
+    private fun privateKeyAtIndex(index: Int, type: KeyType, keyParameter: KeyParameter?): ECKey? {
         checkState(isLocal, "this must own a wallet")
 
         when (type) {
-            IdentityPublicKey.Type.ECDSA_SECP256K1 -> {
+            KeyType.ECDSA_SECP256K1 -> {
                 val authenticationChain = authenticationGroup!!.getKeyChain(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY)
                 // decrypt keychain
                 val decryptedChain = if (wallet!!.isEncrypted) {
@@ -980,13 +983,13 @@ class BlockchainIdentity {
         rootIndex: Int,
         childNumber: ChildNumber,
         subIndex: Int,
-        type: IdentityPublicKey.Type,
+        type: KeyType,
         keyParameter: KeyParameter?
     ): ECKey? {
         checkState(isLocal, "this must own a wallet")
 
         when (type) {
-            IdentityPublicKey.Type.ECDSA_SECP256K1 -> {
+            KeyType.ECDSA_SECP256K1 -> {
                 val authenticationChain = authenticationGroup!!.getKeyChain(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY)
                 // decrypt keychain
                 val decryptedChain = if (wallet!!.isEncrypted) {
@@ -1730,14 +1733,14 @@ class BlockchainIdentity {
      *
      * @param xpub ByteArray The serialized extended public key obtained from [DeterministicKeyChain.getWatchingKey().serialize]
      * @param contactPublicKey ECKey The public key of the identity
-     * @param signingAlgorithm Type
+     * @param signingAlgorithm KeyType
      * @param aesKey KeyParameter? The decryption key to the encrypted wallet
      * @return ByteArray The encrypted extended public key
      */
     fun encryptExtendedPublicKey(
         xpub: ByteArray,
         contactPublicKey: ECKey,
-        signingAlgorithm: IdentityPublicKey.Type,
+        signingAlgorithm: KeyType,
         aesKey: KeyParameter?
     ): Pair<ByteArray, ByteArray> {
         val keyCrypter = KeyCrypterECDH()
@@ -1792,14 +1795,14 @@ class BlockchainIdentity {
      *
      * @param encryptedXpub ByteArray
      * @param contactPublicKey ECKey
-     * @param signingAlgorithm Type
+     * @param signingAlgorithm KeyType
      * @param keyParameter KeyParameter The decryption key to the encrypted wallet
      * @return DeterministicKey The extended public key without the derivation path
      */
     fun decryptExtendedPublicKey(
         encryptedXpub: ByteArray,
         contactPublicKey: ECKey,
-        signingAlgorithm: IdentityPublicKey.Type,
+        signingAlgorithm: KeyType,
         keyIndex: Int,
         keyParameter: KeyParameter?
     ): String {
@@ -1899,7 +1902,7 @@ class BlockchainIdentity {
     }
 
     fun getAccountReference(encryptionKey: KeyParameter?, fromIdentity: Identity): Int {
-        val privateKey = maybeDecryptKey(0, IdentityPublicKey.Type.ECDSA_SECP256K1, encryptionKey)
+        val privateKey = maybeDecryptKey(0, KeyType.ECDSA_SECP256K1, encryptionKey)
 
         val receiveChain = getReceiveFromContactChain(fromIdentity, encryptionKey)
 
@@ -1938,7 +1941,7 @@ class BlockchainIdentity {
     fun publishTxMetaData(txMetadataItems: List<TxMetadataItem>, keyParameter: KeyParameter?) {
         val keyIndex = 1
         val encryptionKeyIndex = 0
-        val encryptionKey = privateKeyAtPath(keyIndex, TxMetadataDocument.childNumber, encryptionKeyIndex, IdentityPublicKey.Type.ECDSA_SECP256K1, keyParameter)
+        val encryptionKey = privateKeyAtPath(keyIndex, TxMetadataDocument.childNumber, encryptionKeyIndex, KeyType.ECDSA_SECP256K1, keyParameter)
 
         var lastItem: TxMetadataItem? = null
         var currentIndex = 0
@@ -1971,7 +1974,7 @@ class BlockchainIdentity {
 
             val signingKey = maybeDecryptKey(
                 KeyIndexPurpose.AUTHENTICATION.ordinal,
-                IdentityPublicKey.Type.ECDSA_SECP256K1,
+                KeyType.ECDSA_SECP256K1,
                 keyParameter
             )!!
             TxMetadata(platform).create(
@@ -2004,7 +2007,7 @@ class BlockchainIdentity {
             txMetadataDocument.keyIndex,
             TxMetadataDocument.childNumber,
             txMetadataDocument.encryptionKeyIndex,
-            IdentityPublicKey.Type.ECDSA_SECP256K1,
+            KeyType.ECDSA_SECP256K1,
             keyParameter
         )
         val aesKeyParameter = cipher.deriveKey(encryptionKey)

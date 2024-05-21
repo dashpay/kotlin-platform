@@ -10,7 +10,9 @@ import org.bitcoinj.core.NetworkParameters
 import org.dashj.platform.dpp.contract.DataContract
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.IdentityPublicKey
+import org.dashj.platform.dpp.identity.value
 import org.dashj.platform.dpp.statetransition.StateTransitionIdentitySigned
+import org.dashj.platform.sdk.SecurityLevel
 import java.lang.IllegalStateException
 
 class DocumentsBatchTransition : StateTransitionIdentitySigned {
@@ -91,8 +93,8 @@ class DocumentsBatchTransition : StateTransitionIdentitySigned {
     /**
      * Returns minimal key security level that can be used to sign this ST
      */
-    override fun getKeySecurityLevelRequirement(): IdentityPublicKey.SecurityLevel {
-        val defaultSecurityLevel = IdentityPublicKey.SecurityLevel.HIGH
+    override fun getKeySecurityLevelRequirement(): SecurityLevel {
+        val defaultSecurityLevel = SecurityLevel.HIGH
 
         // Step 1: Get all document types for the ST
         // Step 2: Get document schema for every type
@@ -100,13 +102,13 @@ class DocumentsBatchTransition : StateTransitionIdentitySigned {
         // Find the highest level (lowest int value) of all documents - the ST's signature
         // requirement is the highest level across all documents affected by the ST.
         val documentTransitions = this.transitions
-        var highestSecurityLevel: IdentityPublicKey.SecurityLevel? = null
+        var highestSecurityLevel: SecurityLevel? = null
         documentTransitions.forEach { documentTransition ->
             val documentType = documentTransition.type
             val dataContract = documentTransition.dataContract
             val documentSchema = dataContract.getDocumentSchema(documentType)
 
-            val documentKeySecurityLevelRequirement = IdentityPublicKey.SecurityLevel.getByCode(
+            val documentKeySecurityLevelRequirement = SecurityLevel.swigToEnum(
                 (documentSchema["signatureSecurityLevelRequirement"] as? Int) ?: defaultSecurityLevel.value
             )
 

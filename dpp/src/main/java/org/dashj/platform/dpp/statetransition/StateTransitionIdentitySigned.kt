@@ -25,6 +25,9 @@ import org.dashj.platform.dpp.statetransition.errors.StateTransitionIsNotSignedE
 import org.dashj.platform.dpp.statetransition.errors.WrongPublicKeyPurposeException
 import org.dashj.platform.dpp.toBase64
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.sdk.KeyType
+import org.dashj.platform.sdk.Purpose
+import org.dashj.platform.sdk.SecurityLevel
 
 abstract class StateTransitionIdentitySigned(
     val params: NetworkParameters,
@@ -72,7 +75,7 @@ abstract class StateTransitionIdentitySigned(
         verifyPublicKeyIsEnabled(identityPublicKey)
 
         when (identityPublicKey.type) {
-            IdentityPublicKey.Type.ECDSA_SECP256K1 -> {
+            KeyType.ECDSA_SECP256K1 -> {
                 val privateKeyModel = ECKey.fromPrivate(privateKey)
                 pubKeyBase = privateKeyModel.pubKey
                 if (!pubKeyBase.contentEquals(identityPublicKey.data)) {
@@ -80,7 +83,7 @@ abstract class StateTransitionIdentitySigned(
                 }
                 signByPrivateKey(privateKeyModel)
             }
-            IdentityPublicKey.Type.ECDSA_HASH160 -> {
+            KeyType.ECDSA_HASH160 -> {
                 val privateKeyModel = ECKey.fromPrivate(privateKey)
                 pubKeyBase = privateKeyModel.pubKeyHash
                 if (!pubKeyBase.contentEquals(identityPublicKey.data)) {
@@ -88,7 +91,7 @@ abstract class StateTransitionIdentitySigned(
                 }
                 signByPrivateKey(privateKeyModel)
             }
-            IdentityPublicKey.Type.BLS12_381 -> {
+            KeyType.BLS12_381 -> {
                 val privateKeyModel = BLSSecretKey(privateKey)
                 pubKeyBase = privateKeyModel.GetPublicKey().bitcoinSerialize()
 
@@ -134,13 +137,13 @@ abstract class StateTransitionIdentitySigned(
         }
 
         return when (publicKey.type) {
-            IdentityPublicKey.Type.ECDSA_HASH160 -> verifySignatureByPublicKeyHash(publicKey.data)
-            IdentityPublicKey.Type.ECDSA_SECP256K1 -> {
+            KeyType.ECDSA_HASH160 -> verifySignatureByPublicKeyHash(publicKey.data)
+            KeyType.ECDSA_SECP256K1 -> {
                 val publicKeyModel = ECKey.fromPublicOnly(publicKey.data)
                 verifySignatureByPublicKey(publicKeyModel)
             }
 
-            IdentityPublicKey.Type.BLS12_381 -> verifyBLSSignatureByPublicKey(publicKey.data)
+            KeyType.BLS12_381 -> verifyBLSSignatureByPublicKey(publicKey.data)
             else -> throw InvalidIdentityPublicKeyTypeException(publicKey.type)
         }
     }
@@ -153,9 +156,9 @@ abstract class StateTransitionIdentitySigned(
 
     private fun verifyPublicKeyLevelAndPurpose(publicKey: IdentityPublicKey) {
         // If state transition requires MASTER security level it must be sign only with MASTER key
-        if (publicKey.isMaster() && getKeySecurityLevelRequirement() != IdentityPublicKey.SecurityLevel.MASTER) {
+        if (publicKey.isMaster() && getKeySecurityLevelRequirement() != SecurityLevel.MASTER) {
             throw InvalidSignaturePublicKeySecurityLevelException(
-                IdentityPublicKey.SecurityLevel.MASTER,
+                SecurityLevel.MASTER,
                 this.getKeySecurityLevelRequirement(),
             )
         }
@@ -168,10 +171,10 @@ abstract class StateTransitionIdentitySigned(
             )
         }
 
-        if (publicKey.purpose != IdentityPublicKey.Purpose.AUTHENTICATION) {
+        if (publicKey.purpose != Purpose.AUTHENTICATION) {
             throw WrongPublicKeyPurposeException(
                 publicKey.purpose,
-                IdentityPublicKey.Purpose.AUTHENTICATION,
+                Purpose.AUTHENTICATION,
             )
         }
     }
@@ -188,7 +191,7 @@ abstract class StateTransitionIdentitySigned(
      *
      * @return {number}
      */
-    open fun getKeySecurityLevelRequirement(): IdentityPublicKey.SecurityLevel {
-        return IdentityPublicKey.SecurityLevel.HIGH
+    open fun getKeySecurityLevelRequirement(): SecurityLevel {
+        return SecurityLevel.HIGH
     }
 }

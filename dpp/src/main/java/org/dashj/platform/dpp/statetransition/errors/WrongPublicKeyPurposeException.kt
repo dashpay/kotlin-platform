@@ -9,10 +9,11 @@ package org.dashj.platform.dpp.statetransition.errors
 
 import org.dashj.platform.dpp.errors.DPPException
 import org.dashj.platform.dpp.identity.IdentityPublicKey
+import org.dashj.platform.sdk.Purpose
 
 class WrongPublicKeyPurposeException(
-    val publicKeyPurpose: IdentityPublicKey.Purpose,
-    val keyPurposeRequirement: IdentityPublicKey.Purpose
+    val publicKeyPurpose: Purpose,
+    val keyPurposeRequirement: Purpose
 ) : DPPException(
     "State transition must be signed with a key that has purpose $keyPurposeRequirement," +
         " but was $publicKeyPurpose"

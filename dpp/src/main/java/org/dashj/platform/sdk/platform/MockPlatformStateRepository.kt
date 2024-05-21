@@ -28,6 +28,7 @@ import org.dashj.platform.dpp.identity.IdentityPublicKey
 import org.dashj.platform.dpp.statetransition.StateTransitionIdentitySigned
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.sdk.KeyType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -146,8 +147,8 @@ open class MockPlatformStateRepository(platform: Platform) : PlatformStateReposi
             identity.id,
             identity.publicKeys.map {
                 when (it.type) {
-                    IdentityPublicKey.Type.ECDSA_HASH160, IdentityPublicKey.Type.BIP13_SCRIPT_HASH -> it.data
-                    IdentityPublicKey.Type.ECDSA_SECP256K1 -> ECKey.fromPublicOnly(it.data).pubKeyHash
+                    KeyType.ECDSA_HASH160, KeyType.BIP13_SCRIPT_HASH -> it.data
+                    KeyType.ECDSA_SECP256K1 -> ECKey.fromPublicOnly(it.data).pubKeyHash
                     else -> Sha256Hash.twiceOf(it.data).bytes
                 }
             }
@@ -247,6 +248,7 @@ open class MockPlatformStateRepository(platform: Platform) : PlatformStateReposi
                 val identity = Identity(
                     signedStateTransition.identityId,
                     signedStateTransition.publicKeys,
+                    0,
                     0,
                     ProtocolVersion.latestVersion
                 )

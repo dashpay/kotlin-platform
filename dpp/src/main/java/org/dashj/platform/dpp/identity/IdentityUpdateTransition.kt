@@ -8,6 +8,7 @@ package org.dashj.platform.dpp.identity
 
 import org.bitcoinj.core.NetworkParameters
 import org.dashj.platform.dpp.identifier.Identifier
+import org.dashj.platform.sdk.SecurityLevel
 
 class IdentityUpdateTransition : IdentityStateTransition {
 
@@ -89,7 +90,7 @@ class IdentityUpdateTransition : IdentityStateTransition {
         return json
     }
 
-    override fun getKeySecurityLevelRequirement(): IdentityPublicKey.SecurityLevel {
-        return IdentityPublicKey.SecurityLevel.MASTER
+    override fun getKeySecurityLevelRequirement(): SecurityLevel {
+        return SecurityLevel.MASTER
     }
 }

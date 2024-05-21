@@ -11,34 +11,50 @@ import com.google.common.base.Preconditions
 import org.dashj.platform.dpp.BaseObject
 import org.dashj.platform.dpp.Metadata
 import org.dashj.platform.dpp.identifier.Identifier
+import org.dashj.platform.sdk.Identity
 import kotlin.math.max
 
-class Identity(
-    var id: Identifier,
-    var balance: Long,
-    val publicKeys: MutableList<IdentityPublicKey>,
-    val revision: Int,
-    protocolVersion: Int
-) : BaseObject(protocolVersion) {
+typealias RustIdentity = org.dashj.platform.sdk.Identity
+
+class Identity : BaseObject {
+
+    var id: Identifier
+    var balance: Long = 0
+    val publicKeys: MutableList<IdentityPublicKey>
+    var revision: Int = 0
 
     var assetLockProof: AssetLockProof? = null
     var metadata: Metadata? = null
 
-    constructor(rawIdentity: Map<String, Any?>) : this(
-        Identifier.from(rawIdentity["id"]),
-        rawIdentity["balance"].toString().toLong(),
-        (rawIdentity["publicKeys"] as List<Any>).map { IdentityPublicKey(it as Map<String, Any>) }.toMutableList(),
-        rawIdentity["revision"] as Int,
-        rawIdentity["protocolVersion"] as Int
-    )
+    constructor(rawIdentity: Map<String, Any?>) : super(rawIdentity["protocolVersion"] as Int) {
+        id = Identifier.from(rawIdentity["id"])
+        balance = rawIdentity["balance"].toString().toLong()
+        publicKeys  = (rawIdentity["publicKeys"] as List<Any>).map { IdentityPublicKey(it as Map<String, Any?>) }.toMutableList()
+    }
 
-    constructor(id: Identifier, publicKeys: List<IdentityPublicKey>, revision: Int, protocolVersion: Int) :
-            this(id, 0, publicKeys.toMutableList(), revision, protocolVersion)
+    constructor(id: Identifier, publicKeys: List<IdentityPublicKey>, balance: Long, revision: Int, protocolVersion: Int) : super(protocolVersion) {
+        this.id = id
+        this.balance = balance
+        this.publicKeys = publicKeys.toMutableList()
+        this.revision = revision
+    }
+
+    constructor(identity: RustIdentity) : super() {
+        when (identity.tag) {
+            Identity.Tag.V0 -> {
+                val identity = identity.v0._0
+                id = Identifier(identity.id)
+                publicKeys = identity.publicKeys.values.map { IdentityPublicKey.from(it) }.toMutableList()
+            }
+        }
+    }
+
 
     fun getPublicKeyById(keyId: Int): IdentityPublicKey? {
         Preconditions.checkArgument(keyId >= 0, "keyId ($keyId) must be >= 0")
         return publicKeys.find { it.id == keyId }
     }
+
 
     override fun toObject(): Map<String, Any> {
         return mapOf(

@@ -25,6 +25,7 @@ import org.dashj.platform.dpp.statetransition.errors.StateTransitionIsNotSignedE
 import org.dashj.platform.dpp.toBase64Padded
 import org.dashj.platform.dpp.toSha256Hash
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.sdk.KeyType
 import java.security.SignatureException
 
 abstract class StateTransition(
@@ -111,19 +112,19 @@ abstract class StateTransition(
         return encodeProtocolEntity(serializedData)
     }
 
-    fun signByPrivateKey(privateKey: String, keyType: IdentityPublicKey.Type) {
+    fun signByPrivateKey(privateKey: String, keyType: KeyType) {
         signByPrivateKey(Converters.byteArrayFromString(privateKey), keyType)
     }
-    fun signByPrivateKey(privateKey: ByteArray, keyType: IdentityPublicKey.Type) {
+    fun signByPrivateKey(privateKey: ByteArray, keyType: KeyType) {
         val data = hash(skipSignature = true)
 
         when (keyType) {
-            IdentityPublicKey.Type.ECDSA_SECP256K1,
-            IdentityPublicKey.Type.ECDSA_HASH160 -> {
+            KeyType.ECDSA_SECP256K1,
+            KeyType.ECDSA_HASH160 -> {
                 val privateKeyModel = ECKey.fromPrivate(privateKey)
                 signature = privateKeyModel.signHash(Sha256Hash.wrap(data))
             }
-            IdentityPublicKey.Type.BLS12_381 -> {
+            KeyType.BLS12_381 -> {
                 val privateKeyModel = BLSSecretKey(privateKey)
                 val blsSignature = privateKeyModel.Sign(Sha256Hash.wrap(data))
 
@@ -140,11 +141,11 @@ abstract class StateTransition(
         signature = privateKey.signHash(hash)
     }
 
-    fun verifyByPublicKey(publicKey: ByteArray, publicKeyType: IdentityPublicKey.Type): Boolean {
+    fun verifyByPublicKey(publicKey: ByteArray, publicKeyType: KeyType): Boolean {
         return when (publicKeyType) {
-            IdentityPublicKey.Type.ECDSA_SECP256K1 -> verifyECDSASignatureByPublicKey(publicKey)
-            IdentityPublicKey.Type.ECDSA_HASH160 -> verifyESDSAHash160SignatureByPublicKeyHash(publicKey)
-            IdentityPublicKey.Type.BLS12_381 -> verifyBLSSignatureByPublicKey(publicKey)
+            KeyType.ECDSA_SECP256K1 -> verifyECDSASignatureByPublicKey(publicKey)
+            KeyType.ECDSA_HASH160 -> verifyESDSAHash160SignatureByPublicKeyHash(publicKey)
+            KeyType.BLS12_381 -> verifyBLSSignatureByPublicKey(publicKey)
             else -> throw InvalidIdentityPublicKeyTypeException(publicKeyType)
         }
     }

@@ -8,6 +8,7 @@ package org.dashj.platform.dpp.statetransition.errors
 
 import org.dashj.platform.dpp.errors.DPPException
 import org.dashj.platform.dpp.identity.IdentityPublicKey
+import org.dashj.platform.sdk.KeyType
 
-class InvalidSignatureTypeException(val signatureType: IdentityPublicKey.Type) :
+class InvalidSignatureTypeException(val signatureType: KeyType) :
     DPPException("Invalid Signature Type: $signatureType")

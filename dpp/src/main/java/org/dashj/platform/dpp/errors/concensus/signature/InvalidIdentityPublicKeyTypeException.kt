@@ -7,11 +7,13 @@
 package org.dashj.platform.dpp.errors.concensus.signature
 
 import org.dashj.platform.dpp.identity.IdentityPublicKey
+import org.dashj.platform.dpp.identity.value
+import org.dashj.platform.sdk.KeyType
 
 class InvalidIdentityPublicKeyTypeException(val type: Int) :
     SignatureException("Invalid identity public key type $type") {
     constructor(arguments: List<Any>) : this(arguments[0] as Int) {
         setArguments(arguments)
     }
-    constructor(type: IdentityPublicKey.Type) : this(type.value)
+    constructor(type: KeyType) : this(type.value)
 }

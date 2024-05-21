@@ -13,10 +13,24 @@ import org.dashj.platform.dpp.errors.concensus.signature.InvalidIdentityPublicKe
 import org.dashj.platform.dpp.identity.errors.EmptyPublicKeyDataException
 import org.dashj.platform.dpp.toBase64
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.sdk.KeyType
+import org.dashj.platform.sdk.Purpose
+import org.dashj.platform.sdk.SecurityLevel
+
+typealias RustIdentityPublicKey = org.dashj.platform.sdk.IdentityPublicKey
+
+val KeyType.value: Int
+    get() = swigValue()
+
+val Purpose.value: Int
+    get() = swigValue()
+
+val SecurityLevel.value: Int
+    get() = swigValue()
 
 class IdentityPublicKey(
     val id: Int,
-    val type: Type,
+    val type: KeyType,
     val purpose: Purpose,
     val securityLevel: SecurityLevel,
     val data: ByteArray,
@@ -25,51 +39,51 @@ class IdentityPublicKey(
     var signature: ByteArray? = null
 ) : BaseObject() {
 
-    enum class Type(val value: Int) {
-        ECDSA_SECP256K1(0),
-        BLS12_381(1),
-        ECDSA_HASH160(2),
-        BIP13_SCRIPT_HASH(3),
-        EDSSA_25519_HASH160(4),
-        INVALID(30000); // for tests
+//    enum class Type(val value: Int) {
+//        ECDSA_SECP256K1(0),
+//        BLS12_381(1),
+//        ECDSA_HASH160(2),
+//        BIP13_SCRIPT_HASH(3),
+//        EDSSA_25519_HASH160(4),
+//        INVALID(30000); // for tests
+//
+//        companion object {
+//            private val values = values()
+//            fun getByCode(code: Int): Type {
+//                return values.filter { it.value == code }[0]
+//            }
+//        }
+//    }
 
-        companion object {
-            private val values = values()
-            fun getByCode(code: Int): Type {
-                return values.filter { it.value == code }[0]
-            }
-        }
-    }
-
-    enum class Purpose(val value: Int) {
-        AUTHENTICATION(0),
-        ENCRYPTION(1),
-        DECRYPTION(2),
-        WITHDRAW(3),
-        SYSTEM(4),
-        VOTING(5);
-
-        companion object {
-            private val values = values()
-            fun getByCode(code: Int): Purpose {
-                return values.filter { it.value == code }[0]
-            }
-        }
-    }
-
-    enum class SecurityLevel(val value: Int) {
-        MASTER(0),
-        CRITICAL(1),
-        HIGH(2),
-        MEDIUM(3);
-
-        companion object {
-            private val values = values()
-            fun getByCode(code: Int): SecurityLevel {
-                return values.filter { it.value == code }[0]
-            }
-        }
-    }
+//    enum class Purpose(val value: Int) {
+//        AUTHENTICATION(0),
+//        ENCRYPTION(1),
+//        DECRYPTION(2),
+//        WITHDRAW(3),
+//        SYSTEM(4),
+//        VOTING(5);
+//
+//        companion object {
+//            private val values = values()
+//            fun getByCode(code: Int): Purpose {
+//                return values.filter { it.value == code }[0]
+//            }
+//        }
+//    }
+//
+//    enum class SecurityLevel(val value: Int) {
+//        MASTER(0),
+//        CRITICAL(1),
+//        HIGH(2),
+//        MEDIUM(3);
+//
+//        companion object {
+//            private val values = values()
+//            fun getByCode(code: Int): SecurityLevel {
+//                return values.filter { it.value == code }[0]
+//            }
+//        }
+//    }
 
     companion object {
         val allowedSecurityLevels = mapOf(
@@ -85,37 +99,55 @@ class IdentityPublicKey(
             Purpose.ENCRYPTION to listOf(
                 SecurityLevel.MEDIUM
             ),
-            Purpose.WITHDRAW to listOf(
+            Purpose.TRANSFER to listOf(
                 SecurityLevel.CRITICAL
             )
         )
+
+        fun from(identityPublicKey: RustIdentityPublicKey) : IdentityPublicKey {
+            return when (identityPublicKey.tag) {
+                org.dashj.platform.sdk.IdentityPublicKey.Tag.V0 -> {
+                    val ipk = identityPublicKey.v0._0
+                    IdentityPublicKey(
+                        ipk.id.toInt(),
+                        ipk.keyType,
+                        ipk.purpose,
+                        ipk.securityLevel,
+                        ipk.data._0,
+                        ipk.read_only,
+                        ipk.disabled_at?.toLong()
+                    )
+                }
+                else -> error("Identity ")
+            }
+        }
     }
 
-    constructor(id: Int, type: Type, purpose: Purpose, securityLevel: SecurityLevel, data: String, readOnly: Boolean) :
+    constructor(id: Int, type: KeyType, purpose: Purpose, securityLevel: SecurityLevel, data: String, readOnly: Boolean) :
         this(id, type, purpose, securityLevel, Converters.fromBase64(data), readOnly)
 
-    constructor(id: Int, type: Type, data: String) :
+    constructor(id: Int, type: KeyType, data: String) :
         this(id, type, Purpose.AUTHENTICATION, SecurityLevel.MASTER, Converters.fromBase64(data), true)
 
-    constructor(id: Int, type: Type, data: ByteArray) :
+    constructor(id: Int, type: KeyType, data: ByteArray) :
         this(id, type, Purpose.AUTHENTICATION, SecurityLevel.MASTER, data, true)
 
     constructor(rawIdentityPublicKey: Map<String, Any?>) :
         this(
             rawIdentityPublicKey["id"] as Int,
             when (rawIdentityPublicKey["type"]) {
-                is Type -> rawIdentityPublicKey["type"] as Type
-                is Int -> Type.getByCode(rawIdentityPublicKey["type"] as Int)
+                is KeyType -> rawIdentityPublicKey["type"] as KeyType
+                is Int -> KeyType.swigToEnum(rawIdentityPublicKey["type"] as Int)
                 else -> error("invalid type")
             },
             when (rawIdentityPublicKey["purpose"]) {
                 is Purpose -> rawIdentityPublicKey["purpose"] as Purpose
-                is Int -> Purpose.getByCode(rawIdentityPublicKey["purpose"] as Int)
+                is Int -> Purpose.swigToEnum(rawIdentityPublicKey["purpose"] as Int)
                 else -> Purpose.AUTHENTICATION
             },
             when (rawIdentityPublicKey["securityLevel"]) {
                 is SecurityLevel -> rawIdentityPublicKey["securityLevel"] as SecurityLevel
-                is Int -> SecurityLevel.getByCode(rawIdentityPublicKey["securityLevel"] as Int)
+                is Int -> SecurityLevel.swigToEnum(rawIdentityPublicKey["securityLevel"] as Int)
                 else -> SecurityLevel.CRITICAL
             },
             when (rawIdentityPublicKey["data"]) {
@@ -142,9 +174,9 @@ class IdentityPublicKey(
     fun toObject(skipSignature: Boolean): Map<String, Any> {
         val objMap = hashMapOf<String, Any>(
             "id" to id,
-            "type" to type.value,
-            "purpose" to purpose.value,
-            "securityLevel" to securityLevel.value,
+            "type" to type.swigValue(),
+            "purpose" to purpose.swigValue(),
+            "securityLevel" to securityLevel.swigValue(),
             "data" to data,
             "readOnly" to readOnly
         )
@@ -167,7 +199,7 @@ class IdentityPublicKey(
     }
 
     fun isMaster(): Boolean {
-        return securityLevel == IdentityPublicKey.SecurityLevel.MASTER
+        return securityLevel == SecurityLevel.MASTER
     }
 
     override fun equals(other: Any?): Boolean {
@@ -195,8 +227,8 @@ class IdentityPublicKey(
             throw EmptyPublicKeyDataException()
         }
         return when (type) {
-            Type.ECDSA_HASH160, Type.BIP13_SCRIPT_HASH -> return data
-            Type.BLS12_381, Type.ECDSA_SECP256K1 -> Utils.sha256hash160(data)
+            KeyType.ECDSA_HASH160, KeyType.BIP13_SCRIPT_HASH -> return data
+            KeyType.BLS12_381, KeyType.ECDSA_SECP256K1 -> Utils.sha256hash160(data)
             else -> throw InvalidIdentityPublicKeyTypeException(type)
         }
     }

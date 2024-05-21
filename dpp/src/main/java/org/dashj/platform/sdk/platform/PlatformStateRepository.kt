@@ -21,6 +21,7 @@ import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.identity.IdentityPublicKey
 import org.dashj.platform.dpp.statetransition.StateTransitionIdentitySigned
 import org.dashj.platform.dpp.toHex
+import org.dashj.platform.sdk.KeyType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -113,8 +114,8 @@ open class PlatformStateRepository(val platform: Platform) : StateRepository {
             identity.id,
             identity.publicKeys.map {
                 when (it.type) {
-                    IdentityPublicKey.Type.ECDSA_HASH160, IdentityPublicKey.Type.BIP13_SCRIPT_HASH -> it.data
-                    IdentityPublicKey.Type.ECDSA_SECP256K1 -> ECKey.fromPublicOnly(it.data).pubKeyHash
+                    KeyType.ECDSA_HASH160, KeyType.BIP13_SCRIPT_HASH -> it.data
+                    KeyType.ECDSA_SECP256K1 -> ECKey.fromPublicOnly(it.data).pubKeyHash
                     else -> Sha256Hash.twiceOf(it.data).bytes
                 }
             }
@@ -157,9 +158,7 @@ open class PlatformStateRepository(val platform: Platform) : StateRepository {
             }.keys.first()
             fetchIdentity(identifier)
         } catch (e: NoSuchElementException) {
-            platform.client.getIdentityByFirstPublicKey(pubKeyHash, false)?.let {
-                platform.dpp.identity.createFromBuffer(it)
-            }
+            platform.client.getIdentityByFirstPublicKey(pubKeyHash, false)
         }
     }
 

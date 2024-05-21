@@ -19,6 +19,9 @@ import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.statetransition.AssetLockProofFactory
 import org.dashj.platform.dpp.util.CreditsConverter.convertSatoshiToCredits
 import org.dashj.platform.dpp.validation.ValidationResult
+import org.dashj.platform.sdk.KeyType
+import org.dashj.platform.sdk.Purpose
+import org.dashj.platform.sdk.SecurityLevel
 import java.util.Date
 
 class IdentityFactory(dpp: DashPlatformProtocol, stateRepository: StateRepository) : Factory(dpp, stateRepository) {
@@ -30,15 +33,15 @@ class IdentityFactory(dpp: DashPlatformProtocol, stateRepository: StateRepositor
         protocolVersion: Int
     ): Identity {
         val id = Identifier.from(lockedOutPoint.hash)
-        return Identity(id, publicKeys, revision, protocolVersion)
+        return Identity(id, publicKeys, 0, revision, protocolVersion)
     }
 
     fun create(id: Identifier, publicKeys: List<IdentityPublicKey>, revision: Int, protocolVersion: Int): Identity {
-        return Identity(id, publicKeys, revision, protocolVersion)
+        return Identity(id, publicKeys, 0, revision, protocolVersion)
     }
 
     fun create(id: String, publicKeys: List<IdentityPublicKey>, revision: Int, protocolVersion: Int): Identity {
-        return Identity(Identifier.from(id), publicKeys, revision, protocolVersion)
+        return Identity(Identifier.from(id), publicKeys, 0, revision, protocolVersion)
     }
 
     fun createFromKeyList(assetLockProof: AssetLockProof, publicKeys: List<ECKey>): Identity {
@@ -48,13 +51,14 @@ class IdentityFactory(dpp: DashPlatformProtocol, stateRepository: StateRepositor
                     index, it ->
                 IdentityPublicKey(
                     index,
-                    IdentityPublicKey.Type.ECDSA_SECP256K1,
-                    IdentityPublicKey.Purpose.AUTHENTICATION,
-                    IdentityPublicKey.SecurityLevel.MASTER,
+                    KeyType.ECDSA_SECP256K1,
+                    Purpose.AUTHENTICATION,
+                    SecurityLevel.MASTER,
                     it.pubKey,
                     false
                 )
             },
+            balance = 0L,
             revision = 0,
             protocolVersion = ProtocolVersion.latestVersion
         )
@@ -64,6 +68,7 @@ class IdentityFactory(dpp: DashPlatformProtocol, stateRepository: StateRepositor
         val identity = Identity(
             assetLockProof.createIdentifier(),
             publicKeyConfigs.map { publicKey -> IdentityPublicKey(publicKey) },
+            0,
             0,
             ProtocolVersion.latestVersion
         )
@@ -162,8 +167,8 @@ class IdentityFactory(dpp: DashPlatformProtocol, stateRepository: StateRepositor
 
         val newIdentity = Identity(
             identityCreateTransition.identityId,
-            0,
             identityCreateTransition.publicKeys.map { it.copy(skipSignature = true) }.toMutableList(),
+            0,
             0,
             ProtocolVersion.latestVersion
         )

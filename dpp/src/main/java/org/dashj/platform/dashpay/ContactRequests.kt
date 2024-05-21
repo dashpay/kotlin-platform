@@ -9,7 +9,8 @@ import org.dashj.platform.dashpay.callback.SendContactRequestCallback
 import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
-import org.dashj.platform.dpp.identity.IdentityPublicKey
+import org.dashj.platform.sdk.KeyType
+import org.dashj.platform.sdk.SecurityLevel
 import org.dashj.platform.sdk.platform.Documents
 import org.dashj.platform.sdk.platform.Platform
 
@@ -29,7 +30,7 @@ class ContactRequests(val platform: Platform) {
             // is the publicKey disabled?
             if (publicKey.disabledAt == null || publicKey.disabledAt!! > Date().time) {
                 // is the public key of type ECDSA with a high enough security level?
-                publicKey.type == IdentityPublicKey.Type.ECDSA_SECP256K1 && publicKey.securityLevel <= IdentityPublicKey.SecurityLevel.MEDIUM
+                publicKey.type == KeyType.ECDSA_SECP256K1 && publicKey.securityLevel <= SecurityLevel.MEDIUM
             } else {
                 false
             }

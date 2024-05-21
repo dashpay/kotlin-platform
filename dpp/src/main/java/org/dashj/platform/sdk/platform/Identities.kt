@@ -65,7 +65,7 @@ class Identities(val platform: Platform) {
             // get the identity from Platform since it cannot be recreated from the transition with the balance, etc
             platform.stateRepository.addValidIdentity(identityCreateTransition.identityId)
 
-            return Identity(identityCreateTransition.identityId, identityPublicKeys, 0, identityCreateTransition.protocolVersion)
+            return Identity(identityCreateTransition.identityId, identityPublicKeys, 0, 0, identityCreateTransition.protocolVersion)
         } catch (e: Exception) {
             log.info("registerIdentity failure: $e")
             throw e
@@ -98,7 +98,7 @@ class Identities(val platform: Platform) {
             // get the identity from Platform since it cannot be recreated from the transition with the balance, etc
             platform.stateRepository.addValidIdentity(identityCreateTransition.identityId)
 
-            return Identity(identityCreateTransition.identityId, identityPublicKeys, 0, identityCreateTransition.protocolVersion)
+            return Identity(identityCreateTransition.identityId, identityPublicKeys, 0, 0, identityCreateTransition.protocolVersion)
         } catch (e: Exception) {
             log.info("registerIdentity failure: $e")
             throw e

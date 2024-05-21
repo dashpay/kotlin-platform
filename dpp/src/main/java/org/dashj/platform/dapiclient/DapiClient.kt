@@ -55,6 +55,7 @@ import org.dashj.platform.dpp.toBase58
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Cbor
 import org.dashj.platform.sdk.Start
+import org.dashj.platform.sdk.base.Result
 import org.dashj.platform.sdk.callbacks.ContextProvider
 import org.dashj.platform.sdk.dashsdk
 import org.dashj.platform.sdk.platform.Documents
@@ -447,7 +448,16 @@ class DapiClient(
     ): Identity? {
         logger.info("getIdentity(${id.toBase58()}, $prove)")
         val identityId = Identifier.from(id)
-        return null
+        val result = dashsdk.fetchIdentity(
+            RustIdentifier(id),
+            BigInteger.valueOf(contextProviderFunction),
+            BigInteger.ZERO
+        )
+        return try {
+            Identity(result.unwrap());
+        } catch (e: Exception) {
+            null;
+        }
     }
 
     /**
@@ -455,9 +465,18 @@ class DapiClient(
      * @param pubKeyHash ByteArray
      * @return ByteArray?
      */
-    fun getIdentityByFirstPublicKey(pubKeyHash: ByteArray, prove: Boolean = false): ByteArray? {
+    fun getIdentityByFirstPublicKey(pubKeyHash: ByteArray, prove: Boolean = false): Identity? {
         logger.info("getIdentityByFirstPublicKey(${pubKeyHash.toHex()})")
-        return null
+        val result = dashsdk.getIdentityByPublicKeyHash(
+            pubKeyHash,
+            BigInteger.valueOf(contextProviderFunction),
+            BigInteger.ZERO
+        )
+        return try {
+            Identity(result.unwrap())
+        } catch (e: Exception) {
+            null
+        }
     }
 
     /**
