@@ -48,10 +48,7 @@ import org.dashj.platform.contracts.wallet.TxMetadataDocument
 import org.dashj.platform.contracts.wallet.TxMetadataItem
 import org.dashj.platform.dapiclient.MaxRetriesReachedException
 import org.dashj.platform.dapiclient.model.DocumentQuery
-import org.dashj.platform.dashpay.callback.RegisterIdentityCallback
-import org.dashj.platform.dashpay.callback.RegisterNameCallback
-import org.dashj.platform.dashpay.callback.RegisterPreorderCallback
-import org.dashj.platform.dashpay.callback.UpdateProfileCallback
+import org.dashj.platform.dashpay.callback.*
 import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.document.DocumentCreateTransition
 import org.dashj.platform.dpp.document.DocumentsBatchTransition
@@ -66,6 +63,7 @@ import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.KeyType
 import org.dashj.platform.sdk.Purpose
 import org.dashj.platform.sdk.SecurityLevel
+import org.dashj.platform.sdk.callbacks.Signer
 import org.dashj.platform.sdk.platform.Names
 import org.dashj.platform.sdk.platform.Platform
 import org.slf4j.LoggerFactory
@@ -412,7 +410,8 @@ class BlockchainIdentity {
             coreHeight,
             signingKey!!,
             privateKeys,
-            identityPublicKeys
+            identityPublicKeys,
+            signer = WalletSignerCallback(wallet!!, keyParameter)
         )
 
         registrationStatus = RegistrationStatus.REGISTERED
@@ -456,7 +455,8 @@ class BlockchainIdentity {
                     coreHeight,
                     signingKey!!,
                     privateKeys,
-                    identityPublicKeys
+                    identityPublicKeys,
+                    signer = WalletSignerCallback(wallet!!, keyParameter)
                 )
             } else if (instantLock != null) {
                 identity = platform.identities.register(
@@ -465,7 +465,8 @@ class BlockchainIdentity {
                     instantLock,
                     signingKey!!,
                     privateKeys,
-                    identityPublicKeys
+                    identityPublicKeys,
+                    signer = WalletSignerCallback(wallet!!, keyParameter)
                 )
             } else throw InvalidInstantAssetLockProofException("instantLock == null")
         } else {
@@ -475,7 +476,8 @@ class BlockchainIdentity {
                 instantLock,
                 signingKey!!,
                 privateKeys,
-                identityPublicKeys
+                identityPublicKeys,
+                signer = WalletSignerCallback(wallet!!, keyParameter)
             )
         }
 

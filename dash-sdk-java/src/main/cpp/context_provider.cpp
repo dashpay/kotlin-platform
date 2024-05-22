@@ -82,7 +82,7 @@ int sign_data(u_int8_t * key_data, int key_len, uint8_t * data, int size, uint8_
     }
 
     jbyteArray keyByteArray = jenv->NewByteArray(key_len);
-    jenv->SetByteArrayRegion(keyByteArray, 0, key_len, reinterpret_cast<jbyte *>(data));
+    jenv->SetByteArrayRegion(keyByteArray, 0, key_len, reinterpret_cast<jbyte *>(key_data));
 
     jbyteArray dataByteArray = jenv->NewByteArray(size);
     jenv->SetByteArrayRegion(dataByteArray, 0, size, reinterpret_cast<jbyte *>(data));

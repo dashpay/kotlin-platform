@@ -9,6 +9,8 @@ import org.bitcoinj.quorums.InstantSendLock
 import org.dashj.platform.dpp.toBase64
 import org.dashj.platform.dpp.util.Converters
 
+typealias NativeInstantAssetLockProof = org.dashj.platform.sdk.InstantAssetLockProof
+
 class InstantAssetLockProof(
     val outputIndex: Long,
     val transaction: Transaction,
@@ -45,7 +47,8 @@ class InstantAssetLockProof(
     override fun getOutPoint(): ByteArray {
         val outPoint = TransactionOutPoint(
             output.params, output.outPointFor.index,
-            Sha256Hash.wrap(output.outPointFor.hash.reversedBytes)
+            //Sha256Hash.wrap(output.outPointFor.hash.reversedBytes)
+            output.outPointFor.hash
         )
         return outPoint.bitcoinSerialize()
     }
@@ -65,6 +68,14 @@ class InstantAssetLockProof(
             "instantLock" to instantLock.bitcoinSerialize().toBase64(),
             "transaction" to transaction.toStringBase64(),
             "outputIndex" to outputIndex
+        )
+    }
+
+    fun toNative(): NativeInstantAssetLockProof {
+        return NativeInstantAssetLockProof(
+            instantLock.bitcoinSerialize(),
+            transaction.bitcoinSerialize(),
+            outputIndex
         )
     }
 }

@@ -13,6 +13,7 @@ import kotlin.collections.HashMap
 import org.bitcoinj.core.ECKey
 import org.bitcoinj.core.NetworkParameters
 import org.bitcoinj.evolution.SimplifiedMasternodeListManager
+import org.bitcoinj.params.MainNetParams
 import org.dashj.platform.dapiclient.DapiClient
 import org.dashj.platform.dapiclient.MaxRetriesReachedException
 import org.dashj.platform.dapiclient.NoAvailableAddressesForRetryException
@@ -221,4 +222,6 @@ class Platform(val params: NetworkParameters) {
             false
         }
     }
+
+    fun isTestNet(): Boolean = params.id == NetworkParameters.ID_MAINNET
 }

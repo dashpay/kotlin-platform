@@ -13,9 +13,7 @@ import org.dashj.platform.dpp.errors.concensus.signature.InvalidIdentityPublicKe
 import org.dashj.platform.dpp.identity.errors.EmptyPublicKeyDataException
 import org.dashj.platform.dpp.toBase64
 import org.dashj.platform.dpp.util.Converters
-import org.dashj.platform.sdk.KeyType
-import org.dashj.platform.sdk.Purpose
-import org.dashj.platform.sdk.SecurityLevel
+import org.dashj.platform.sdk.*
 
 typealias RustIdentityPublicKey = org.dashj.platform.sdk.IdentityPublicKey
 
@@ -196,6 +194,21 @@ class IdentityPublicKey(
             json["signature"] = toBase64()
         }
         return json
+    }
+
+    fun toNative(): RustIdentityPublicKey {
+        return RustIdentityPublicKey(
+            IdentityPublicKeyV0(
+                KeyID(id),
+                purpose,
+                securityLevel,
+                null,
+                type,
+                readOnly,
+                BinaryData(data),
+                disabledAt?.let { TimestampMillis(it) }
+            )
+        )
     }
 
     fun isMaster(): Boolean {

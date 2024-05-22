@@ -224,6 +224,35 @@ public class IdentityTest extends BaseTest {
         identityV0.delete();
         identity.delete();
     }
+
+    @Test
+    public void assetLockTest() {
+        OutPoint outPoint = new OutPoint(identifier, 0);
+        assertEquals(0, outPoint.getVout());
+        assertArrayEquals(identifier, outPoint.getTxid());
+
+        InstantAssetLockProof instantAssetLockProof = new InstantAssetLockProof(identifier, identifier, 0);
+        assertArrayEquals(identifier, instantAssetLockProof.getInstant_lock());
+        assertArrayEquals(identifier, instantAssetLockProof.getTransaction());
+        assertEquals(0, instantAssetLockProof.getOutput_index());
+
+        ChainAssetLockProof chainAssetLockProof = new ChainAssetLockProof(2_000_000, outPoint);
+        assertEquals(2_000_000, chainAssetLockProof.getCore_chain_locked_height());
+        // assertEquals(outPoint, chainAssetLockProof.getOut_point());
+
+        AssetLockProof instantProof = new AssetLockProof(instantAssetLockProof);
+        assertEquals(AssetLockProof.Tag.Instant, instantProof.getTag());
+        assertArrayEquals(identifier, instantProof.getInstant().get_0().getInstant_lock());
+        assertArrayEquals(identifier, instantProof.getInstant().get_0().getTransaction());
+        assertEquals(0, instantProof.getInstant().get_0().getOutput_index());
+
+        AssetLockProof chainProof = new AssetLockProof(chainAssetLockProof);
+        assertEquals(AssetLockProof.Tag.Chain, chainProof.getTag());
+        assertEquals(2_000_000, chainProof.getChain().get_0().getCore_chain_locked_height());
+        // assertEquals(outPoint, chainProof.getChain().get_0().getOut_point());
+
+        outPoint.delete();
+    }
 //
 //    @Test
 //    public void traitTest() {

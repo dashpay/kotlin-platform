@@ -9,14 +9,19 @@ package org.dashj.platform.sdk.platform
 import org.bitcoinj.core.ECKey
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.evolution.AssetLockTransaction
+import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.quorums.InstantSendLock
 import org.dashj.platform.dpp.identifier.Identifier
-import org.dashj.platform.dpp.identity.ChainAssetLockProof
-import org.dashj.platform.dpp.identity.Identity
-import org.dashj.platform.dpp.identity.IdentityPublicKey
-import org.dashj.platform.dpp.identity.InstantAssetLockProof
+import org.dashj.platform.dpp.identity.*
+import org.dashj.platform.sdk.AssetLockProof
+import org.dashj.platform.sdk.IdentityV0
+import org.dashj.platform.sdk.KeyID
+import org.dashj.platform.sdk.Revision
+import org.dashj.platform.sdk.callbacks.Signer
+import org.dashj.platform.sdk.dashsdk
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigInteger
 
 class Identities(val platform: Platform) {
 
@@ -28,7 +33,8 @@ class Identities(val platform: Platform) {
         signedLockTransaction: AssetLockTransaction,
         instantLock: InstantSendLock,
         privateKeys: List<ByteArray>,
-        identityPublicKeys: List<IdentityPublicKey>
+        identityPublicKeys: List<IdentityPublicKey>,
+        signer: Signer
     ): Identity {
         return register(
             0,
@@ -36,7 +42,8 @@ class Identities(val platform: Platform) {
             instantLock,
             signedLockTransaction.assetLockPublicKey,
             privateKeys,
-            identityPublicKeys
+            identityPublicKeys,
+            signer
         )
     }
 
@@ -46,26 +53,48 @@ class Identities(val platform: Platform) {
         instantLock: InstantSendLock,
         assetLockPrivateKey: ECKey,
         privateKeys: List<ByteArray>,
-        identityPublicKeys: List<IdentityPublicKey>
+        identityPublicKeys: List<IdentityPublicKey>,
+        signer: Signer
     ): Identity {
         try {
             val assetLock = InstantAssetLockProof(outputIndex, transaction, instantLock)
+            val identityId = assetLock.createIdentifier()
+//            val identityCreateTransition = platform.dpp.identity.createIdentityCreateTransition(assetLock, identityPublicKeys)
 
-            val identityCreateTransition = platform.dpp.identity.createIdentityCreateTransition(assetLock, identityPublicKeys)
+//            for (i in identityPublicKeys.indices) {
+//                identityCreateTransition.signByPrivateKey(privateKeys[i], identityPublicKeys[i].type)
+//                identityPublicKeys[i].signature = identityCreateTransition.signature
+//                identityCreateTransition.signature = null
+//            }
 
-            for (i in identityPublicKeys.indices) {
-                identityCreateTransition.signByPrivateKey(privateKeys[i], identityPublicKeys[i].type)
-                identityPublicKeys[i].signature = identityCreateTransition.signature
-                identityCreateTransition.signature = null
-            }
+//            identityCreateTransition.signByPrivateKey(assetLockPrivateKey)
+//            platform.broadcastStateTransition(identityCreateTransition)
 
-            identityCreateTransition.signByPrivateKey(assetLockPrivateKey)
-            platform.broadcastStateTransition(identityCreateTransition)
+
+            val identityV0 = IdentityV0(
+                identityId.toNative(),
+                identityPublicKeys.associateBy({ KeyID(it.id) }, { it.toNative() }),
+                BigInteger.ZERO,
+                Revision(1)
+            )
+            val identity = RustIdentity(identityV0)
+            val identityResult = dashsdk.platformMobilePutPutIdentity(
+                identity,
+                AssetLockProof(assetLock.toNative()),
+                assetLockPrivateKey.pubKey,
+                BigInteger.valueOf(signer.signerCallback),
+                BigInteger.valueOf(platform.client.contextProviderFunction),
+                BigInteger.ZERO,
+                platform.isTestNet()
+            )
+
+
 
             // get the identity from Platform since it cannot be recreated from the transition with the balance, etc
-            platform.stateRepository.addValidIdentity(identityCreateTransition.identityId)
+//            platform.stateRepository.addValidIdentity(identityCreateTransition.identityId)
 
-            return Identity(identityCreateTransition.identityId, identityPublicKeys, 0, 0, identityCreateTransition.protocolVersion)
+//            return Identity(identityCreateTransition.identityId, identityPublicKeys, 0, 0, identityCreateTransition.protocolVersion)
+            return Identity(identityResult.unwrap())
         } catch (e: Exception) {
             log.info("registerIdentity failure: $e")
             throw e
@@ -78,27 +107,46 @@ class Identities(val platform: Platform) {
         coreHeight: Long,
         assetLockPrivateKey: ECKey,
         privateKeys: List<ByteArray>,
-        identityPublicKeys: List<IdentityPublicKey>
+        identityPublicKeys: List<IdentityPublicKey>,
+        signer: Signer
     ): Identity {
         try {
+            log.info("AssetLockTransaction: ${transaction.txId}")
             val assetLock = ChainAssetLockProof(coreHeight, transaction.getOutput(outputIndex).outPointFor)
-
-            val identityCreateTransition = platform.dpp.identity.createIdentityCreateTransition(assetLock, identityPublicKeys)
-
-            for (i in identityPublicKeys.indices) {
-                identityCreateTransition.signByPrivateKey(privateKeys[i], identityPublicKeys[i].type)
-                identityPublicKeys[i].signature = identityCreateTransition.signature
-                identityCreateTransition.signature = null
-            }
-
-            identityCreateTransition.signByPrivateKey(assetLockPrivateKey)
-
-            platform.broadcastStateTransition(identityCreateTransition)
-
-            // get the identity from Platform since it cannot be recreated from the transition with the balance, etc
-            platform.stateRepository.addValidIdentity(identityCreateTransition.identityId)
-
-            return Identity(identityCreateTransition.identityId, identityPublicKeys, 0, 0, identityCreateTransition.protocolVersion)
+            val identityId = assetLock.createIdentifier()
+//            val identityCreateTransition = platform.dpp.identity.createIdentityCreateTransition(assetLock, identityPublicKeys)
+//
+//            for (i in identityPublicKeys.indices) {
+//                identityCreateTransition.signByPrivateKey(privateKeys[i], identityPublicKeys[i].type)
+//                identityPublicKeys[i].signature = identityCreateTransition.signature
+//                identityCreateTransition.signature = null
+//            }
+//
+//            identityCreateTransition.signByPrivateKey(assetLockPrivateKey)
+//
+//            platform.broadcastStateTransition(identityCreateTransition)
+//
+//            // get the identity from Platform since it cannot be recreated from the transition with the balance, etc
+//            platform.stateRepository.addValidIdentity(identityCreateTransition.identityId)
+//
+//            return Identity(identityCreateTransition.identityId, identityPublicKeys, 0, 0, identityCreateTransition.protocolVersion)
+            val identityV0 = IdentityV0(
+                identityId.toNative(),
+                identityPublicKeys.associateBy({ KeyID(it.id) }, { it.toNative() }),
+                BigInteger.ZERO,
+                Revision(1)
+            )
+            val identity = RustIdentity(identityV0)
+            val identityResult = dashsdk.platformMobilePutPutIdentity(
+                identity,
+                AssetLockProof(assetLock.toNative()),
+                assetLockPrivateKey.privKeyBytes,
+                BigInteger.valueOf(signer.signerCallback),
+                BigInteger.valueOf(platform.client.contextProviderFunction),
+                BigInteger.ZERO,
+                platform.isTestNet()
+            )
+            return Identity(identityResult.unwrap())
         } catch (e: Exception) {
             log.info("registerIdentity failure: $e")
             throw e
