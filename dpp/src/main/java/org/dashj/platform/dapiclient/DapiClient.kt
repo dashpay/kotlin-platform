@@ -13,6 +13,8 @@ import com.google.common.primitives.UnsignedBytes
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import org.bitcoinj.core.BloomFilter
 import org.bitcoinj.core.Context
 import org.bitcoinj.core.Sha256Hash
@@ -39,6 +41,7 @@ import org.dashj.platform.dapiclient.provider.DAPIAddress
 import org.dashj.platform.dapiclient.provider.DAPIAddressListProvider
 import org.dashj.platform.dapiclient.provider.ListDAPIAddressProvider
 import org.dashj.platform.dapiclient.provider.SimplifiedMasternodeListDAPIAddressProvider
+import org.dashj.platform.dapiclient.rest.DapiService
 import org.dashj.platform.dpp.DashPlatformProtocol
 import org.dashj.platform.dpp.contract.DataContract
 import org.dashj.platform.dpp.contract.DataContractTransition
@@ -60,6 +63,8 @@ import org.dashj.platform.sdk.callbacks.ContextProvider
 import org.dashj.platform.sdk.dashsdk
 import org.dashj.platform.sdk.platform.Documents
 import org.slf4j.LoggerFactory
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigInteger
 import java.util.Date
 import java.util.concurrent.Callable
@@ -82,9 +87,9 @@ class DapiClient(
     var lastUsedAddress: DAPIAddress? = null
 
     // jRPC Properties
-    //private lateinit var retrofit: Retrofit
-    //private lateinit var dapiService: DapiService
-    // private val debugOkHttpClient: OkHttpClient
+    private lateinit var retrofit: Retrofit
+    private lateinit var dapiService: DapiService
+    private val debugOkHttpClient: OkHttpClient
     private val debugJrpc = true
     private var initializedJRPC = false
     //private val defaultShouldRetryCallback = DefaultShouldRetryCallback()
@@ -147,15 +152,15 @@ class DapiClient(
         get() = if (useContextProvider) contextProvider.quorumPublicKeyCallback else 0L
 
     init {
-//        val loggingInterceptor = HttpLoggingInterceptor { msg: String? -> logger.info(msg) }
-//        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
-//
-//        debugOkHttpClient = OkHttpClient.Builder()
-//            .addInterceptor(loggingInterceptor)
-//            .connectTimeout(DEFAULT_HTTP_TIMEOUT, TimeUnit.SECONDS)
-//            .readTimeout(DEFAULT_HTTP_TIMEOUT, TimeUnit.SECONDS)
-//            .writeTimeout(DEFAULT_HTTP_TIMEOUT, TimeUnit.SECONDS)
-//            .build()
+        val loggingInterceptor = HttpLoggingInterceptor { msg: String? -> logger.info(msg) }
+        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+
+        debugOkHttpClient = OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(DEFAULT_HTTP_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(DEFAULT_HTTP_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(DEFAULT_HTTP_TIMEOUT, TimeUnit.SECONDS)
+            .build()
 
         if (banBaseTime != DEFAULT_BASE_BAN_TIME) {
             this.dapiAddressListProvider.setBanBaseTime(banBaseTime)
@@ -999,7 +1004,13 @@ class DapiClient(
      */
     fun getBestBlockHash(): String? {
         logger.info("getBestBlockHash(): jRPC")
-        return null
+        val service = getJRPCService()
+        val response = service.getBestBlockHash(JsonRPCRequest("getBestBlockHash", mapOf())).execute()
+        if (response.isSuccessful) {
+            return response.body()!!.result
+        } else {
+            throw ResponseException(response.code(), response.errorBody().toString())
+        }
     }
 
     /**
@@ -1007,7 +1018,15 @@ class DapiClient(
      * @return String?
      */
     fun getBlockHash(height: Int): String? {
-        return null
+        logger.info("getBlockHash(): jRPC")
+        val service = getJRPCService()
+        val parameters = mapOf("height" to height)
+        val response = service.getBlockHash(JsonRPCRequest("getBlockHash", parameters)).execute()
+        if (response.isSuccessful) {
+            return response.body()!!.result
+        } else {
+            throw ResponseException(response.code(), response.errorBody().toString())
+        }
     }
 
     /**
@@ -1015,29 +1034,40 @@ class DapiClient(
      * @return String?
      */
     fun getMnListDiff(baseBlockHash: String, blockHash: String): Map<String, Any>? {
-        return mapOf()
+        logger.info("getMnListDiff(): jRPC")
+        val service = getJRPCService()
+        val parameters = mapOf(
+            "baseBlockHash" to baseBlockHash,
+            "blockHash" to blockHash
+        )
+        val response = service.getMnListDiff(JsonRPCRequest("getMnListDiff", parameters)).execute()
+        if (response.isSuccessful) {
+            return response.body()!!.result
+        } else {
+            throw ResponseException(response.code(), response.errorBody().toString())
+        }
     }
 
     // Internal Methods
 
-//    private fun getJRPCService(): DapiService {
-//        if (initializedJRPC) {
-//            return dapiService
-//        }
-//
-//        val mnIP = dapiAddressListProvider.getLiveAddress().host
-//
-//        logger.info("Connecting to GRPC host: $mnIP:${DAPIAddress.DEFAULT_JRPC_PORT}")
-//
-//        retrofit = Retrofit.Builder()
-//            .addConverterFactory(GsonConverterFactory.create())
-//            .baseUrl("https://$mnIP:${DAPIAddress.DEFAULT_JRPC_PORT}/")
-//            .client(if (debugJrpc) debugOkHttpClient else OkHttpClient())
-//            .build()
-//        dapiService = retrofit.create(DapiService::class.java)
-//
-//        return dapiService
-//    }
+    private fun getJRPCService(): DapiService {
+        if (initializedJRPC) {
+            return dapiService
+        }
+
+        val mnIP = dapiAddressListProvider.getLiveAddress().host
+
+        logger.info("Connecting to GRPC host: $mnIP:${DAPIAddress.DEFAULT_JRPC_PORT}")
+
+        retrofit = Retrofit.Builder()
+            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl("https://$mnIP:${DAPIAddress.DEFAULT_JRPC_PORT}/")
+            .client(if (debugJrpc) debugOkHttpClient else OkHttpClient())
+            .build()
+        dapiService = retrofit.create(DapiService::class.java)
+
+        return dapiService
+    }
 
 //    fun extractException(exception: StatusRuntimeException): ConcensusException {
 //        val trailers = GrpcExceptionInfo(exception)

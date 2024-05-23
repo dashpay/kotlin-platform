@@ -30,10 +30,14 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 
     implementation 'co.nstant.in:cbor:0.8'
+    implementation 'com.squareup.retrofit2:retrofit:2.6.4'
+    implementation 'com.squareup.retrofit2:converter-gson:2.6.4'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.8.0'
+    implementation 'com.squareup.moshi:moshi:1.11.0'
+    implementation 'com.squareup.moshi:moshi-kotlin:1.11.0'
     testImplementation 'com.squareup.retrofit2:retrofit-mock:2.4.0'
     testImplementation 'com.squareup.okhttp3:mockwebserver:3.11.0'
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0-RC1"
-    testImplementation 'com.squareup.retrofit2:retrofit-mock:2.4.0'
     testImplementation 'com.squareup.okhttp3:mockwebserver:3.11.0'
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0-RC1"
 
