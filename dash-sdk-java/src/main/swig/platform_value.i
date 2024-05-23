@@ -4,8 +4,8 @@
     }
 #define CTOR_CLONE(RTYPE, CTYPE, CLONE_FN) \
     platform_value_Value(CTYPE value) { \
-        CTYPE clone = CLONE_FN(value); \
-        return platform_value_Value_##RTYPE##_ctor(clone); \
+        CTYPE copy = CLONE_FN(value); \
+        return platform_value_Value_##RTYPE##_ctor(copy); \
     }
 
 #define CTOR_SIZE_CLONE(RTYPE, CTYPE, CLONE_FN) \
@@ -63,8 +63,11 @@ CTYPE get##RTYPE() { \
         }
     }
     // CTOR(EnumU8, Vec_u8) // the problem here that Bytes uses Vec_u8
-    CTOR(EnumString, Vec_String*)
-    CTOR(Identifier, platform_value_Hash256*)
+    platform_value_Value(Vec_String * value, bool slice) {
+        return platform_value_Value_EnumString_ctor(value);
+    }
+    //CTOR(EnumString, Vec_String*)
+    CTOR_CLONE(Identifier, platform_value_Hash256*, clone)
     CTOR(Float, double)
     CTOR(Bool, bool)
     platform_value_Value() {

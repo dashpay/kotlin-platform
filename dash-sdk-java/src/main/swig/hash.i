@@ -3,11 +3,12 @@
 
 %rename (Hash256) platform_value_Hash256;
 %extend platform_value_Hash256 {
-    platform_value_Hash256(uint8_t (*byteArray)[32]) {
-        return platform_value_Hash256_ctor(Arr_u8_32_ctor(32, (uint8_t*)byteArray));
+    platform_value_Hash256(Arr_u8_32 * byteArray) {
+        Arr_u8_32 * copy = clone(byteArray);
+        return platform_value_Hash256_ctor(copy);
     }
-
     ~platform_value_Hash256() {
+        printf("~platform_value_Hash256(0x%ld)\n", $self);
         platform_value_Hash256_destroy($self);
     }
     bool objectEquals(platform_value_Hash256* other) {

@@ -18,7 +18,7 @@
     }
 
     uint8_t (*getBytes())[32] {
-        if ($self == nullptr || $self->_0 || $self->_0->_0) {
+        if ($self == nullptr || $self->_0 == nullptr || $self->_0->_0 == nullptr) {
             throw std::invalid_argument("Identifier or IdentifierBytes32 is null");
         }
         return (uint8_t (*)[32])$self->_0->_0->values; // Return the modified array
