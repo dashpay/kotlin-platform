@@ -13,6 +13,8 @@ import org.dashj.platform.dpp.ProtocolVersion
 import org.dashj.platform.dpp.errors.InvalidDocumentTypeError
 import org.dashj.platform.dpp.identifier.Identifier
 
+typealias RustDataContract = org.dashj.platform.sdk.DataContract
+
 class DataContract(
     protocolVersion: Int,
     val id: Identifier,
@@ -24,6 +26,18 @@ class DataContract(
 ) : BaseObject(protocolVersion) {
 
     companion object DEFAULTS {
+        fun from(dataContract: RustDataContract): DataContract {
+            return DataContract(
+                ProtocolVersion.latestVersion,
+                Identifier.from(dataContract.id),
+                Identifier.from(dataContract.id),
+                1,
+                "",
+                dataContract.doc_types.associateBy({it}, { "empty" }).toMutableMap() // dataContract.doc_types.keys()
+                //TODO: need List<String> from Vec_String
+            )
+        }
+
         const val SCHEMA = "https://schema.dash.org/dpp-0-4-0/meta/data-contract"
     }
 
