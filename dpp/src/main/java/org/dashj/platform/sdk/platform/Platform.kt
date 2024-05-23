@@ -9,9 +9,12 @@ package org.dashj.platform.sdk.platform
 import com.google.common.base.Stopwatch
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
+import org.bitcoinj.core.AbstractBlockChain
 import kotlin.collections.HashMap
 import org.bitcoinj.core.ECKey
 import org.bitcoinj.core.NetworkParameters
+import org.bitcoinj.core.StoredBlock
+import org.bitcoinj.core.listeners.NewBestBlockListener
 import org.bitcoinj.evolution.SimplifiedMasternodeListManager
 import org.bitcoinj.params.MainNetParams
 import org.dashj.platform.dapiclient.DapiClient
@@ -36,6 +39,12 @@ class Platform(val params: NetworkParameters) {
         fun mockDAPI() = MOCK_DAPI
     }
 
+    private var _coreBlockHeight: Long = 0
+    private var _blockHeight: Long = 0
+    val coreBlockHeight: Long
+        get() = _coreBlockHeight
+    val blockHeight: Long
+        get() = _blockHeight
     var stateRepository = if (mockDAPI()) {
         MockPlatformStateRepository(this)
     } else {
@@ -224,4 +233,18 @@ class Platform(val params: NetworkParameters) {
     }
 
     fun isTestNet(): Boolean = params.id == NetworkParameters.ID_MAINNET
+
+    private val newBestBlockListener = NewBestBlockListener { block ->
+        if (block != null) {
+            _coreBlockHeight = block.height.toLong()
+        }
+    }
+
+    fun setBlockChain(blockChain: AbstractBlockChain?) {
+        if (blockChain != null) {
+            blockChain.addNewBestBlockListener(newBestBlockListener)
+            _coreBlockHeight = blockChain.bestChainHeight.toLong()
+        }
+    }
+
 }

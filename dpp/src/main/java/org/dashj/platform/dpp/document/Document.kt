@@ -13,9 +13,11 @@ import org.dashj.platform.dpp.ProtocolVersion
 import org.dashj.platform.dpp.contract.DataContract
 import org.dashj.platform.dpp.deepCopy
 import org.dashj.platform.dpp.identifier.Identifier
+import org.dashj.platform.dpp.identifier.RustIdentifier
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.sdk.*
 import org.dashj.platform.sdk.Document.Tag.V0
-import org.dashj.platform.sdk.PlatformValue
+import java.math.BigInteger
 import kotlin.collections.HashMap
 
 typealias RustDocument = org.dashj.platform.sdk.Document
@@ -64,6 +66,47 @@ fun convertPlatformValueMap(map: PlatformValue): Map<String, Any?> {
     return hashMap
 }
 
+fun convertListToPlatformValue(list: List<Any>): PlatformValue {
+    return PlatformValue(
+        list.map { item ->
+            convertToPlatformValue(item)
+        }
+    )
+}
+
+fun convertMapToPlatformValue(map: Map<String, Any?>): PlatformValue {
+    val result = hashMapOf<PlatformValue, PlatformValue>()
+    map.forEach { (key, value) ->
+        result[PlatformValue(key)] = convertToPlatformValue(value)
+    }
+    return PlatformValue(PlatformValueMap(result))
+}
+
+fun convertToPlatformValue(value: Any?) : PlatformValue {
+    return when(value) {
+        is String -> PlatformValue(value)
+        is Byte -> PlatformValue(value)
+        is Short -> PlatformValue(value)
+        is Int -> PlatformValue(value)
+        is Long -> PlatformValue(value)
+        is BigInteger -> PlatformValue(value)
+        is ByteArray -> PlatformValue(value, true)
+        is Identifier -> PlatformValue(Hash256(value.toBuffer()))
+        is RustIdentifier -> PlatformValue(Hash256(value._0._0))
+        is List<*> -> convertListToPlatformValue(value as List<Any>)
+        is Map<*, *> -> convertMapToPlatformValue(value as Map<String, Any?>)
+        else -> if (value == null) PlatformValue() else error("no conversion for $value")
+    }
+}
+
+fun convertToPlatformProperties(map: Map<String, Any?>) : Map<String, PlatformValue> {
+    val result = hashMapOf<String, PlatformValue>()
+    map.forEach { (key, value) ->
+        result[key] = convertToPlatformValue(value)
+    }
+    return result
+}
+
 fun convertProperties(properties: Map<String, PlatformValue>): Map<String, Any?> {
     val result = hashMapOf<String, Any?>()
 
@@ -96,7 +139,7 @@ class Document : BaseObject {
         this.dataContractId = Identifier.from(data.remove("\$dataContractId")!!)
         this.ownerId = Identifier.from(data.remove("\$ownerId")!!)
         this.revision = if (data.containsKey("\$revision")) {
-            data.remove("\$revision") as Int
+            data.remove("\$revision") as Long
         } else {
             DocumentCreateTransition.INITIAL_REVISION
         }.toLong()
@@ -189,5 +232,25 @@ class Document : BaseObject {
     fun setRevision(revision: Long): Document {
         this.revision = revision
         return this
+    }
+
+    fun toNative(): RustDocument? {
+        return RustDocument(
+            DocumentV0(
+                id.toNative(),
+                ownerId.toNative(),
+                convertToPlatformProperties(data),
+                Revision(revision.toInt()),
+                createdAt?.let { TimestampMillis(it) },
+                updatedAt?.let { TimestampMillis(it) },
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+            )
+        )
     }
 }

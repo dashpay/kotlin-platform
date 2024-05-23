@@ -13,6 +13,7 @@ import org.bitcoinj.quorums.InstantSendLock
 import org.dashj.platform.dapiclient.errors.NotFoundException
 import org.dashj.platform.dapiclient.model.DocumentQuery
 import org.dashj.platform.dpp.Factory
+import org.dashj.platform.dpp.ProtocolVersion
 import org.dashj.platform.dpp.StateRepository
 import org.dashj.platform.dpp.contract.DataContract
 import org.dashj.platform.dpp.document.Document

@@ -8,6 +8,7 @@ package org.dashj.platform.dapiclient.model
 
 import com.google.common.base.Preconditions
 import org.dashj.platform.dpp.BaseObject
+import org.dashj.platform.dpp.document.convertToPlatformValue
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identifier.RustIdentifier
 import org.dashj.platform.dpp.util.Cbor
@@ -146,19 +147,7 @@ class DocumentQuery private constructor(
                     val field = clause[0] as String
                     val operator = operators[clause[1]]
                     val value = clause[2]
-                    val valueObject = when (value) {
-                        is String -> PlatformValue(value)
-                        is Byte -> PlatformValue(value)
-                        is Short -> PlatformValue(value)
-                        is Int -> PlatformValue(value)
-                        is Long -> PlatformValue(value)
-                        is BigInteger -> PlatformValue(value)
-                        is ByteArray -> PlatformValue(value, false)
-                        is Identifier -> PlatformValue(Hash256(value.toBuffer()))
-                        is RustIdentifier -> PlatformValue(Hash256(value._0._0))
-                        //is null -> PlatformValue()
-                        else -> throw IllegalStateException("value $value was not processed")
-                    }
+                    val valueObject = convertToPlatformValue(value)
                     WhereClause(field, operator, valueObject)
                 }
 
