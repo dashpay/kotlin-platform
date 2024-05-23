@@ -540,7 +540,17 @@ class DapiClient(
     ): DataContract? {
         logger.info("getDataContract(${contractIdByteArray.toBase58()})")
         val contractId = Identifier.from(contractIdByteArray)
-        return null
+
+        val dataContract = dashsdk.platformMobileDataContractsFetchDataContract(
+            contractId.toNative(),
+            BigInteger.valueOf(contextProviderFunction),
+            BigInteger.ZERO
+        )
+        return try {
+            DataContract.from(dataContract.unwrap())
+        } catch (e: Exception) {
+            null
+        }
     }
 
 //    private fun extractProof(inclusion: ByteArray, noninclusion: ByteArray):
@@ -660,7 +670,7 @@ class DapiClient(
             type,
             documentQuery.encodeWhere(),
             documentQuery.encodeOrderBy(),
-            documentQuery.limit.toLong(),
+            if (documentQuery.limit == -1) 100 else documentQuery.limit.toLong(),
             start,
             BigInteger.valueOf(contextProviderFunction),
             BigInteger.ZERO
