@@ -42,6 +42,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "myexception.i"
 
 // generics
+%include "generics/primitive_lists.i"
 %include "generics/lists.i"
 %include "generics/maps.i"
 %include "generics/result.i"
@@ -51,6 +52,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "binary_data.i"
 %include "contract_bounds.i"
 %include "drive.i"
+%include "data_contract.i"
 %include "document.i"
 %include "document_properties.i"
 %include "hash.i"
