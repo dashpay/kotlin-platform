@@ -142,3 +142,5 @@
 
 DEFINE_RESULT(Identity, String, Result_ok_dpp_identity_identity_Identity_err_String, platform_mobile_identity_Identity_clone);
 DEFINE_LIST_RESULT(Document, String, Result_ok_Vec_dpp_document_Document_err_String, dpp_document_Document);
+DEFINE_RESULT(Document, String, Result_ok_dpp_document_Document_err_String, clone);
+DEFINE_RESULT(DataContract, String, Result_ok_platform_mobile_data_contracts_DataContractFFI_err_String, clone);
