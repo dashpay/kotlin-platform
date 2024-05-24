@@ -8,17 +8,12 @@ package org.dashj.platform.dapiclient.model
 
 import com.google.common.base.Preconditions
 import org.dashj.platform.dpp.BaseObject
-import org.dashj.platform.dpp.document.convertToPlatformValue
 import org.dashj.platform.dpp.identifier.Identifier
-import org.dashj.platform.dpp.identifier.RustIdentifier
-import org.dashj.platform.dpp.util.Cbor
-import org.dashj.platform.sdk.Hash256
+import org.dashj.platform.dpp.util.convertToPlatformValue
 import org.dashj.platform.sdk.OrderClause
-import org.dashj.platform.sdk.PlatformValue
 import org.dashj.platform.sdk.WhereClause
 import org.dashj.platform.sdk.WhereOperator
 import org.json.JSONArray
-import java.math.BigInteger
 
 /**
  * These options are used by getDocument to filter results
