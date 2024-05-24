@@ -2,7 +2,7 @@
 %extend platform_value_types_binary_data_BinaryData {
     platform_value_types_binary_data_BinaryData(Vec_u8 *o_0) {
         //printf("BinaryData(%lx)\n", (uint64_t)o_0);
-        return platform_value_types_binary_data_BinaryData_ctor(o_0);
+        return platform_value_types_binary_data_BinaryData_ctor(clone(o_0));
     }
     ~platform_value_types_binary_data_BinaryData() {
         //printf("~BinaryData(%lx)\n", (uint64_t)$self);

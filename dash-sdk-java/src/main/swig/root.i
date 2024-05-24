@@ -1,35 +1,26 @@
 %module dashsdk
 
 %{
-//extern "C" {
 #include "config.h"
 #include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
-//}
+
 #include <stdlib.h>
 #include "dpp.h"
 #include "conversions.h"
 #include <ctime>
 #include "wrapper.h"
 #include "clone.h"
+#include <vector>
+#include <iosfwd>
 MemoryFactory * MemoryFactory::instance = new MemoryFactory();
 MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %}
-//%include "enumsimple.swg"
+
 %include "enums.swg"
-%ignore dpp_identity_identity_IdentityFactory_TraitObject::object;
-%ignore dpp_identity_identity_IdentityFactory_TraitObject::vtable;
-%ignore IdentityFactory_VTable;
-%ignore IHaveChainSettings_TraitObject::object;
-%ignore IHaveChainSettings_TraitObject::vtable;
-%ignore IHaveChainSettings_VTable;
 %nodefaultctor;
 
 %rename("%(lowercamelcase)s", %$isfunction) "";
 
-%ignore Vec_u8;
-%ignore Arr_u8_36;
-%ignore Arr_u8_32;
-%ignore Arr_u8_20;
 %ignore __int128;
 %ignore i128;
 
@@ -46,6 +37,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "generics/lists.i"
 %include "generics/maps.i"
 %include "generics/result.i"
+%include "generics/byte_array.i"
 
 // Platform Related Structures
 %include "i128.i"
@@ -66,9 +58,6 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "uint8_array_20.i"
 %include "timestamp_millis.i"
 %include "enums.i"
-%include "Arr_u8_36.i"
-%include "Arr_u8_32.i"
-%include "Arr_u8_20.i"
 %include "platform_value.i"
 %include "platform_value_array.i"
 
@@ -77,7 +66,10 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "rs_sdk.i"
 
 // typemaps
-%include "Vec_u8.i"
+DEFINE_BYTE_ARRAY(Arr_u8_36, 36);
+DEFINE_BYTE_ARRAY(Arr_u8_32, 32);
+DEFINE_BYTE_ARRAY(Arr_u8_20, 20);
+DEFINE_BYTE_ARRAY(Vec_u8, -1);
 
 // Java Classes
 %typemap(javaimports) SWIGTYPE, SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*) %{

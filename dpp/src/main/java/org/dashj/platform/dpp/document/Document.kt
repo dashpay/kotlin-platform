@@ -13,108 +13,16 @@ import org.dashj.platform.dpp.ProtocolVersion
 import org.dashj.platform.dpp.contract.DataContract
 import org.dashj.platform.dpp.deepCopy
 import org.dashj.platform.dpp.identifier.Identifier
-import org.dashj.platform.dpp.identifier.RustIdentifier
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.dpp.util.convertProperties
+import org.dashj.platform.dpp.util.convertToPlatformProperties
 import org.dashj.platform.sdk.*
 import org.dashj.platform.sdk.Document.Tag.V0
-import java.math.BigInteger
 import kotlin.collections.HashMap
 
 typealias RustDocument = org.dashj.platform.sdk.Document
 
-fun convertPlatformValue(value: PlatformValue): Any? {
-    return when (value.tag) {
-        PlatformValue.Tag.U128 -> value.u128
-        PlatformValue.Tag.I128 -> value.i128
-        PlatformValue.Tag.U64 -> value.u64
-        PlatformValue.Tag.I64 -> value.i64
-        PlatformValue.Tag.U32 -> value.u32
-        PlatformValue.Tag.I32 -> value.i32
-        PlatformValue.Tag.U16 -> value.u16
-        PlatformValue.Tag.I16 -> value.i16
-        PlatformValue.Tag.U8 -> value.u8
-        PlatformValue.Tag.I8 -> value.i8
-        PlatformValue.Tag.Bytes -> value.bytes
-        PlatformValue.Tag.Bytes20 -> value.bytes20
-        PlatformValue.Tag.Bytes32 -> value.bytes32
-        PlatformValue.Tag.Bytes36 -> value.bytes36
-        //PlatformValue.Tag.EnumU8 -> value.enumU8
-        PlatformValue.Tag.EnumString -> value.enumString
-        PlatformValue.Tag.Identifier -> Identifier(value.identifier.bytes)
-        PlatformValue.Tag.Float -> value.float
-        PlatformValue.Tag.Text -> value.text
-        PlatformValue.Tag.Bool -> value.bool
-        PlatformValue.Tag.Null -> null
-        PlatformValue.Tag.Array -> convertPlatformValueArray(value)
-        PlatformValue.Tag.Map -> convertPlatformValueMap(value)
-        else -> throw error("Unsupported Value ${value.tag}")
-    }
-}
 
-fun convertPlatformValueArray(array: PlatformValue): List<Any?> {
-    require(array.tag == PlatformValue.Tag.Array)
-    return array.array.map { convertPlatformValue(it) }
-}
-
-fun convertPlatformValueMap(map: PlatformValue): Map<String, Any?> {
-    require(map.tag == PlatformValue.Tag.Map)
-    val hashMap = hashMapOf<String, Any?>()
-    map.map._0.forEach { (key, value) ->
-        require(key.tag == PlatformValue.Tag.Text)
-        hashMap[key.text] = convertPlatformValue(value)
-    }
-    return hashMap
-}
-
-fun convertListToPlatformValue(list: List<Any>): PlatformValue {
-    return PlatformValue(
-        list.map { item ->
-            convertToPlatformValue(item)
-        }
-    )
-}
-
-fun convertMapToPlatformValue(map: Map<String, Any?>): PlatformValue {
-    val result = hashMapOf<PlatformValue, PlatformValue>()
-    map.forEach { (key, value) ->
-        result[PlatformValue(key)] = convertToPlatformValue(value)
-    }
-    return PlatformValue(PlatformValueMap(result))
-}
-
-fun convertToPlatformValue(value: Any?) : PlatformValue {
-    return when(value) {
-        is String -> PlatformValue(value)
-        is Byte -> PlatformValue(value)
-        is Short -> PlatformValue(value)
-        is Int -> PlatformValue(value)
-        is Long -> PlatformValue(value)
-        is BigInteger -> PlatformValue(value)
-        is ByteArray -> PlatformValue(value, true)
-        is Identifier -> PlatformValue(Hash256(value.toBuffer()))
-        is RustIdentifier -> PlatformValue(Hash256(value._0._0))
-        is List<*> -> convertListToPlatformValue(value as List<Any>)
-        is Map<*, *> -> convertMapToPlatformValue(value as Map<String, Any?>)
-        else -> if (value == null) PlatformValue() else error("no conversion for $value")
-    }
-}
-
-fun convertToPlatformProperties(map: Map<String, Any?>) : Map<String, PlatformValue> {
-    val result = hashMapOf<String, PlatformValue>()
-    map.forEach { (key, value) ->
-        result[key] = convertToPlatformValue(value)
-    }
-    return result
-}
-
-fun convertProperties(properties: Map<String, PlatformValue>): Map<String, Any?> {
-    val result = hashMapOf<String, Any?>()
-
-    properties.forEach { (key, value) ->
-        result[key] = convertPlatformValue(value)
-    }
-    return result
-}
 
 class Document : BaseObject {
 
@@ -234,7 +142,7 @@ class Document : BaseObject {
         return this
     }
 
-    fun toNative(): RustDocument? {
+    fun toNative(): RustDocument {
         return RustDocument(
             DocumentV0(
                 id.toNative(),
