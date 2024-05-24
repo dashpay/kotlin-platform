@@ -23,8 +23,12 @@ endif()
 # Define the C source file
 set(C_SOURCE_FILE ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/build/generated/cpp/sdk.cpp
         ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/java_map_keyid_identitypublickey.cpp
+        ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/java_list_value.cpp
+        ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/java_map_string_value.cpp
         ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/java_map_valuemap.cpp
-        ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/context_provider.cpp)
+        ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/context_provider.cpp
+        ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/wrapper.h
+)
 
 # Define the Rust libraryn config
 set(RUST_LIB_NAME "dash_sdk_bindings")

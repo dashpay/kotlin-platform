@@ -5,8 +5,8 @@ edition = "2021"
 
 [dependencies]
 dash-sdk = { path = "../../../../../platform/packages/rs-sdk" }
-#rs-sdk = { git = "https://github.com/dashpay/platform.git", branch="v1.0-dev" }
-#rs-sdk = { path = "../../../../../platform-upstream/packages/rs-sdk" }
+#dash-sdk = { git = "https://github.com/dashpay/platform.git", branch="v1.0-dev" }
+#dash-sdk = { path = "../../../../../platform-upstream/packages/rs-sdk" }
 # bls-signatures = { path = "../../../../../bls-signatures/rust-bindings/bls-signatures"}
 
 
@@ -20,6 +20,17 @@ platform-value = { path = "../../../../../platform/packages/rs-platform-value" }
 dpp = { path = "../../../../../platform/packages/rs-dpp" }
 #rs-dapi-client = { path = "../../../../../platform/packages/rs-dapi-client" }
 #platform-version = { path = "../../../../../platform/packages/rs-platform-version" }
+dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
+    "std",
+    "secp-recovery",
+    "rand",
+    "signer",
+    "serde",
+], default-features = false, branch = "master" }
+drive = { path = "../../../../../platform/packages/rs-drive", default-features = false, features = [
+    "verify",
+    "serde",
+] }
 
 [build-dependencies]
 cbindgen = "0.26.0"
@@ -34,3 +45,7 @@ rs-x11-hash = { path = "../../../../../rs-x11-hash" }
 
 [lib]
 crate-type = ["staticlib"]
+
+[features]
+default = ["verify"]
+verify = []

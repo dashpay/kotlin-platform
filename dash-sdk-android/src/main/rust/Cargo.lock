@@ -794,6 +794,9 @@ name = "dapi-grpc"
 version = "1.0.0-dev.12"
 dependencies = [
  "dapi-grpc-macros",
+ "ferment",
+ "ferment-interfaces",
+ "ferment-macro",
  "futures-core",
  "platform-version",
  "prost 0.12.4",
@@ -888,7 +891,9 @@ version = "1.0.0"
 dependencies = [
  "cbindgen",
  "dash-sdk",
+ "dashcore",
  "dpp",
+ "drive",
  "ferment",
  "ferment-interfaces",
  "ferment-macro",
@@ -1096,6 +1101,9 @@ version = "1.0.0-dev.12"
 dependencies = [
  "byteorder",
  "dpp",
+ "ferment",
+ "ferment-interfaces",
+ "ferment-macro",
  "grovedb",
  "grovedb-costs",
  "grovedb-path",
@@ -1103,6 +1111,7 @@ dependencies = [
  "indexmap 2.2.6",
  "integer-encoding",
  "nohash-hasher",
+ "platform-value",
  "platform-version",
  "serde",
  "sqlparser",
@@ -1317,6 +1326,9 @@ dependencies = [
 [[package]]
 name = "ferment-interfaces"
 version = "0.1.4"
+dependencies = [
+ "indexmap 2.2.6",
+]
 
 [[package]]
 name = "ferment-macro"
@@ -2388,10 +2400,13 @@ dependencies = [
 name = "platform-mobile"
 version = "0.1.0"
 dependencies = [
+ "dapi-grpc",
  "dash-sdk",
+ "dashcore",
  "data-contracts",
  "dotenvy",
  "dpp",
+ "drive",
  "drive-proof-verifier",
  "envy",
  "ferment-interfaces",
@@ -2403,7 +2418,12 @@ dependencies = [
  "parking_lot 0.11.2",
  "platform-value",
  "platform-version",
+ "quote",
+ "rand",
  "serde",
+ "serde_json",
+ "sha2",
+ "syn 2.0.60",
  "tokio",
  "tracing",
  "tracing-subscriber",
