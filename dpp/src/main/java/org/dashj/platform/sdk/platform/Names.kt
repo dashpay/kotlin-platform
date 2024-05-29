@@ -98,9 +98,14 @@ class Names(val platform: Platform) {
 
         val label = if (nameSlice == -1) name else name.slice(0 until nameSlice)
 
-        val normalizedLabel = label.toLowerCase()
+        val normalizedLabel = normalizeString(label)
         return Pair(normalizedParentDomainName, normalizedLabel)
     }
+
+    private fun normalizeString(text: String) = text.lowercase()
+        .replace('o', '0')
+        .replace('i', '1')
+        .replace('l', '1')
 
     private fun getLabel(name: String): String {
         val nameSlice = name.indexOf('.')
@@ -139,12 +144,7 @@ class Names(val platform: Platform) {
         val map = hashMapOf<String, List<Document>?>(
             "create" to listOf(domainDocument)
         )
-        //val domainTransition = platform.dpp.document.createStateTransition(map)
-        //domainTransition.sign(identity.getPublicKeyById(1)!!, identityHDPrivateKey.privateKeyAsHex)
-
-        //log.info("domainTransition: ${domainTransition.toJSON()}")
-
-        //platform.broadcastStateTransition(domainTransition)
+        // TODO: add code for put document
 
         return domainDocument
     }
