@@ -172,7 +172,7 @@ class Names(val platform: Platform) {
 
         val fields = HashMap<String, Any?>(7)
         fields["label"] = getLabel(name)
-        fields["normalizedLabel"] = normalizedLabel
+        fields["normalizedLabel"] = normalizeString(normalizedLabel)
         fields["normalizedParentDomainName"] = normalizedParentDomainName
         fields["parentDomainName"] = normalizedParentDomainName
         fields["preorderSalt"] = preorderSaltBase
@@ -193,7 +193,7 @@ class Names(val platform: Platform) {
         // before normalizedLabel in the where clauses
         return DocumentQuery.Builder()
             .where("normalizedParentDomainName", "==", parentDomain)
-            .where("normalizedLabel", "==", name.toLowerCase())
+            .where("normalizedLabel", "==", normalizeString(name))
             .build()
     }
 
@@ -243,7 +243,7 @@ class Names(val platform: Platform) {
     fun search(text: String, parentDomain: String, retrieveAll: Boolean, limit: Int = -1, startAfter: Identifier? = null): List<Document> {
         val documentQuery = DocumentQuery.Builder()
             .where("normalizedParentDomainName", "==", parentDomain)
-            .where("normalizedLabel", "startsWith", text.toLowerCase())
+            .where("normalizedLabel", "startsWith", normalizeString(text))
             .orderBy("normalizedLabel", true)
             .limit(if (retrieveAll) -1 else limit)
             .startAfter(startAfter)
