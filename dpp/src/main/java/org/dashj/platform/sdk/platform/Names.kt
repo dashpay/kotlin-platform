@@ -68,11 +68,8 @@ class Names(val platform: Platform) {
             "create" to listOf(preorderDocument)
         )
 
-        // val preorderTransition = platform.dpp.document.createStateTransition(map)
-        // preorderTransition.sign(identity.getPublicKeyById(0)!!, identityHDPrivateKey.privateKeyAsHex)
-
+        // TODO: add code for put document
         return try {
-            //platform.broadcastStateTransition(preorderTransition)
             preorderDocument
         } catch (x: Exception) {
             null
@@ -173,10 +170,11 @@ class Names(val platform: Platform) {
 
         val (normalizedParentDomainName, normalizedLabel) = normalizedNames(name)
 
-        val fields = HashMap<String, Any?>(6)
+        val fields = HashMap<String, Any?>(7)
         fields["label"] = getLabel(name)
         fields["normalizedLabel"] = normalizedLabel
         fields["normalizedParentDomainName"] = normalizedParentDomainName
+        fields["parentDomainName"] = normalizedParentDomainName
         fields["preorderSalt"] = preorderSaltBase
         fields["records"] = records
         fields["subdomainRules"] = subdomainRules

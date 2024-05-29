@@ -50,23 +50,21 @@ import org.dashj.platform.dapiclient.MaxRetriesReachedException
 import org.dashj.platform.dapiclient.model.DocumentQuery
 import org.dashj.platform.dashpay.callback.*
 import org.dashj.platform.dpp.document.Document
-import org.dashj.platform.dpp.document.DocumentCreateTransition
 import org.dashj.platform.dpp.document.DocumentsBatchTransition
 import org.dashj.platform.dpp.errors.concensus.basic.identity.InvalidInstantAssetLockProofException
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.identity.IdentityPublicKey
 import org.dashj.platform.dpp.statetransition.StateTransitionIdentitySigned
+import org.dashj.platform.dpp.toBase64
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Cbor
 import org.dashj.platform.dpp.util.Converters
-import org.dashj.platform.sdk.KeyType
-import org.dashj.platform.sdk.Purpose
-import org.dashj.platform.sdk.SecurityLevel
-import org.dashj.platform.sdk.callbacks.Signer
+import org.dashj.platform.sdk.*
 import org.dashj.platform.sdk.platform.Names
 import org.dashj.platform.sdk.platform.Platform
 import org.slf4j.LoggerFactory
+import java.math.BigInteger
 
 class BlockchainIdentity {
 
@@ -368,6 +366,7 @@ class BlockchainIdentity {
 
     fun initializeAssetLockTransaction(creditFundingTransaction: AssetLockTransaction) {
         this.assetLockTransaction = creditFundingTransaction
+        this.uniqueId = assetLockTransaction!!.identityId
         registrationStatus = RegistrationStatus.NOT_REGISTERED
     }
 
@@ -589,18 +588,33 @@ class BlockchainIdentity {
     // MARK: Registering
     // Preorder stage
     fun registerPreorderedSaltedDomainHashesForUsernames(usernames: List<String>, keyParameter: KeyParameter?) {
-        val transition = createPreorderTransition(usernames)
-        if (transition == null) {
-            return
-        }
-        signStateTransition(transition, keyParameter)
+        val preorderDocuments = createPreorderDocuments(usernames)
 
-        platform.broadcastStateTransition(transition)
+        val signer = WalletSignerCallback(wallet!!, keyParameter)
 
-        for (string in usernames) {
+        var i = 0
+        preorderDocuments.forEach { preorder ->
+            // TODO: check for existing preorder
+            log.info("checking for preorder {} with saltedDomainHash {}", preorder.ownerId, (preorder.data["saltedDomainHash"]!! as ByteArray).toBase64())
+            if (platform.documents.get("dpns.preorder", DocumentQuery.builder().where(listOf("saltedDomainHash", "==", preorder.data["saltedDomainHash"]!!)).build()).isEmpty()) {
+                val documentResult = dashsdk.platformMobilePutPutDocument(
+                    preorder.toNative(),
+                    preorder.dataContractId!!.toNative(),
+                    preorder.type,
+                    identity!!.publicKeys[1].toNative(),
+                    BlockHeight(10000),
+                    CoreBlockHeight(platform.coreBlockHeight),
+                    BigInteger.valueOf(signer.signerCallback),
+                    BigInteger.valueOf(platform.client.contextProviderFunction),
+                    BigInteger.ZERO
+                )
+                val preorder = documentResult.unwrap()
+            }
+
+            val string = usernames[i++]
             var usernameStatusDictionary = usernameStatuses[string] as MutableMap<String, Any>
             if (usernameStatusDictionary == null) {
-                usernameStatusDictionary = HashMap<String, Any>()
+                usernameStatusDictionary = hashMapOf()
             }
             usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.PREORDER_REGISTRATION_PENDING
             usernameStatuses[string] = usernameStatusDictionary
@@ -610,8 +624,7 @@ class BlockchainIdentity {
 
         for (username in saltedDomainHashes.keys) {
             val saltedDomainHashData = saltedDomainHashes[username] as ByteArray
-            for (preorderTransition in transition.transitions) {
-                preorderTransition as DocumentCreateTransition
+            for (preorderTransition in preorderDocuments) {
                 if ((preorderTransition.data["saltedDomainHash"] as ByteArray).contentEquals(saltedDomainHashData)) {
                     val usernameStatus = if (usernameStatuses.containsKey(username)) {
                         usernameStatuses[username] as MutableMap<String, Any>
@@ -630,12 +643,27 @@ class BlockchainIdentity {
     }
 
     fun registerUsernameDomainsForUsernames(usernames: List<String>, keyParameter: KeyParameter?) {
-        val transition = createDomainTransition(usernames) ?: return
-        signStateTransition(transition, keyParameter)
+        val domainDocuments = createDomainDocuments(usernames)
 
-        platform.broadcastStateTransition(transition)
+        val signer = WalletSignerCallback(wallet!!, keyParameter)
 
-        for (string in usernames) {
+        var i = 0
+        domainDocuments.forEach { domain ->
+            val document_result = dashsdk.platformMobilePutPutDocument(
+                domain.toNative(),
+                domain.dataContractId!!.toNative(),
+                domain.type,
+                identity!!.publicKeys[1].toNative(),
+                BlockHeight(10000),
+                CoreBlockHeight(platform.coreBlockHeight),
+                BigInteger.valueOf(signer.signerCallback),
+                BigInteger.valueOf(platform.client.contextProviderFunction),
+                BigInteger.ZERO
+            )
+            val domain = document_result.unwrap()
+            log.info("domain doc id: {}", Identifier(domain.v0._0.id.bytes))
+
+            val string = usernames[i++]
             var usernameStatusDictionary = usernameStatuses[string] as MutableMap<String, Any>
             if (usernameStatusDictionary == null) {
                 usernameStatusDictionary = HashMap<String, Any>()
@@ -643,13 +671,13 @@ class BlockchainIdentity {
             usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.REGISTRATION_PENDING
             usernameStatuses[string] = usernameStatusDictionary
         }
-        saveUsernames(usernames, UsernameStatus.REGISTRATION_PENDING)
+
+       saveUsernames(usernames, UsernameStatus.REGISTRATION_PENDING)
 
         val usernamesLeft = ArrayList(usernames)
         for (username in usernames) {
             val normalizedName = username.toLowerCase()
-            for (nameDocumentTransition in transition.transitions) {
-                nameDocumentTransition as DocumentCreateTransition
+            for (nameDocumentTransition in domainDocuments) {
                 if (nameDocumentTransition.data["normalizedLabel"] == normalizedName) {
                     val usernameStatus = if (usernameStatuses.containsKey(username)) {
                         usernameStatuses[username] as MutableMap<String, Any>
