@@ -6,10 +6,9 @@
  */
 package dashj.org.platform
 
-import dashj.org.platform.RegisteredNames.Companion
 import org.dashj.platform.dapiclient.model.DocumentQuery
 import org.dashj.platform.dpp.document.Document
-import org.dashj.platform.dpp.toBase64
+import org.dashj.platform.dpp.util.ByteArray32
 import org.dashj.platform.sdk.Client
 import org.dashj.platform.sdk.client.ClientOptions
 import org.dashj.platform.sdk.platform.Documents
@@ -41,7 +40,7 @@ class PreorderedNames {
 
                     for (doc in documents) {
                         println(
-                            "Salted domain hash: " + (doc.data["saltedDomainHash"] as ByteArray).toBase64() +
+                            "Salted domain hash: " + (doc.data["saltedDomainHash"] as ByteArray32).toBase64() +
                                 " Identity: " + doc.ownerId
                         )
                     }
