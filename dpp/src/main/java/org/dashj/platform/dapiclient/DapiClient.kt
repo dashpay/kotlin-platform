@@ -444,12 +444,11 @@ class DapiClient(
      * Fetch the identity by id
      * @param id String
      * @param prove Whether to return the proof
-     * @return GetIdentityResponse?
+     * @return Identity?
      */
     fun getIdentity(
         id: ByteArray,
         prove: Boolean = false,
-        //retryCallback: GrpcMethodShouldRetryCallback = defaultShouldRetryCallback
     ): Identity? {
         logger.info("getIdentity(${id.toBase58()}, $prove)")
         val identityId = Identifier.from(id)
@@ -459,16 +458,16 @@ class DapiClient(
             BigInteger.ZERO
         )
         return try {
-            Identity(result.unwrap());
+            Identity(result.unwrap())
         } catch (e: Exception) {
-            null;
+            null
         }
     }
 
     /**
      * Fetch the identity by the first public key hash
      * @param pubKeyHash ByteArray
-     * @return ByteArray?
+     * @return Identity?
      */
     fun getIdentityByFirstPublicKey(pubKeyHash: ByteArray, prove: Boolean = false): Identity? {
         logger.info("getIdentityByFirstPublicKey(${pubKeyHash.toHex()})")
