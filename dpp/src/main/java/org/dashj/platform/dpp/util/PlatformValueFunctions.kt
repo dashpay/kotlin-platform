@@ -2,6 +2,10 @@ package org.dashj.platform.dpp.util
 
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identifier.RustIdentifier
+import org.dashj.platform.dpp.toBase58
+import org.dashj.platform.dpp.toBase64
+import org.dashj.platform.dpp.toBase64Padded
+import org.dashj.platform.dpp.toHex
 import org.dashj.platform.sdk.Hash256
 import org.dashj.platform.sdk.PlatformValue
 import org.dashj.platform.sdk.PlatformValueMap
@@ -12,6 +16,10 @@ open class ByteArrayFixedLength(val bytes: ByteArray, maxLength: Int) {
         require(bytes.size == maxLength)
     }
     val size = maxLength
+    fun toBase64(): String = bytes.toBase64()
+    fun toBase64Padded(): String = bytes.toBase64Padded()
+    fun ToBase58(): String = bytes.toBase58()
+    fun toHex(): String = bytes.toHex()
 }
 
 class ByteArray20(bytes: ByteArray): ByteArrayFixedLength(bytes, 20)
