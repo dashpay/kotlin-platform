@@ -45,7 +45,8 @@ def process_clone(declaration):
             func_name = func_name[1:]
         args_str = parts[1].split('*')[0]
         formatted_args = format_arguments(args_str)
-        return f'{formatted_args} * clone({formatted_args} * object) {{\n    return {func_name}(object);\n}}\n'
+        return f'inline {formatted_args} * clone({formatted_args} * object) {{\n    return (object != nullptr) ? {func_name}(object) : nullptr;\n}}\n'
+
     return ""
 
 def extract_functions(header_file, output_file, clone_file):

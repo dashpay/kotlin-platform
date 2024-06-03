@@ -13,7 +13,7 @@ buildscript {
     dependencies {
         //classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.android.tools.build:gradle:7.2.0'  // Use the latest version
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.6'
+        classpath "com.google.protobuf:protobuf-gradle-plugin:0.9.4"
     }
 }
 

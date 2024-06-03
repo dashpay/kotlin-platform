@@ -2387,6 +2387,7 @@ name = "platform-mobile"
 version = "0.1.0"
 dependencies = [
  "dash-sdk",
+ "dashcore",
  "data-contracts",
  "dotenvy",
  "dpp",

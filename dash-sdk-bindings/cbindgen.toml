@@ -14,3 +14,4 @@ extra_bindings = []
 
 [enum]
 prefix_with_name = false
+enum_class = true

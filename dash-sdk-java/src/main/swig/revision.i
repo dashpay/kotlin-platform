@@ -5,8 +5,8 @@
     dpp_prelude_Revision() {
         return dpp_prelude_Revision_ctor(0);
     }
-    dpp_prelude_Revision(long long timestamp) {
-        return dpp_prelude_Revision_ctor(timestamp);
+    dpp_prelude_Revision(long value) {
+        return dpp_prelude_Revision_ctor(value);
     }
     ~dpp_prelude_Revision() {
         dpp_prelude_Revision_destroy($self);

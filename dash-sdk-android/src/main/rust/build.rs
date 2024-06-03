@@ -14,7 +14,7 @@ fn main() {
           vec![
              "platform-value",
              "dpp",
-             // "platform-version",
+             "drive",
              "dash-sdk",
              "rs-dapi-client",
               "platform-mobile"

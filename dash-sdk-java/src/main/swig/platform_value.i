@@ -4,8 +4,8 @@
     }
 #define CTOR_CLONE(RTYPE, CTYPE, CLONE_FN) \
     platform_value_Value(CTYPE value) { \
-        CTYPE clone = CLONE_FN(value); \
-        return platform_value_Value_##RTYPE##_ctor(clone); \
+        CTYPE copy = CLONE_FN(value); \
+        return platform_value_Value_##RTYPE##_ctor(copy); \
     }
 
 #define CTOR_SIZE_CLONE(RTYPE, CTYPE, CLONE_FN) \
@@ -22,12 +22,8 @@ CTYPE get##RTYPE() { \
     return $self->cvalue._0; \
 }
 
-//DEFINE_CLASS(PlatformValue, platform_value_Value)
 %rename (PlatformValue) platform_value_Value;
 %extend platform_value_Value {
-//     platform_value_Value(char * text) {
-//         return platform_value_Value_Text_ctor(text);
-//     }
     CTOR_CLONE(Text, char *, memoryFactory.clone)
     CTOR(U128, u128)
     CTOR(I128, __int128)
@@ -40,31 +36,56 @@ CTYPE get##RTYPE() { \
     //CTOR(U8, uint8_t)
     CTOR(I8, int8_t)
     platform_value_Value(Vec_u8 * value, bool slice) {
+        Vec_u8 * copy = clone(value);
         if (!slice) {
-            return platform_value_Value_Bytes_ctor(value);
+            return platform_value_Value_Bytes_ctor(copy);
         }
         switch (value->count) {
             case 20: {
-                Arr_u8_20 * bytes20 = Arr_u8_20_ctor(value->count, value->values);
+                Arr_u8_20 * bytes20 = (Arr_u8_20*)copy; //Arr_u8_20_ctor(copy->count, copy->values);
                 return platform_value_Value_Bytes20_ctor(bytes20);
             }
             case 32: {
-                Arr_u8_32 * bytes32 = Arr_u8_32_ctor(value->count, value->values);
+                Arr_u8_32 * bytes32 = (Arr_u8_32*)copy; //Arr_u8_32_ctor(copy->count, copy->values);
                 return platform_value_Value_Bytes32_ctor(bytes32);
             }
             case 36: {
-                Arr_u8_36 * bytes36 = Arr_u8_36_ctor(value->count, value->values);
+                Arr_u8_36 * bytes36 = (Arr_u8_36*)copy; //Arr_u8_36_ctor(copy->count, copy->values);
                 return platform_value_Value_Bytes36_ctor(bytes36);
             }
             default: {
-                //Vec_u8 * bytes = Vec_u8_ctor(size, value);
-                return platform_value_Value_Bytes_ctor(value);
+                return platform_value_Value_Bytes_ctor(copy);
             }
         }
     }
-    // CTOR(EnumU8, Vec_u8) // the problem here that Bytes uses Vec_u8
-    CTOR(EnumString, Vec_String*)
-    CTOR(Identifier, platform_value_Hash256*)
+
+    platform_value_Value(Vec_u8 * value, platform_value_Value::Tag tag) {
+        Vec_u8 * copy = clone(value);
+        switch (tag) {
+            case platform_value_Value::Tag::EnumU8:
+                return platform_value_Value_EnumU8_ctor(copy);
+            case platform_value_Value::Tag::Bytes:
+                return platform_value_Value_Bytes_ctor(copy);
+            case platform_value_Value::Tag::Bytes20:
+                if (value->count != 20) throw std::invalid_argument("Vec_u8 must be 20 bytes for Bytes20");
+                return platform_value_Value_Bytes20_ctor((Arr_u8_20*)copy);
+            case platform_value_Value::Tag::Bytes32:
+                if (value->count != 32) throw std::invalid_argument("Vec_u8 must be 32 bytes for Bytes32");
+                return platform_value_Value_Bytes32_ctor((Arr_u8_32*)copy);
+            case platform_value_Value::Tag::Bytes36:
+                if (value->count != 36) throw std::invalid_argument("Vec_u8 must be 36 bytes for Bytes36");
+                return platform_value_Value_Bytes36_ctor((Arr_u8_36*)copy);
+            default:
+                throw std::invalid_argument("value type not supported for Vec_u8*");
+        }
+    }
+
+    // this will conflict with the Array constructor in Java
+    // so it has an extra argument that is not used
+    platform_value_Value(Vec_String * value, bool enum_string) {
+        return platform_value_Value_EnumString_ctor(value);
+    }
+    CTOR_CLONE(Identifier, platform_value_Hash256*, clone)
     CTOR(Float, double)
     CTOR(Bool, bool)
     platform_value_Value() {
@@ -106,6 +127,7 @@ CTYPE get##RTYPE() { \
     VALUE_GET(Bytes20, Arr_u8_20*, bytes20)
     VALUE_GET(Bytes32, Arr_u8_32*, bytes32)
     VALUE_GET(Bytes36, Arr_u8_36*, bytes36)
+    VALUE_GET(EnumU8, Vec_u8*, enum_u8)
 
     VALUE_GET(EnumString, Vec_String *, enum_string)
     VALUE_GET(Identifier, platform_value_Hash256*, identifier)

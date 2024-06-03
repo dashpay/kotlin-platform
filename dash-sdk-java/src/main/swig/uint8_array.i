@@ -1,3 +1,4 @@
+// keep this for now.  make a macro of it later where 32 is any type
 // uint8_t [] to byte []
 %typemap(jni) (uint8_t (*)[32]) "jbyteArray"
 %typemap(jtype) (uint8_t (*)[32]) "byte[]"

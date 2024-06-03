@@ -6,3 +6,5 @@ include 'dpp'
 
 include ':dash-sdk-android'
 include ':dashj-platform-android-simple'
+
+include 'tools'

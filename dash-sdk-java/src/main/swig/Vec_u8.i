@@ -25,6 +25,12 @@ struct Vec_u8;
      printf("typemap(in) Vec_u8 *: count: %ld, values: [%lx]%d\n", $1->count, (long)$1->values, $1->values[0]);
 %}
 
+%typemap(freearg) Vec_u8 *
+%{
+    // Vec_u8 typemap(freearg)
+    Vec_u8_destroy($1);
+%}
+
 %typemap(argout) Vec_u8 *
 %{
      printf("typemap(argout) Vec_u8 *: %ld, [%lx]%d\n", $1->count, (long)$1->values, $1->values[0]);

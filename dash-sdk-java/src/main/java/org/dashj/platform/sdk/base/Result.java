@@ -30,7 +30,7 @@ public abstract class Result<T, E> {
 
         @Override
         public E unwrapError() throws Exception {
-            throw new Exception("Attempted to unwrapError on a Success");
+            throw new Exception("Attempted to unwrapError on a Success: ");
         }
     }
 
@@ -43,7 +43,7 @@ public abstract class Result<T, E> {
 
         @Override
         public T unwrap() throws Exception {
-            throw new Exception("Attempted to unwrap a Failure");
+            throw new Exception("Attempted to unwrap a Failure: " + error);
         }
 
         @Override

@@ -191,6 +191,13 @@ public class ValueTest extends BaseTest {
     }
 
     @Test
+    public void createPlatformValueVectorsTestTwo() {
+        PlatformValue bytes20 = new PlatformValue(identifier, true);
+        assertEquals(PlatformValue.Tag.Bytes32, bytes20.getTag());
+        bytes20.delete();
+    }
+
+    @Test
     public void accessInvalidTypeTest() {
         PlatformValue platformValue = new PlatformValue("text");
         platformValue.getText(); // should not throw an exception
