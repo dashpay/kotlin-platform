@@ -9,8 +9,7 @@
 
 %typemap(javaout) STRUCT_TYPE * {
     return $jnicall;
-  }
-
+}
 
 %typemap(throws) STRUCT_TYPE *
 %{ SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "null "##STRUCT_TYPE);
@@ -48,6 +47,11 @@
         $1->values[i] = CLONE_FN(ipk);
     }
 }
+
+%typemap(freearg) STRUCT_TYPE *
+%{
+    STRUCT_TYPE##_destroy($1);
+%}
 
 %typemap(out) STRUCT_TYPE* {
     jclass listClass = jenv->FindClass("java/util/ArrayList");

@@ -89,6 +89,11 @@
     $1 = result;
 }
 
+%typemap(freearg) STRUCT_TYPE *
+%{
+    STRUCT_TYPE##_destroy($1);
+%}
+
 %typemap(javain) STRUCT_TYPE * "$javainput"
 
 %typemap(javaout) STRUCT_TYPE * {

@@ -37,12 +37,12 @@
 }
 
 %typemap(in) CTYPE* {
-    
+    SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "This operation is not supported: convert from Result<T, E> to " #CTYPE);
+    return $null;
 }
 
 %typemap(freearg) struct CTYPE* {
-    free($1.keys);
-    free($1.values);
+    // not used, not created
 }
 
 %typemap(javain) CTYPE * "$javainput"
@@ -117,12 +117,12 @@
 }
 
 %typemap(in) CTYPE* {
-
+    SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "This operation is not supported: convert from Result<T, E> to " #CTYPE);
+    return $null;
 }
 
 %typemap(freearg) struct CTYPE* {
-    free($1.keys);
-    free($1.values);
+    // not used, not created
 }
 
 %typemap(javain) CTYPE * "$javainput"
