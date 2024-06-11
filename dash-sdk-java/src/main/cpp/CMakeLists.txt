@@ -14,6 +14,7 @@ set(C_SOURCE_FILE ${CMAKE_SOURCE_DIR}/../../../build/generated/cpp/sdk.cpp
         java_map_string_value.cpp
         java_map_valuemap.cpp
         context_provider.cpp
+        java_vm.cpp
         wrapper.h)
 
 # Define the pre-built Rust library
