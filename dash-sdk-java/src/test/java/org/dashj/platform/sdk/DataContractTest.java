@@ -7,6 +7,7 @@ import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class DataContractTest extends BaseTest {
     @Test
@@ -18,5 +19,13 @@ public class DataContractTest extends BaseTest {
         assertArrayEquals(dpnsContractId, dataContract.getId().get_0().get_0());
         assertEquals(2, dataContract.getDoc_types().size());
         dataContract.getDoc_types().forEach(System.out::println);
+    }
+
+    @Test
+    public void fetchDataContractFailureTest() throws Exception {
+        Identifier contractId = new Identifier(identifier);
+        Result<DataContract, String> result = dashsdk.platformMobileDataContractsFetchDataContract(contractId, BigInteger.ZERO, BigInteger.ZERO);
+
+        assertThrows(Exception.class, result::unwrap);
     }
 }
