@@ -1,15 +1,13 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.8.22' // Use a compatible version
+    id 'org.jetbrains.kotlin.jvm'
     id 'com.google.protobuf'
     id('io.gitlab.arturbosch.detekt').version("1.19.0")
     id 'maven-publish'
-    //id 'maven'
     id 'signing'
 }
 
 group 'org.dashj.platform'
-version 'unspecified'
 
 repositories {
     mavenCentral()
@@ -22,7 +20,7 @@ dependencies {
     implementation 'com.google.guava:guava:29.0-android'
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7"
-    implementation 'com.google.protobuf:protobuf-javalite:3.21.1'
+    implementation 'com.google.protobuf:protobuf-javalite:3.21.7'
 
     testImplementation 'org.slf4j:slf4j-jdk14:1.7.30'
     implementation 'org.slf4j:slf4j-api:1.7.30'
@@ -33,21 +31,11 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.6.4'
     implementation 'com.squareup.retrofit2:converter-gson:2.6.4'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.8.0'
-    implementation 'com.squareup.moshi:moshi:1.11.0'
-    implementation 'com.squareup.moshi:moshi-kotlin:1.11.0'
     testImplementation 'com.squareup.retrofit2:retrofit-mock:2.4.0'
     testImplementation 'com.squareup.okhttp3:mockwebserver:3.11.0'
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0-RC1"
-    testImplementation 'com.squareup.okhttp3:mockwebserver:3.11.0'
-    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0-RC1"
-
-    implementation 'io.grpc:grpc-okhttp:1.54.0' // CURRENT_GRPC_VERSION
-    implementation('io.grpc:grpc-protobuf-lite:1.54.0') { // CURRENT_GRPC_VERSION
-        exclude module: "protobuf-lite"
-    }
     implementation 'io.grpc:grpc-stub:1.54.0' // CURRENT_GRPC_VERSION
     implementation 'io.grpc:grpc-netty-shaded:1.54.0'  // replace with the latest version
-    implementation 'io.netty:netty-tcnative-boringssl-static:2.0.46.Final'  // replace with the latest version
 }
 
 protobuf {
