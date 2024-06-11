@@ -9,7 +9,7 @@ import org.dashj.platform.sdk.callbacks.Signer
 
 class WalletSignerCallback(wallet: Wallet, val keyParameter: KeyParameter?) : Signer() {
 
-    val authenticationGroup = wallet.getKeyChainExtension(AuthenticationGroupExtension.EXTENSION_ID) as AuthenticationGroupExtension
+    private val authenticationGroup = wallet.getKeyChainExtension(AuthenticationGroupExtension.EXTENSION_ID) as AuthenticationGroupExtension
 
     override fun sign(publicKey: ByteArray, data: ByteArray): ByteArray {
         val key = authenticationGroup.identityKeyChain?.findKeyFromPubKey(publicKey)
