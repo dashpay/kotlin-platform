@@ -19,7 +19,7 @@
         jclass resultClass = jenv->FindClass("org/dashj/platform/sdk/base/Result");
 
         if ($1->ok != NULL) {
-            jclass myClass = jenv->FindClass("org/dashj/platform/sdk/RETURN_TYPE");
+            jclass myClass = jenv->FindClass("org/dashj/platform/sdk/" #RETURN_TYPE);
             jmethodID constructor = jenv->GetMethodID(myClass, "<init>", "(JZ)V");
             void * clonedObject = CLONE_FN($1->ok);
             jobject okObject = jenv->NewObject(myClass, constructor, (jlong) clonedObject, true);
