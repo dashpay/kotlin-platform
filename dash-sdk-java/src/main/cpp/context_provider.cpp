@@ -3,6 +3,7 @@
 #include "config.h"
 #include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 #include <cstring>
+#include "jnihelper.h"
 // fetchIdentity4
 
 //void myFetchIdentity4(platform_value_types_identifier_Identifier *identifier, jobject * callbackObject) {
@@ -18,16 +19,26 @@ uint8_t invalid_key[] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
-
+std::mutex g_mutex;
 uint8_t * get_quorum_public_key(int quorum_type, char * quorum_hash, int core_chain_locked_height, uint8_t * native_array) {
+    LOGI("get_quorum_public_key(%d, %lx, %d, %lx", quorum_type, quorum_hash, core_chain_locked_height, native_array);
+    JniHelper jni;
+    JNIEnv * jenv = jni.getEnv();
+    if (jenv == nullptr) {
+        LOGI("Failed to get JNIEnv");
+        return nullptr;
+    }
     jclass clazz = jenv->FindClass("org/dashj/platform/sdk/callbacks/ContextProvider");
     if (clazz == nullptr) {
-        printf("Cannot find class\n");
+        LOGI("Cannot find class\n");
+        return nullptr;
     }
     jmethodID getQuorumPublicKey = jenv->GetMethodID(clazz, "getQuorumPublicKey", "(I[BI)[B");
     if (getQuorumPublicKey == nullptr) {
-        printf("Cannot find getQuorumPublicKey(IB[I)[B\n");
+        LOGI("Cannot find getQuorumPublicKey(IB[I)[B\n");
+        return nullptr;
     }
+
     jbyteArray quorum_hash_bytes = jenv->NewByteArray(32);
     if (quorum_hash_bytes == nullptr) {
         LOGI("Cannot allocate jbyteArray");
@@ -68,6 +79,8 @@ uint8_t * get_quorum_public_key(int quorum_type, char * quorum_hash, int core_ch
 //            printf("%d, ", native_array[i]);
 //        printf("\n");
     }
+    jenv->DeleteLocalRef(quorum_hash_bytes);
+
     return native_array;
 }
 
