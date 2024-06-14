@@ -6,13 +6,18 @@ import kotlin.concurrent.timerTask
 import org.bouncycastle.crypto.params.KeyParameter
 import org.dashj.platform.dapiclient.model.DocumentQuery
 import org.dashj.platform.dashpay.callback.SendContactRequestCallback
+import org.dashj.platform.dashpay.callback.WalletSignerCallback
 import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
+import org.dashj.platform.sdk.BlockHeight
+import org.dashj.platform.sdk.CoreBlockHeight
 import org.dashj.platform.sdk.KeyType
 import org.dashj.platform.sdk.SecurityLevel
+import org.dashj.platform.sdk.dashsdk
 import org.dashj.platform.sdk.platform.Documents
 import org.dashj.platform.sdk.platform.Platform
+import java.math.BigInteger
 
 class ContactRequests(val platform: Platform) {
 
@@ -53,16 +58,22 @@ class ContactRequests(val platform: Platform) {
                 .encryptedAccountLabel(encryptedAccountLabel)
                 .build().document
 
-            val transitionMap = hashMapOf(
-                "create" to listOf(contactRequestDocument)
+            val signer = WalletSignerCallback(fromUser.wallet!!, aesKey)
+
+            val documentResult = dashsdk.platformMobilePutPutDocument(
+                contactRequestDocument.toNative(),
+                contactRequestDocument.dataContractId!!.toNative(),
+                contactRequestDocument.type,
+                fromUser.identity!!.publicKeys[1].toNative(),
+                BlockHeight(10000),
+                CoreBlockHeight(platform.coreBlockHeight),
+                BigInteger.valueOf(signer.signerCallback),
+                BigInteger.valueOf(platform.client.contextProviderFunction),
+                BigInteger.ZERO
             )
+            val publishedContactRequest = documentResult.unwrap()
 
-//            val transition = platform.dpp.document.createStateTransition(transitionMap)
-//            fromUser.signStateTransition(transition, aesKey)
-//
-//            platform.broadcastStateTransition(transition)
-
-            return ContactRequest(contactRequestDocument)
+            return ContactRequest(Document(publishedContactRequest, contactRequestDocument.dataContractId!!))
         }
         throw IllegalArgumentException("No valid keys to use in toUser's identity")
     }
