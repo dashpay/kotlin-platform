@@ -5,18 +5,24 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package org.dashj.platform.contracts.wallet
+package org.dashj.platform.wallet
 
 import java.util.Date
 import kotlin.collections.HashMap
 import org.bitcoinj.core.ECKey
 import org.dashj.platform.dapiclient.model.DocumentQuery
+import org.dashj.platform.dashpay.callback.SingleKeySignerCallback
 import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.document.DocumentCreateTransition
 import org.dashj.platform.dpp.document.DocumentsBatchTransition
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
+import org.dashj.platform.sdk.BlockHeight
+import org.dashj.platform.sdk.CoreBlockHeight
+import org.dashj.platform.sdk.callbacks.Signer
+import org.dashj.platform.sdk.dashsdk
 import org.dashj.platform.sdk.platform.Platform
+import java.math.BigInteger
 
 class TxMetadata(
     val platform: Platform
@@ -32,35 +38,25 @@ class TxMetadata(
         encryptedMetadata: ByteArray,
         identity: Identity,
         id: Int,
-        signingKey: ECKey
+        signer: Signer
     ): Document {
         val profileDocument = createDocument(keyIndex, encryptionKeyIndex, encryptedMetadata, identity)
         profileDocument.createdAt = Date().time
 
-        val transitionMap = hashMapOf(
-            "create" to listOf(profileDocument)
+        val documentResult = dashsdk.platformMobilePutPutDocument(
+            profileDocument.toNative(),
+            profileDocument.dataContractId!!.toNative(),
+            profileDocument.type,
+            identity.publicKeys[id].toNative(),
+            BlockHeight(10000),
+            CoreBlockHeight(platform.coreBlockHeight),
+            BigInteger.valueOf(signer.signerCallback),
+            BigInteger.valueOf(platform.client.contextProviderFunction),
+            BigInteger.ZERO
         )
+        val domain = documentResult.unwrap()
 
-        val transition = signAndBroadcast(transitionMap, identity, id, signingKey)
-
-        val rawDocument = transition!!.transitions[0].toObject().toMutableMap()
-        rawDocument["\$ownerId"] = transition.ownerId
-
-        return platform.dpp.document.createFromObject(rawDocument)
-    }
-
-    private fun signAndBroadcast(
-        transitionMap: HashMap<String, List<Document>>,
-        identity: Identity,
-        id: Int,
-        signingKey: ECKey
-    ): DocumentsBatchTransition? {
-//        val profileStateTransition =
-//            platform.dpp.document.createStateTransition(transitionMap)
-//        profileStateTransition.sign(identity.getPublicKeyById(id)!!, signingKey.privateKeyAsHex)
-//        platform.broadcastStateTransition(profileStateTransition)
-//        return profileStateTransition
-        return null
+        return Document(domain, profileDocument.dataContractId!!)
     }
 
     fun createDocument(
