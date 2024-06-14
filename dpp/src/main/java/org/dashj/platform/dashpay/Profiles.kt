@@ -8,16 +8,18 @@
 package org.dashj.platform.dashpay
 
 import java.util.Date
-import kotlin.collections.HashMap
-import org.bitcoinj.core.ECKey
 import org.dashj.platform.dapiclient.model.DocumentQuery
+import org.dashj.platform.dashpay.callback.WalletSignerCallback
 import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.document.DocumentCreateTransition
-import org.dashj.platform.dpp.document.DocumentsBatchTransition
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
+import org.dashj.platform.sdk.BlockHeight
+import org.dashj.platform.sdk.CoreBlockHeight
+import org.dashj.platform.sdk.dashsdk
 import org.dashj.platform.sdk.platform.Documents
 import org.dashj.platform.sdk.platform.Platform
+import java.math.BigInteger
 
 class Profiles(
     val platform: Platform
@@ -28,73 +30,82 @@ class Profiles(
     }
 
     fun create(
-        displayName: String,
-        publicMessage: String,
+        displayName: String?,
+        publicMessage: String?,
         avatarUrl: String?,
         avatarHash: ByteArray?,
         avatarFingerprint: ByteArray?,
         identity: Identity,
         id: Int,
-        signingKey: ECKey
+        signer: WalletSignerCallback
     ): Document {
         val profileDocument = createProfileDocument(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint, identity)
         profileDocument.createdAt = Date().time
 
-        val transitionMap = hashMapOf(
-            "create" to listOf(profileDocument)
+        val profileResult = dashsdk.platformMobilePutPutDocument(
+            profileDocument.toNative(),
+            profileDocument.dataContractId!!.toNative(),
+            profileDocument.type,
+            identity.publicKeys[id].toNative(),
+            BlockHeight(10000),
+            CoreBlockHeight(platform.coreBlockHeight),
+            BigInteger.valueOf(signer.signerCallback),
+            BigInteger.valueOf(platform.client.contextProviderFunction),
+            BigInteger.ZERO
         )
-
-//        val transition = signAndBroadcast(transitionMap, identity, id, signingKey)
-//
-//        return platform.dpp.document.createFromObject(transition.transitions[0].toObject())
-        return profileDocument
+        return Document(profileResult.unwrap(), profileDocument.dataContractId!!)
     }
 
     fun replace(
-        displayName: String,
-        publicMessage: String,
+        displayName: String?,
+        publicMessage: String?,
         avatarUrl: String?,
         avatarHash: ByteArray?,
         avatarFingerprint: ByteArray?,
         identity: Identity,
         id: Int,
-        signingKey: ECKey
+        signer: WalletSignerCallback
     ): Document {
         val currentProfile = get(identity.id)
 
         val profileData = hashMapOf<String, Any?>()
-        profileData.putAll(currentProfile!!.toJSON())
-        profileData["displayName"] = displayName
-        profileData["publicMessage"] = publicMessage
-        profileData["avatarUrl"] = avatarUrl
-        profileData["avatarHash"] = avatarHash
-        profileData["avatarFingerprint"] = avatarFingerprint
+        profileData.putAll(currentProfile!!.toObject())
+        if (displayName != null) {
+            profileData["displayName"] = displayName
+        }
+        if (publicMessage != null) {
+            profileData["publicMessage"] = publicMessage
+        }
+        if (avatarUrl != null) {
+            profileData["avatarUrl"] = avatarUrl
+            if (avatarHash != null) {
+                profileData["avatarHash"] = avatarHash
+            }
+            if (avatarFingerprint != null) {
+                profileData["avatarFingerprint"] = avatarFingerprint
+            }
+        }
+        profileData["\$type"] = "profile"
 
         val profileDocument = platform.dpp.document.createFromObject(profileData)
         profileDocument.updatedAt = Date().time
+        profileDocument.revision += 1
 
-//        val transitionMap = hashMapOf(
-//            "replace" to listOf(profileDocument)
-//        )
-//
-//        val transition = signAndBroadcast(transitionMap, identity, id, signingKey)
-//
-//        return platform.dpp.document.createFromObject(transition.transitions[0].toObject())
-        return profileDocument
+        // under the hood this calls new_document_creation_transition_from_document
+        // an not new_document_replacement_transition_from_document
+        val profileResult = dashsdk.platformMobilePutPutDocument(
+            profileDocument.toNative(),
+            profileDocument.dataContractId!!.toNative(),
+            profileDocument.type,
+            identity.publicKeys[id].toNative(),
+            BlockHeight(10000),
+            CoreBlockHeight(platform.coreBlockHeight),
+            BigInteger.valueOf(signer.signerCallback),
+            BigInteger.valueOf(platform.client.contextProviderFunction),
+            BigInteger.ZERO
+        )
+        return Document(profileResult.unwrap(), profileDocument.dataContractId!!)
     }
-
-//    private fun signAndBroadcast(
-//        transitionMap: HashMap<String, List<Document>>,
-//        identity: Identity,
-//        id: Int,
-//        signingKey: ECKey
-//    ): DocumentsBatchTransition? {
-//        val profileStateTransition =
-//            platform.dpp.document.createStateTransition(transitionMap)
-//        profileStateTransition.sign(identity.getPublicKeyById(id)!!, signingKey.privateKeyAsHex)
-//        platform.broadcastStateTransition(profileStateTransition)
-//        return profileStateTransition
-//    }
 
     fun createProfileDocument(
         displayName: String?,
@@ -105,15 +116,26 @@ class Profiles(
         identity: Identity,
         revision: Long = DocumentCreateTransition.INITIAL_REVISION
     ): Document {
+        val profileData = hashMapOf<String, Any?>()
+        if (displayName != null) {
+            profileData["displayName"] = displayName
+        }
+        if (publicMessage != null) {
+            profileData["publicMessage"] = publicMessage
+        }
+        if (avatarUrl != null) {
+            profileData["avatarUrl"] = avatarUrl
+            if (avatarHash != null) {
+                profileData["avatarHash"] = avatarHash
+            }
+            if (avatarFingerprint != null) {
+                profileData["avatarFingerprint"] = avatarFingerprint
+            }
+        }
+        profileData["\$type"] = "profile"
         val document = platform.documents.create(
             DOCUMENT, identity.id,
-            mutableMapOf<String, Any?>(
-                "publicMessage" to publicMessage,
-                "displayName" to displayName,
-                "avatarUrl" to avatarUrl,
-                "avatarHash" to avatarHash,
-                "avatarFingerprint" to avatarFingerprint
-            )
+            profileData
         )
         document.revision = revision.toLong()
         if (revision == DocumentCreateTransition.INITIAL_REVISION) {
@@ -193,6 +215,7 @@ class Profiles(
         return platform.documents.get(DOCUMENT, documentQuery)
     }
 
+    @Deprecated("not required with wait functions")
     suspend fun watchProfile(
         userId: String,
         retryCount: Int,
