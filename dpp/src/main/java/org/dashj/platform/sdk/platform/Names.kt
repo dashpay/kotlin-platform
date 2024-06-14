@@ -125,7 +125,7 @@ class Names(val platform: Platform) {
     ): Sha256Hash {
         val baos = ByteArrayOutputStream(preOrderSaltRaw.size + fullName.length)
         baos.write(preOrderSaltRaw)
-        baos.write(fullName.toByteArray())
+        baos.write(normalizeString(fullName).toByteArray())
         return Sha256Hash.twiceOf(baos.toByteArray())
     }
 
