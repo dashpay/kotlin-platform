@@ -201,6 +201,7 @@ public class WalletTool {
     private static OptionSpec<Integer> sessionsFlag;
     private static OptionSpec<Integer> roundsFlag;
     private static OptionSpec<Boolean> multiSessionFlag;
+    private static OptionSpec<Boolean> aliasFlag;
 
     private static Context context;
     private static NetworkParameters params;
@@ -373,7 +374,7 @@ public class WalletTool {
         sessionsFlag = parser.accepts("sessions").withRequiredArg().ofType(Integer.class);
         roundsFlag = parser.accepts("rounds").withRequiredArg().ofType(Integer.class);
         multiSessionFlag = parser.accepts("multi-session").withOptionalArg().ofType(Boolean.class);
-
+        aliasFlag = parser.accepts("alias").withOptionalArg().ofType(Boolean.class);
         options = parser.parse(args);
 
         if (args.length == 0 || options.has("help") ||
@@ -1489,6 +1490,7 @@ public class WalletTool {
             // TODO: we used to use peerGroup.setRequiredServices(0); here
             peerGroup.addPeerDiscovery(new ThreeMethodPeerDiscovery(params, Context.get().masternodeListManager));
         }
+        platform.setBlockChain(chain);
     }
 
     private static void syncChain(OptionSpec<WaitForEnum> waitForFlag) {
@@ -2033,7 +2035,7 @@ public class WalletTool {
 
     private static void createUsername(OptionSpec<WaitForEnum> waitForFlag, String username, Coin credits, boolean useCoinJoin, boolean returnChange) {
         initializeIdentity();
-
+        syncChain(waitForFlag);
         if (blockchainIdentity == null) {
             try {
 
