@@ -9,7 +9,6 @@ package org.dashj.platform.sdk.platform
 import org.bitcoinj.core.ECKey
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.evolution.AssetLockTransaction
-import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.quorums.InstantSendLock
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.*
@@ -32,7 +31,6 @@ class Identities(val platform: Platform) {
     fun register(
         signedLockTransaction: AssetLockTransaction,
         instantLock: InstantSendLock,
-        privateKeys: List<ByteArray>,
         identityPublicKeys: List<IdentityPublicKey>,
         signer: Signer
     ): Identity {
@@ -41,7 +39,6 @@ class Identities(val platform: Platform) {
             signedLockTransaction,
             instantLock,
             signedLockTransaction.assetLockPublicKey,
-            privateKeys,
             identityPublicKeys,
             signer
         )
@@ -52,24 +49,12 @@ class Identities(val platform: Platform) {
         transaction: AssetLockTransaction,
         instantLock: InstantSendLock,
         assetLockPrivateKey: ECKey,
-        privateKeys: List<ByteArray>,
         identityPublicKeys: List<IdentityPublicKey>,
         signer: Signer
     ): Identity {
         try {
             val assetLock = InstantAssetLockProof(outputIndex, transaction, instantLock)
             val identityId = assetLock.createIdentifier()
-//            val identityCreateTransition = platform.dpp.identity.createIdentityCreateTransition(assetLock, identityPublicKeys)
-
-//            for (i in identityPublicKeys.indices) {
-//                identityCreateTransition.signByPrivateKey(privateKeys[i], identityPublicKeys[i].type)
-//                identityPublicKeys[i].signature = identityCreateTransition.signature
-//                identityCreateTransition.signature = null
-//            }
-
-//            identityCreateTransition.signByPrivateKey(assetLockPrivateKey)
-//            platform.broadcastStateTransition(identityCreateTransition)
-
 
             val identityV0 = IdentityV0(
                 identityId.toNative(),
@@ -81,19 +66,13 @@ class Identities(val platform: Platform) {
             val identityResult = dashsdk.platformMobilePutPutIdentity(
                 identity,
                 AssetLockProof(assetLock.toNative()),
-                assetLockPrivateKey.pubKey,
+                assetLockPrivateKey.privKeyBytes,
                 BigInteger.valueOf(signer.signerCallback),
                 BigInteger.valueOf(platform.client.contextProviderFunction),
                 BigInteger.ZERO,
                 platform.isTestNet()
             )
 
-
-
-            // get the identity from Platform since it cannot be recreated from the transition with the balance, etc
-//            platform.stateRepository.addValidIdentity(identityCreateTransition.identityId)
-
-//            return Identity(identityCreateTransition.identityId, identityPublicKeys, 0, 0, identityCreateTransition.protocolVersion)
             return Identity(identityResult.unwrap())
         } catch (e: Exception) {
             log.info("registerIdentity failure: $e")
@@ -106,7 +85,6 @@ class Identities(val platform: Platform) {
         transaction: AssetLockTransaction,
         coreHeight: Long,
         assetLockPrivateKey: ECKey,
-        privateKeys: List<ByteArray>,
         identityPublicKeys: List<IdentityPublicKey>,
         signer: Signer
     ): Identity {
@@ -114,22 +92,7 @@ class Identities(val platform: Platform) {
             log.info("AssetLockTransaction: ${transaction.txId}")
             val assetLock = ChainAssetLockProof(coreHeight, transaction.getOutput(outputIndex).outPointFor)
             val identityId = assetLock.createIdentifier()
-//            val identityCreateTransition = platform.dpp.identity.createIdentityCreateTransition(assetLock, identityPublicKeys)
-//
-//            for (i in identityPublicKeys.indices) {
-//                identityCreateTransition.signByPrivateKey(privateKeys[i], identityPublicKeys[i].type)
-//                identityPublicKeys[i].signature = identityCreateTransition.signature
-//                identityCreateTransition.signature = null
-//            }
-//
-//            identityCreateTransition.signByPrivateKey(assetLockPrivateKey)
-//
-//            platform.broadcastStateTransition(identityCreateTransition)
-//
-//            // get the identity from Platform since it cannot be recreated from the transition with the balance, etc
-//            platform.stateRepository.addValidIdentity(identityCreateTransition.identityId)
-//
-//            return Identity(identityCreateTransition.identityId, identityPublicKeys, 0, 0, identityCreateTransition.protocolVersion)
+
             val identityV0 = IdentityV0(
                 identityId.toNative(),
                 identityPublicKeys.associateBy({ KeyID(it.id) }, { it.toNative() }),
@@ -148,7 +111,7 @@ class Identities(val platform: Platform) {
             )
             return Identity(identityResult.unwrap())
         } catch (e: Exception) {
-            log.info("registerIdentity failure: $e")
+            log.info("registerIdentity failure: ", e)
             throw e
         }
     }
@@ -197,7 +160,7 @@ class Identities(val platform: Platform) {
 
             return true
         } catch (e: Exception) {
-            log.info("topup failure: $e")
+            log.info("topup failure: ", e)
             throw e
         }
     }
