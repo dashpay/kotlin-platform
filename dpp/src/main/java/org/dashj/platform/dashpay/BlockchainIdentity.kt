@@ -590,6 +590,9 @@ class BlockchainIdentity {
         val signer = WalletSignerCallback(wallet!!, keyParameter)
 
         var i = 0
+        val highIdentityPublicKey = identity!!.getFirstPublicKey(SecurityLevel.HIGH)
+            ?: error("can't find a public key with HIGH security level")
+
         preorderDocuments.forEach { preorder ->
             // TODO: check for existing preorder
             log.info("checking for preorder {} with saltedDomainHash {}", preorder.ownerId, (preorder.data["saltedDomainHash"]!! as ByteArray).toBase64())
@@ -598,7 +601,7 @@ class BlockchainIdentity {
                     preorder.toNative(),
                     preorder.dataContractId!!.toNative(),
                     preorder.type,
-                    identity!!.publicKeys[1].toNative(),
+                    highIdentityPublicKey.toNative(),
                     BlockHeight(10000),
                     CoreBlockHeight(platform.coreBlockHeight),
                     BigInteger.valueOf(signer.signerCallback),
@@ -701,12 +704,15 @@ class BlockchainIdentity {
         signer: WalletSignerCallback
     ): org.dashj.platform.sdk.Document {
         var error = ""
+        val highIdentityPublicKey = identity!!.getFirstPublicKey(SecurityLevel.HIGH)
+            ?: error("can't find a public key with HIGH security level")
+
         for (i in 0 .. 2) {
             val document_result = dashsdk.platformMobilePutPutDocument(
                 domain.toNative(),
                 domain.dataContractId!!.toNative(),
                 domain.type,
-                identity!!.publicKeys[1].toNative(),
+                highIdentityPublicKey.toNative(),
                 BlockHeight(10000),
                 CoreBlockHeight(platform.coreBlockHeight),
                 BigInteger.valueOf(signer.signerCallback),
@@ -1886,7 +1892,7 @@ class BlockchainIdentity {
 
     fun addContactPaymentKeyChain(contactIdentity: Identity, contactRequest: Document, encryptionKey: KeyParameter?) {
         val accountReference = if (contactRequest.data.containsKey("accountReference")) {
-            contactRequest.data["accountReference"] as Int
+            (contactRequest.data["accountReference"] as Long).toInt()
         } else {
             0 // default account reference
         }
@@ -1897,8 +1903,8 @@ class BlockchainIdentity {
             val xpub = decryptExtendedPublicKey(
                 contactRequest.data["encryptedPublicKey"] as ByteArray,
                 contactIdentity,
-                contactRequest.data["senderKeyIndex"] as Int,
-                contactRequest.data["recipientKeyIndex"] as Int,
+                (contactRequest.data["senderKeyIndex"] as Long).toInt(),
+                (contactRequest.data["recipientKeyIndex"] as Long).toInt(),
                 encryptionKey
             )
             val contactKeyChain = FriendKeyChain(wallet!!.params, xpub, contact)
