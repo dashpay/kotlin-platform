@@ -121,7 +121,7 @@ class DapiClient(
         const val DEFAULT_HTTP_TIMEOUT = 10L
         const val REQUIRED_SUCCESS_RATE = 0.50 // 50%
     }
-    val contextProvider = object : ContextProvider() {
+    var contextProvider = object : ContextProvider() {
         override fun getQuorumPublicKey(
             quorumType: Int,
             quorumHashBytes: ByteArray?,
