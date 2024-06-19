@@ -69,8 +69,8 @@ class TxMetadata(
             DOCUMENT,
             identity.id,
             mutableMapOf(
-                "keyIndex" to keyIndex,
-                "encryptionKeyIndex" to encryptionKeyIndex,
+                "keyIndex" to keyIndex.toLong(),
+                "encryptionKeyIndex" to encryptionKeyIndex.toLong(),
                 "encryptedMetadata" to encryptedMetadata
             )
         )
