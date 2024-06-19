@@ -71,12 +71,12 @@ class Document : BaseObject {
 
                 this.id = Identifier.from(doc.id)
                 this.ownerId = Identifier.from(doc.owner_id)
-                this.revision = doc.revision.toLong()
+                this.revision = doc.revision?.toLong() ?: 1L // can revision be null?
                 this.createdAt = doc.created_at?.toLong()
                 this.updatedAt = doc.updated_at?.toLong()
                 this.data = data
             }
-            else -> throw error("Document version not supported: ${document.tag}")
+            else -> error("Document version not supported: ${document.tag}")
         }
 
     }
@@ -86,7 +86,7 @@ class Document : BaseObject {
     }
 
     fun toObject(skipIdentifierConversion: Boolean): MutableMap<String, Any?> {
-        val map = hashMapOf<String, Any?>(
+        val map = hashMapOf(
             "\$protocolVersion" to protocolVersion,
             "\$id" to id,
             "\$type" to type,
