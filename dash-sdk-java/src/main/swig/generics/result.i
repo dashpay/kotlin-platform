@@ -19,7 +19,7 @@
         jclass resultClass = jenv->FindClass("org/dashj/platform/sdk/base/Result");
 
         if ($1->ok != NULL) {
-            jclass myClass = jenv->FindClass("org/dashj/platform/sdk/RETURN_TYPE");
+            jclass myClass = jenv->FindClass("org/dashj/platform/sdk/" #RETURN_TYPE);
             jmethodID constructor = jenv->GetMethodID(myClass, "<init>", "(JZ)V");
             void * clonedObject = CLONE_FN($1->ok);
             jobject okObject = jenv->NewObject(myClass, constructor, (jlong) clonedObject, true);
@@ -37,12 +37,12 @@
 }
 
 %typemap(in) CTYPE* {
-    
+    SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "This operation is not supported: convert from Result<T, E> to " #CTYPE);
+    return $null;
 }
 
 %typemap(freearg) struct CTYPE* {
-    free($1.keys);
-    free($1.values);
+    // not used, not created
 }
 
 %typemap(javain) CTYPE * "$javainput"
@@ -117,12 +117,12 @@
 }
 
 %typemap(in) CTYPE* {
-
+    SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "This operation is not supported: convert from Result<T, E> to " #CTYPE);
+    return $null;
 }
 
 %typemap(freearg) struct CTYPE* {
-    free($1.keys);
-    free($1.values);
+    // not used, not created
 }
 
 %typemap(javain) CTYPE * "$javainput"

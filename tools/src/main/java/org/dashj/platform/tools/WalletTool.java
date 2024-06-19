@@ -77,6 +77,7 @@ import org.bitcoinj.core.listeners.BlocksDownloadedEventListener;
 import org.bitcoinj.core.listeners.DownloadProgressTracker;
 import org.bitcoinj.core.listeners.PreBlocksDownloadListener;
 import org.bitcoinj.crypto.DeterministicKey;
+import org.bitcoinj.crypto.IDeterministicKey;
 import org.bitcoinj.crypto.KeyCrypterException;
 import org.bitcoinj.crypto.MnemonicCode;
 import org.bitcoinj.crypto.MnemonicException;
@@ -201,6 +202,7 @@ public class WalletTool {
     private static OptionSpec<Integer> sessionsFlag;
     private static OptionSpec<Integer> roundsFlag;
     private static OptionSpec<Boolean> multiSessionFlag;
+    private static OptionSpec<Boolean> aliasFlag;
 
     private static Context context;
     private static NetworkParameters params;
@@ -373,7 +375,7 @@ public class WalletTool {
         sessionsFlag = parser.accepts("sessions").withRequiredArg().ofType(Integer.class);
         roundsFlag = parser.accepts("rounds").withRequiredArg().ofType(Integer.class);
         multiSessionFlag = parser.accepts("multi-session").withOptionalArg().ofType(Boolean.class);
-
+        aliasFlag = parser.accepts("alias").withOptionalArg().ofType(Boolean.class);
         options = parser.parse(args);
 
         if (args.length == 0 || options.has("help") ||
@@ -1489,6 +1491,7 @@ public class WalletTool {
             // TODO: we used to use peerGroup.setRequiredServices(0); here
             peerGroup.addPeerDiscovery(new ThreeMethodPeerDiscovery(params, Context.get().masternodeListManager));
         }
+        platform.setBlockChain(chain);
     }
 
     private static void syncChain(OptionSpec<WaitForEnum> waitForFlag) {
@@ -2031,9 +2034,9 @@ public class WalletTool {
         }
     }
 
-    private static void createUsername(OptionSpec<WaitForEnum> waitForFlag, String username, Coin credits, boolean useCoinJoin, boolean returnChange) {
+    private static void createUsername(OptionSpec<WaitForEnum> waitForFlag, String username, Coin credits, boolean useCoinJoin, boolean returnChange) throws BlockStoreException {
         initializeIdentity();
-
+        syncChain(waitForFlag);
         if (blockchainIdentity == null) {
             try {
 
@@ -2128,30 +2131,51 @@ public class WalletTool {
                 }
             }
         } else {
-            System.out.println("This wallet already has an identity");
+            System.out.println("This wallet already has an identity:" + blockchainIdentity.getUniqueIdString());
 
             // check for username
-
             if (!blockchainIdentity.isRegistered()) {
                 createIdentity(waitForFlag, username);
             } else {
                 if (platform.getNames().get(username, Names.DEFAULT_PARENT_DOMAIN) == null) {
                     System.out.println("This wallet already has registered an identity");
 
-                    if (blockchainIdentity.getCurrentUsername() == null) {
+                    //if (blockchainIdentity.getCurrentUsername() == null) {
+
+                    try {
                         createPreorder(username, waitForFlag);
-                    } else {
-                        System.out.println("This wallet already has a username");
+                    } catch (InterruptedException e) {
+
                     }
+                    //} else {
+                    //    System.out.println("This wallet already has a username");
+                    //}
                 } else {
-                    System.out.println("This username $username already exists");
+                    System.out.printf("This username %s already exists\n", username);
                 }
             }
         }
     }
 
     private static void createIdentity(OptionSpec<WaitForEnum> waitForFlag, String username) {
-        blockchainIdentity.registerIdentity(null, true);
+        if (blockchainIdentity.getAssetLockTransaction() != null) {
+            Identity identity = platform.getIdentities().get(Identifier.from(blockchainIdentity.getAssetLockTransaction().getIdentityId()));
+            if (identity != null) {
+                blockchainIdentity.setIdentity(identity);
+                blockchainIdentity.setUniqueId(identity.getId().toSha256Hash());
+            } else {
+                IDeterministicKey key = authenticationGroupExtension.getIdentityKeyChain().getKey(1);
+                Identity identity1 = platform.getIdentities().getByPublicKeyHash(key.getPubKeyHash());
+                if (identity1 != null) {
+                    blockchainIdentity.setIdentity(identity1);
+                    blockchainIdentity.setUniqueId(identity1.getId().toSha256Hash());
+                } else {
+                    blockchainIdentity.registerIdentity(null, true);
+                }
+            }
+        } else {
+            blockchainIdentity.registerIdentity(null, true);
+        }
 //        blockchainIdentity.watchIdentity(10, 2000, RetryDelayType.SLOW20, new RegisterIdentityCallback() {
 //            @Override
 //            public void onComplete(@NotNull String uniqueId) {
@@ -2165,16 +2189,29 @@ public class WalletTool {
 //                waitAndShutdownFuture.set(waitForFlag);
 //            }
 //        });
+        try {
+            createPreorder(username, waitForFlag);
+        } catch (InterruptedException e) {
+
+        }
     }
 
-    private static void createPreorder(String username, final OptionSpec<WaitForEnum> waitForFlag) {
+    private static void createPreorder(String username, final OptionSpec<WaitForEnum> waitForFlag) throws InterruptedException {
         blockchainIdentity.addUsername(username, false);
         List<String> names = blockchainIdentity.getUnregisteredUsernames();
         blockchainIdentity.registerPreorderedSaltedDomainHashesForUsernames(names, null);
 
         Map<String, byte[]> saltedDomainHashes = blockchainIdentity.saltedDomainHashesForUsernames(names);
 
-        blockchainIdentity.watchPreorder(saltedDomainHashes, 10, 2000, RetryDelayType.SLOW20, new RegisterPreorderCallback() {
+        try {
+            wallet.saveToFile(walletFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("Wait 30 seconds before creating domain");
+        sleep(30000);
+        createDomain(waitForFlag);
+        /*blockchainIdentity.watchPreorder(saltedDomainHashes, 10, 2000, RetryDelayType.SLOW20, new RegisterPreorderCallback() {
             @Override
             public void onTimeout(@NotNull List<String> incompleteNames) {
                 System.out.println("These usernames were not preordered: " + incompleteNames);
@@ -2191,30 +2228,39 @@ public class WalletTool {
                 }
                 createDomain(waitForFlag);
             }
-        });
+        });*/
     }
 
     private static void createDomain(OptionSpec<WaitForEnum> waitForFlag) {
         List<String> names = blockchainIdentity.getUsernamesWithStatus(BlockchainIdentity.UsernameStatus.PREORDERED);
-        blockchainIdentity.registerUsernameDomainsForUsernames(names, null);
-        blockchainIdentity.watchUsernames(names, 10, 2000, RetryDelayType.SLOW20, new RegisterNameCallback() {
-            @Override
-            public void onTimeout(@NotNull List<String> incompleteNames) {
-                System.out.println("These usernames were not registered: " + incompleteNames);
-                waitAndShutdownFuture.set(waitForFlag);
-            }
+        boolean alias = options.has(aliasFlag);
+        blockchainIdentity.registerUsernameDomainsForUsernames(names, null, alias);
 
-            @Override
-            public void onComplete(@NotNull List<String> names) {
-                System.out.println("These usernames were registered: " + names);
-                try {
-                    wallet.saveToFile(walletFile);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                sendContactRequests(waitForFlag);
-            }
-        });
+        System.out.println("These usernames were registered: " + names);
+        try {
+            wallet.saveToFile(walletFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+//        blockchainIdentity.watchUsernames(names, 10, 2000, RetryDelayType.SLOW20, new RegisterNameCallback() {
+//            @Override
+//            public void onTimeout(@NotNull List<String> incompleteNames) {
+//                System.out.println("These usernames were not registered: " + incompleteNames);
+//                waitAndShutdownFuture.set(waitForFlag);
+//            }
+//
+//            @Override
+//            public void onComplete(@NotNull List<String> names) {
+//                System.out.println("These usernames were registered: " + names);
+//                try {
+//                    wallet.saveToFile(walletFile);
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//                sendContactRequests(waitForFlag);
+//            }
+//        });
     }
 
     static void sendContactRequests(OptionSpec<WaitForEnum> waitForFlag) {

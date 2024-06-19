@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "dpp.h"
 #include "conversions.h"
+#include "jnihelper.h"
 #include <ctime>
 #include "wrapper.h"
 #include "clone.h"

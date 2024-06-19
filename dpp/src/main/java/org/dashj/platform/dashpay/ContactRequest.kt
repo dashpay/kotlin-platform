@@ -69,6 +69,7 @@ class ContactRequest(document: Document) : AbstractDocument(document) {
 
         fun build(): ContactRequest {
             data["\$createdAt"] = Date().time
+            data["\$type"] = "contactRequest"
             val document = platform.documents.create(ContactRequests.CONTACTREQUEST_DOCUMENT, ownerId!!, data)
 
             return ContactRequest(document)

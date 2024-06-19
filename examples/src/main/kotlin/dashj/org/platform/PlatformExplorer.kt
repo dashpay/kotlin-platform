@@ -131,7 +131,7 @@ object PlatformExplorer {
                 wallet().context.isDebugMode = false
 
                 signer = object : Signer() {
-                    override fun sign(key: ByteArray?, data: ByteArray?): ByteArray {
+                    override fun sign(key: ByteArray, data: ByteArray): ByteArray {
 
                         return ByteArray(65)
                     }
@@ -225,7 +225,7 @@ object PlatformExplorer {
             println("5. Query all DPNS DOMAIN documents")
             println("6. Query DOMAIN documents for id")
             println("7. Query DPNS DOMAIN documents starting with")
-            println("8. Create Identity")
+            println("8. Query Data contract by id")
 
             println("w. Wallet info")
             println("q. Quit")
@@ -313,9 +313,13 @@ object PlatformExplorer {
                         BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
                         BigInteger.ZERO
                     )
-                    docs.forEach { doc ->
-                        printDomainDocument(doc)
-                        printDocument(doc)
+                    if (docs.isNotEmpty()) {
+                        docs.forEach { doc ->
+                            printDomainDocument(doc)
+                            printDocument(doc)
+                        }
+                    } else {
+                        println("no document found for $id")
                     }
                 }
                 "7" -> {
@@ -333,6 +337,25 @@ object PlatformExplorer {
                     }
                 }
                 "8" -> {
+                    println("Enter an data contract id:")
+                    val idString = scanner.nextLine()
+
+                    println(" > $idString")
+
+                    val value = dashsdk.platformMobileDataContractsFetchDataContract(
+                        Identifier(Base58.decode(idString)),
+                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+                        BigInteger.ZERO
+                    )
+                    try {
+
+                        val dataContract = value.unwrap();
+                        print(dataContract)
+                    } catch (e: Exception) {
+                        println("fetch identity error: ${value.unwrapError()}")
+                    }
+                }
+                "9" -> {
                     var currentKey = authenticationGroupExtension.currentKey(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY)
                     val identityResult = dashsdk.getIdentityByPublicKeyHash(
                         currentKey.pubKeyHash,
@@ -469,6 +492,17 @@ object PlatformExplorer {
             else -> {
                 println("This version is not support")
             }
+        }
+    }
+
+    private fun print(dataContract: DataContract) {
+        println()
+        println("Data Contract Results:")
+
+        println("id: ${org.dashj.platform.dpp.identifier.Identifier(dataContract.id)}")
+        println("doc types:")
+        dataContract.doc_types.forEach { type ->
+            println(" $type")
         }
     }
 

@@ -27,6 +27,7 @@ set(C_SOURCE_FILE ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/build/generated/
         ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/java_map_string_value.cpp
         ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/java_map_valuemap.cpp
         ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/context_provider.cpp
+        ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/java_vm.cpp
         ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp/wrapper.h
 )
 
@@ -72,5 +73,4 @@ find_package(JNI REQUIRED)
 include_directories(${JNI_INCLUDE_DIRS}, ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp)
 add_library(sdklib SHARED ${C_SOURCE_FILE})
 add_dependencies(sdklib BuildRustLib)
-target_link_libraries(sdklib PRIVATE ${RUST_LIB_OUTPUT_PATH})
-# target_link_libraries(sdklib PRIVATE ${RUST_LIB_OUTPUT_PATH} ${LOG_LIB} ${ANDROID_LIB})
+target_link_libraries(sdklib PRIVATE ${RUST_LIB_OUTPUT_PATH} ${LOG_LIB} ${ANDROID_LIB})

@@ -43,7 +43,7 @@ import org.bitcoinj.wallet.Wallet
 import org.bitcoinj.wallet.ZeroConfCoinSelector
 import org.bitcoinj.wallet.authentication.AuthenticationGroupExtension
 import org.bouncycastle.crypto.params.KeyParameter
-import org.dashj.platform.contracts.wallet.TxMetadata
+import org.dashj.platform.wallet.TxMetadata
 import org.dashj.platform.contracts.wallet.TxMetadataDocument
 import org.dashj.platform.contracts.wallet.TxMetadataItem
 import org.dashj.platform.dapiclient.MaxRetriesReachedException
@@ -56,6 +56,7 @@ import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.identity.IdentityPublicKey
 import org.dashj.platform.dpp.statetransition.StateTransitionIdentitySigned
+import org.dashj.platform.dpp.toBase58
 import org.dashj.platform.dpp.toBase64
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Cbor
@@ -408,7 +409,6 @@ class BlockchainIdentity {
             assetLockTransaction!!,
             coreHeight,
             signingKey!!,
-            privateKeys,
             identityPublicKeys,
             signer = WalletSignerCallback(wallet!!, keyParameter)
         )
@@ -453,7 +453,6 @@ class BlockchainIdentity {
                     assetLockTransaction!!,
                     coreHeight,
                     signingKey!!,
-                    privateKeys,
                     identityPublicKeys,
                     signer = WalletSignerCallback(wallet!!, keyParameter)
                 )
@@ -463,7 +462,6 @@ class BlockchainIdentity {
                     assetLockTransaction!!,
                     instantLock,
                     signingKey!!,
-                    privateKeys,
                     identityPublicKeys,
                     signer = WalletSignerCallback(wallet!!, keyParameter)
                 )
@@ -474,7 +472,6 @@ class BlockchainIdentity {
                 assetLockTransaction!!,
                 instantLock,
                 signingKey!!,
-                privateKeys,
                 identityPublicKeys,
                 signer = WalletSignerCallback(wallet!!, keyParameter)
             )
@@ -608,7 +605,8 @@ class BlockchainIdentity {
                     BigInteger.valueOf(platform.client.contextProviderFunction),
                     BigInteger.ZERO
                 )
-                val preorder = documentResult.unwrap()
+                val preorderDocument = documentResult.unwrap()
+                log.info("preorder document: {}", preorderDocument.v0._0.id.bytes.toBase58())
             }
 
             val string = usernames[i++]
@@ -642,26 +640,16 @@ class BlockchainIdentity {
         saveUsernames(usernames, UsernameStatus.PREORDER_REGISTRATION_PENDING)
     }
 
-    fun registerUsernameDomainsForUsernames(usernames: List<String>, keyParameter: KeyParameter?) {
-        val domainDocuments = createDomainDocuments(usernames)
+    fun registerUsernameDomainsForUsernames(usernames: List<String>, keyParameter: KeyParameter?, alias: Boolean) {
+        val domainDocuments = createDomainDocuments(usernames, alias)
 
         val signer = WalletSignerCallback(wallet!!, keyParameter)
 
         var i = 0
         domainDocuments.forEach { domain ->
-            val document_result = dashsdk.platformMobilePutPutDocument(
-                domain.toNative(),
-                domain.dataContractId!!.toNative(),
-                domain.type,
-                identity!!.publicKeys[1].toNative(),
-                BlockHeight(10000),
-                CoreBlockHeight(platform.coreBlockHeight),
-                BigInteger.valueOf(signer.signerCallback),
-                BigInteger.valueOf(platform.client.contextProviderFunction),
-                BigInteger.ZERO
-            )
-            val domain = document_result.unwrap()
-            log.info("domain doc id: {}", Identifier(domain.v0._0.id.bytes))
+            val document = broadcastDomainDocument(domain, signer)
+
+            log.info("domain doc id: {}", Identifier(document.v0._0.id.bytes))
 
             val string = usernames[i++]
             var usernameStatusDictionary = usernameStatuses[string] as MutableMap<String, Any>
@@ -692,7 +680,7 @@ class BlockchainIdentity {
                     platform.stateRepository.addValidDocument(nameDocumentTransition.id)
 
                     val salt = saltForUsername(username, false)
-                    val saltedDomainHash = platform.names.getSaltedDomainHashBytes(salt, "${Names.DEFAULT_PARENT_DOMAIN}.$username")
+                    val saltedDomainHash = platform.names.getSaltedDomainHashBytes(salt, "$username.${Names.DEFAULT_PARENT_DOMAIN}")
 
                     val preorderDocuments = platform.documents.get(
                         Names.DPNS_PREORDER_DOCUMENT,
@@ -706,6 +694,37 @@ class BlockchainIdentity {
                 }
             }
         }
+    }
+
+    private fun broadcastDomainDocument(
+        domain: Document,
+        signer: WalletSignerCallback
+    ): org.dashj.platform.sdk.Document {
+        var error = ""
+        for (i in 0 .. 2) {
+            val document_result = dashsdk.platformMobilePutPutDocument(
+                domain.toNative(),
+                domain.dataContractId!!.toNative(),
+                domain.type,
+                identity!!.publicKeys[1].toNative(),
+                BlockHeight(10000),
+                CoreBlockHeight(platform.coreBlockHeight),
+                BigInteger.valueOf(signer.signerCallback),
+                BigInteger.valueOf(platform.client.contextProviderFunction),
+                BigInteger.ZERO
+            )
+            try {
+                return document_result.unwrap()
+            } catch (e: Exception) {
+                // swallow
+                error = e.toString()
+                error(error)
+                /*if (!error.contains("preorderDocument was not found") &&
+                    !error.contains("Protocol error: unknown version error result did not have metadata"))
+                    throw e*/
+            }
+        }
+        throw IllegalStateException(error)
     }
 
     fun removePreorders(keyParameter: KeyParameter? = null) {
@@ -775,9 +794,9 @@ class BlockchainIdentity {
         for (unregisteredUsername in usernames) {
             val salt = saltForUsername(unregisteredUsername, true)
             val fullUsername = if (unregisteredUsername.contains(".")) {
-                unregisteredUsername.toLowerCase()
+                unregisteredUsername
             } else {
-                unregisteredUsername.toLowerCase() + "." + Names.DEFAULT_PARENT_DOMAIN
+                unregisteredUsername + "." + Names.DEFAULT_PARENT_DOMAIN
             }
             val saltedDomainHashData = platform.names.getSaltedDomainHashBytes(salt, fullUsername)
             mSaltedDomainHashes[unregisteredUsername] = saltedDomainHashData
@@ -798,12 +817,12 @@ class BlockchainIdentity {
         return usernamePreorderDocuments
     }
 
-    fun createDomainDocuments(unregisteredUsernames: List<String>): List<Document> {
+    fun createDomainDocuments(unregisteredUsernames: List<String>, alias: Boolean): List<Document> {
         val usernameDomainDocuments = ArrayList<Document>()
         checkIdentity()
         for (username in saltedDomainHashesForUsernames(unregisteredUsernames).keys) {
-            val isUniqueIdentity =
-                usernameDomainDocuments.isEmpty() && getUsernamesWithStatus(UsernameStatus.CONFIRMED).isEmpty()
+            val isUniqueIdentity = !alias || (
+                usernameDomainDocuments.isEmpty() && getUsernamesWithStatus(UsernameStatus.CONFIRMED).isEmpty())
             val document =
                 platform.names.createDomainDocument(identity!!, username, usernameSalts[username]!!, isUniqueIdentity)
             usernameDomainDocuments.add(document)
@@ -823,8 +842,8 @@ class BlockchainIdentity {
         return null
     }
 
-    fun createDomainTransition(unregisteredUsernames: List<String>): DocumentsBatchTransition? {
-        val usernameDomainDocuments = createDomainDocuments(unregisteredUsernames)
+    fun createDomainTransition(unregisteredUsernames: List<String>, alias: Boolean): DocumentsBatchTransition? {
+        val usernameDomainDocuments = createDomainDocuments(unregisteredUsernames, alias)
         if (usernameDomainDocuments.isEmpty()) return null
         val transitionMap = hashMapOf<String, List<Document>?>(
             "create" to usernameDomainDocuments
@@ -867,7 +886,7 @@ class BlockchainIdentity {
         val usernames = ArrayList<String>()
         for (username in usernameStatuses.keys) {
             val usernameInfo = usernameStatuses[username] as MutableMap<String, Any?>
-            val status = usernameInfo[BLOCKCHAIN_USERNAME_STATUS] as UsernameStatus
+            val status = usernameInfo[BLOCKCHAIN_USERNAME_STATUS] as? UsernameStatus ?: UsernameStatus.INITIAL
             if (status == usernameStatus) {
                 usernames.add(username)
             }
@@ -1519,15 +1538,22 @@ class BlockchainIdentity {
         keyParameter: KeyParameter?
     ): Profile {
         val currentProfile = getProfileFromPlatform()
-        val transition = if (currentProfile == null) {
-            createProfileTransition(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint)
+        val signer = WalletSignerCallback(wallet!!, keyParameter)
+        val document = if (currentProfile == null) {
+            profiles.create(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint, identity!!, 1, signer)
         } else {
-            replaceProfileTransition(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint)
+            profiles.replace(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint, identity!!, 1, signer)
         }
+//        val transition = if (currentProfile == null) {
+//            createProfileTransition(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint)
+//        } else {
+//            replaceProfileTransition(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint)
+//        }
 
 //        signStateTransition(transition, keyParameter)
 //
 //        platform.broadcastStateTransition(transition)
+        lastProfileDocument = document
         return Profile(lastProfileDocument!!)
     }
 
@@ -1590,12 +1616,17 @@ class BlockchainIdentity {
         avatarFingerprint: ByteArray?,
         keyParameter: KeyParameter?
     ): Profile {
-        val transition = replaceProfileTransition(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint)
+        val signer = WalletSignerCallback(wallet!!, keyParameter)
+        lastProfileDocument = profiles.replace(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint, identity!!, 1, signer)
+//        val transition = if (currentProfile == null) {
+//            createProfileTransition(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint)
+//        } else {
+//            replaceProfileTransition(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint)
+//        }
 
 //        signStateTransition(transition, keyParameter)
 //
 //        platform.broadcastStateTransition(transition)
-
         return Profile(lastProfileDocument!!)
     }
 
@@ -2002,18 +2033,13 @@ class BlockchainIdentity {
             val aesKey = cipher.deriveKey(encryptionKey)
             val encryptedData = cipher.encrypt(metadataBytes, aesKey)
 
-            val signingKey = maybeDecryptKey(
-                KeyIndexPurpose.AUTHENTICATION.ordinal,
-                KeyType.ECDSA_SECP256K1,
-                keyParameter
-            )!!
             TxMetadata(platform).create(
                 keyIndex,
                 encryptionKeyIndex,
                 encryptedData.initialisationVector.plus(encryptedData.encryptedBytes),
                 identity!!,
                 KeyIndexPurpose.AUTHENTICATION.ordinal,
-                signingKey
+                WalletSignerCallback(wallet!!, keyParameter)
             )
             currentMetadataItems.clear()
         }

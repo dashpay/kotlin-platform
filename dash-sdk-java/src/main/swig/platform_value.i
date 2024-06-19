@@ -91,8 +91,8 @@ CTYPE get##RTYPE() { \
     platform_value_Value() {
         return platform_value_Value_Null_ctor();
     }
-    CTOR(Array, Vec_platform_value_Value*)
-    CTOR(Map, platform_value_value_map_ValueMap*)
+    CTOR_CLONE(Array, Vec_platform_value_Value*, clone)
+    CTOR_CLONE(Map, platform_value_value_map_ValueMap*, clone)
     ~platform_value_Value() {
         platform_value_Value_destroy($self);
     }

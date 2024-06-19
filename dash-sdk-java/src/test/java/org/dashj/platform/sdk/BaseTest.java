@@ -21,6 +21,12 @@ public class BaseTest {
             (byte) 191, 83, (byte) 197, 49, 85
     };
 
+    static byte[] dashPayContractId = new byte[] {
+            (byte) 162, (byte)161, (byte)180, (byte)172, 111,(byte) 239, 34, (byte)234, 42, 26, 104, (byte)232, 18, 54, 68, (byte)179, 87, (byte)135, 95, 107, 65,
+            44, 24, 16, (byte)146, (byte)129, (byte)193, 70, (byte)231, (byte)178, 113, (byte)188,
+    };
+
+
     static MemoryFactory memoryFactory = MemoryFactory.getInstance();
 
     @BeforeAll

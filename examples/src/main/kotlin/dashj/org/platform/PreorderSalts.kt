@@ -13,7 +13,7 @@ import org.dashj.platform.sdk.Client
 import org.dashj.platform.sdk.client.ClientOptions
 import org.dashj.platform.sdk.platform.Documents
 
-class PreorderedNames {
+class PreorderSalts {
     companion object {
         lateinit var sdk: Client
 
@@ -41,7 +41,7 @@ class PreorderedNames {
                     for (doc in documents) {
                         println(
                             "Salted domain hash: " + (doc.data["saltedDomainHash"] as ByteArray32).toBase64() +
-                                " Identity: " + doc.ownerId
+                                " Identity: " + doc.ownerId + " id: " + doc.id
                         )
                     }
 

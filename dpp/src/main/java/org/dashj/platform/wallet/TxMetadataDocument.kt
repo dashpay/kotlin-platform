@@ -24,9 +24,9 @@ class TxMetadataDocument(document: Document) : AbstractDocument(document) {
     }
 
     val keyIndex: Int
-        get() = document.data["keyIndex"] as Int
+        get() = (document.data["keyIndex"] as Long).toInt()
     val encryptionKeyIndex: Int
-        get() = document.data["encryptionKeyIndex"] as Int
+        get() = (document.data["encryptionKeyIndex"] as Long).toInt()
     val encryptedMetadata: ByteArray
         get() = getFieldByteArray("encryptedMetadata")!!
 
@@ -37,6 +37,10 @@ class TxMetadataDocument(document: Document) : AbstractDocument(document) {
         other as TxMetadataDocument
 
         return document.equals(other.document)
+    }
+
+    override fun hashCode(): Int {
+        return document.id.hashCode()
     }
 
     override fun toString(): String {
