@@ -769,7 +769,7 @@ class BlockchainIdentity {
             usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.CONFIRMED
             usernameStatusDictionary[BLOCKCHAIN_USERNAME_UNIQUE] = Names.isUniqueIdentity(nameDocument)
             usernameStatuses[username] = usernameStatusDictionary
-            usernameSalts[username] = nameDocument.data["preorderSalt"] as ByteArray
+            usernameSalts[username] = Converters.byteArrayFromBase64orByteArray(nameDocument.data["preorderSalt"]!!)
             usernameStatusDictionary[BLOCKCHAIN_USERNAME_SALT] = usernameSalts[username] as ByteArray
             usernames.add(username)
         }
@@ -880,7 +880,7 @@ class BlockchainIdentity {
 
     fun statusOfUsername(username: String): UsernameStatus {
         return if (usernameStatuses.containsKey(username)) {
-            (usernameStatuses[username] as MutableMap<String, Any>)[BLOCKCHAIN_USERNAME_STATUS] as UsernameStatus
+            (usernameStatuses[username] as MutableMap<String, Any>)[BLOCKCHAIN_USERNAME_STATUS] as? UsernameStatus ?: UsernameStatus.INITIAL
         } else UsernameStatus.NOT_PRESENT
     }
 
