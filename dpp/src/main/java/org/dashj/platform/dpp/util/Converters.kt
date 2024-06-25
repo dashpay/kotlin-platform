@@ -43,6 +43,10 @@ object Converters {
             is String -> {
                 fromBase64(any)
             }
+            is ByteArray20 -> any.bytes
+            is ByteArray32 -> any.bytes
+            is ByteArray36 -> any.bytes
+
             is ByteArray -> any
             else -> throw IllegalStateException("any is not String or ByteArray")
         }
@@ -60,7 +64,10 @@ object Converters {
                 Base58.decode(any)
             }
             is ByteArray -> any
-            else -> throw IllegalStateException("any is not String or ByteArray")
+            is ByteArray20 -> any.bytes
+            is ByteArray32 -> any.bytes
+            is ByteArray36 -> any.bytes
+            else -> error("any is not String or ByteArray")
         }
     }
 
@@ -79,7 +86,7 @@ object Converters {
                 try {
                     fromBase64(string)
                 } catch (e: IllegalArgumentException) {
-                    throw IllegalArgumentException("string is not base58, base64 or hex: $string", e)
+                    error("string is not base58, base64 or hex: $string")
                 }
             }
         }
