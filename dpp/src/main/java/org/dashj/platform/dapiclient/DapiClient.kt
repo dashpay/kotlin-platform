@@ -978,11 +978,13 @@ class DapiClient(
      */
     fun getTransactionBytes(txHex: String): ByteArray? {
         logger.info("getTransaction($txHex)")
-        val transactionResult = dashsdk.platformMobileCoreGetTransaction(Converters.fromHex(txHex), BigInteger.ZERO, BigInteger.ZERO)
-        return if (transactionResult.ok != null) {
-            transactionResult.ok
-        } else {
-            null
+        try {
+            val transactionResult =
+                dashsdk.platformMobileCoreGetTransaction(Converters.fromHex(txHex), BigInteger.ZERO, BigInteger.ZERO)
+            return transactionResult.ok
+        } catch (e: NullPointerException) {
+            logger.error("transaction $txHex not found:", e)
+            return null
         }
     }
 
