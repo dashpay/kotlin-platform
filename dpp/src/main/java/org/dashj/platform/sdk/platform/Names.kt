@@ -36,6 +36,44 @@ class Names(val platform: Platform) {
             val records = dataDocumentTransition.data["records"] as Map<String, Any>
             return records.containsKey("dashUniqueIdentityId")
         }
+
+        fun normalizedNames(name: String): Pair<String, String> {
+            val nameSlice = name.indexOf('.')
+            val normalizedParentDomainName =
+                if (nameSlice == -1) DEFAULT_PARENT_DOMAIN else name.slice(nameSlice + 1 until name.length)
+
+            val label = if (nameSlice == -1) name else name.slice(0 until nameSlice)
+
+            val normalizedLabel = normalizeString(label)
+            return Pair(normalizedParentDomainName, normalizedLabel)
+        }
+
+        fun normalizeString(text: String) = text.lowercase()
+            .replace('o', '0')
+            .replace('i', '1')
+            .replace('l', '1')
+
+        private fun getLabel(name: String): String {
+            val nameSlice = name.indexOf('.')
+            return if (nameSlice == -1) name else name.slice(0..nameSlice)
+        }
+
+        fun getSaltedDomainHashBytes(
+            preOrderSaltRaw: ByteArray,
+            name: String
+        ): ByteArray {
+            return getSaltedDomainHash(preOrderSaltRaw, name).bytes
+        }
+
+        fun getSaltedDomainHash(
+            preOrderSaltRaw: ByteArray,
+            fullName: String
+        ): Sha256Hash {
+            val baos = ByteArrayOutputStream(preOrderSaltRaw.size + fullName.length)
+            baos.write(preOrderSaltRaw)
+            baos.write(normalizeString(fullName).toByteArray())
+            return Sha256Hash.twiceOf(baos.toByteArray())
+        }
     }
 
     fun register(
@@ -89,44 +127,6 @@ class Names(val platform: Platform) {
             map
         )
         return preorderDocument
-    }
-
-    fun normalizedNames(name: String): Pair<String, String> {
-        val nameSlice = name.indexOf('.')
-        val normalizedParentDomainName =
-            if (nameSlice == -1) DEFAULT_PARENT_DOMAIN else name.slice(nameSlice + 1 until name.length)
-
-        val label = if (nameSlice == -1) name else name.slice(0 until nameSlice)
-
-        val normalizedLabel = normalizeString(label)
-        return Pair(normalizedParentDomainName, normalizedLabel)
-    }
-
-    private fun normalizeString(text: String) = text.lowercase()
-        .replace('o', '0')
-        .replace('i', '1')
-        .replace('l', '1')
-
-    private fun getLabel(name: String): String {
-        val nameSlice = name.indexOf('.')
-        return if (nameSlice == -1) name else name.slice(0..nameSlice)
-    }
-
-    fun getSaltedDomainHashBytes(
-        preOrderSaltRaw: ByteArray,
-        name: String
-    ): ByteArray {
-        return getSaltedDomainHash(preOrderSaltRaw, name).bytes
-    }
-
-    fun getSaltedDomainHash(
-        preOrderSaltRaw: ByteArray,
-        fullName: String
-    ): Sha256Hash {
-        val baos = ByteArrayOutputStream(preOrderSaltRaw.size + fullName.length)
-        baos.write(preOrderSaltRaw)
-        baos.write(normalizeString(fullName).toByteArray())
-        return Sha256Hash.twiceOf(baos.toByteArray())
     }
 
     fun registerName(
