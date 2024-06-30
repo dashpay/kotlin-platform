@@ -4,15 +4,8 @@
 #include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 #include <cstring>
 #include "jnihelper.h"
-// fetchIdentity4
 
-//void myFetchIdentity4(platform_value_types_identifier_Identifier *identifier, jobject * callbackObject) {
-//    // create lamdas for ContextProvider
-//    // Call the right function in jobject
-//    platform_mobile_fetch_identity_fetch_identity4(identifier);
-//}
-
-jobject contextProvider;
+jobject contextProvider = nullptr;
 uint8_t invalid_key[] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -98,7 +91,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_dashj_platform_sdk_callbacks_Context
     return (long)get_quorum_public_key;
 }
 
-jobject signer;
+jobject signer = nullptr;
 
 int sign_data(u_int8_t * key_data, int key_len, uint8_t * data, int size, uint8_t * result) {
     LOGI("sign_data(0x%lx, %d, 0x%lx, %d, result=0x%lx)\n", key_data, key_len, data, size, result);
