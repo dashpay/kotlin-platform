@@ -683,7 +683,7 @@ class BlockchainIdentity {
                     platform.stateRepository.addValidDocument(nameDocumentTransition.id)
 
                     val salt = saltForUsername(username, false)
-                    val saltedDomainHash = platform.names.getSaltedDomainHashBytes(salt, "$username.${Names.DEFAULT_PARENT_DOMAIN}")
+                    val saltedDomainHash = Names.getSaltedDomainHashBytes(salt, "$username.${Names.DEFAULT_PARENT_DOMAIN}")
 
                     val preorderDocuments = platform.documents.get(
                         Names.DPNS_PREORDER_DOCUMENT,
@@ -804,7 +804,7 @@ class BlockchainIdentity {
             } else {
                 unregisteredUsername + "." + Names.DEFAULT_PARENT_DOMAIN
             }
-            val saltedDomainHashData = platform.names.getSaltedDomainHashBytes(salt, fullUsername)
+            val saltedDomainHashData = Names.getSaltedDomainHashBytes(salt, fullUsername)
             mSaltedDomainHashes[unregisteredUsername] = saltedDomainHashData
             usernameSalts[unregisteredUsername] = salt // is this required?
         }
