@@ -12,6 +12,7 @@ import org.dashj.platform.dpp.BaseObject
 import org.dashj.platform.dpp.Metadata
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.sdk.Identity
+import org.dashj.platform.sdk.SecurityLevel
 import kotlin.math.max
 
 typealias RustIdentity = org.dashj.platform.sdk.Identity
@@ -93,6 +94,14 @@ class Identity : BaseObject {
     fun getPublicKeyMaxId(): Int {
         return publicKeys.fold(-1) { result, publicKey ->
             max(publicKey.id, result)
+        }
+    }
+
+    fun getFirstPublicKey(securityLevel: SecurityLevel): IdentityPublicKey? {
+        return try {
+            publicKeys.first { it.securityLevel == securityLevel }
+        } catch (e: NoSuchElementException) {
+            null
         }
     }
 }

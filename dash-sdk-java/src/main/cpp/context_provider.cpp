@@ -4,15 +4,8 @@
 #include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 #include <cstring>
 #include "jnihelper.h"
-// fetchIdentity4
 
-//void myFetchIdentity4(platform_value_types_identifier_Identifier *identifier, jobject * callbackObject) {
-//    // create lamdas for ContextProvider
-//    // Call the right function in jobject
-//    platform_mobile_fetch_identity_fetch_identity4(identifier);
-//}
-
-jobject contextProvider;
+jobject contextProvider = nullptr;
 uint8_t invalid_key[] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -98,20 +91,22 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_dashj_platform_sdk_callbacks_Context
     return (long)get_quorum_public_key;
 }
 
-jobject signer;
+jobject signer = nullptr;
 
 int sign_data(u_int8_t * key_data, int key_len, uint8_t * data, int size, uint8_t * result) {
-    printf("sign_data(0x%lx, %d, 0x%lx, %d, result=0x%lx)\n", key_data, key_len, data, size, result);
+    LOGI("sign_data(0x%lx, %d, 0x%lx, %d, result=0x%lx)\n", key_data, key_len, data, size, result);
     JniHelper jni;
     JNIEnv * jenv = jni.getEnv();
 
     jclass clazz = jenv->FindClass("org/dashj/platform/sdk/callbacks/Signer");
     if (clazz == nullptr) {
-        printf("Cannot find class\n");
+        LOGI("Cannot find class\n");
+        return 0;
     }
     jmethodID signMethod = jenv->GetMethodID(clazz, "sign", "([B[B)[B");
     if (signMethod == nullptr) {
-        printf("Cannot find sign([B[B)[B\n");
+        LOGI("Cannot find sign([B[B)[B\n");
+        return 0;
     }
 
     jbyteArray keyByteArray = jenv->NewByteArray(key_len);
@@ -119,9 +114,16 @@ int sign_data(u_int8_t * key_data, int key_len, uint8_t * data, int size, uint8_
 
     jbyteArray dataByteArray = jenv->NewByteArray(size);
     jenv->SetByteArrayRegion(dataByteArray, 0, size, reinterpret_cast<jbyte *>(data));
-    printf("now call the function in the signer class");
+    LOGI("now call the function in the signer class");
     auto binaryDataObject = (jbyteArray) jenv->CallObjectMethod(signer, signMethod, keyByteArray, dataByteArray);
-    printf("sign method called = 0x%lx\n", binaryDataObject);
+    LOGI("sign method called = 0x%lx\n", binaryDataObject);
+
+    // check for pending exceptions
+    if (jenv->ExceptionCheck()) {
+        jenv->ExceptionClear();// Clear the exception
+        LOGI("sign: java exception caught");
+        return 0; // caller will need to handle this
+    }
 
     int length = jenv->GetArrayLength(binaryDataObject);
     jenv->GetByteArrayRegion(binaryDataObject, 0, length, (jbyte *)result);

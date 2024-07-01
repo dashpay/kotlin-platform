@@ -17,6 +17,7 @@ dependencies {
     implementation "org.dashj:dashj-core:$dashj_version"
     implementation 'com.google.guava:guava:29.0-android'
     implementation 'org.slf4j:slf4j-jdk14:1.7.30'
+    implementation 'org.json:json:20231013'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }

@@ -19,11 +19,11 @@ class ContactRequest(document: Document) : AbstractDocument(document) {
     val encryptedPublicKey: ByteArray
         get() = getFieldByteArray("encryptedPublicKey")!!
     val senderKeyIndex: Int
-        get() = document.data["senderKeyIndex"] as Int
+        get() = (document.data["senderKeyIndex"] as Long).toInt()
     val recipientKeyIndex: Int
-        get() = document.data["recipientKeyIndex"] as Int
+        get() = (document.data["recipientKeyIndex"] as Long).toInt()
     val accountReference: Int
-        get() = document.data["accountReference"] as Int
+        get() = (document.data["accountReference"] as Long).toInt()
     val version: Int
         get() = accountReference ushr 28
     val encryptedAccountLabel: ByteArray?
@@ -47,12 +47,12 @@ class ContactRequest(document: Document) : AbstractDocument(document) {
 
         fun encryptedPubKey(encryptedPublicKey: ByteArray, senderKeyIndex: Int, recipientKeyIndex: Int) = apply {
             data["encryptedPublicKey"] = encryptedPublicKey
-            data["senderKeyIndex"] = senderKeyIndex
-            data["recipientKeyIndex"] = recipientKeyIndex
+            data["senderKeyIndex"] = senderKeyIndex.toLong()
+            data["recipientKeyIndex"] = recipientKeyIndex.toLong()
         }
 
         fun accountReference(accountReference: Int) = apply {
-            data["accountReference"] = accountReference
+            data["accountReference"] = accountReference.toLong()
         }
 
         fun encryptedAccountLabel(encryptedAccountLabel: ByteArray) = apply {
@@ -70,6 +70,7 @@ class ContactRequest(document: Document) : AbstractDocument(document) {
         fun build(): ContactRequest {
             data["\$createdAt"] = Date().time
             data["\$type"] = "contactRequest"
+            data["\$revision"] = 1L
             val document = platform.documents.create(ContactRequests.CONTACTREQUEST_DOCUMENT, ownerId!!, data)
 
             return ContactRequest(document)

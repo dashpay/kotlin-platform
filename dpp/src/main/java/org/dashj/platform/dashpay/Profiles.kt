@@ -16,6 +16,7 @@ import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.sdk.BlockHeight
 import org.dashj.platform.sdk.CoreBlockHeight
+import org.dashj.platform.sdk.SecurityLevel
 import org.dashj.platform.sdk.dashsdk
 import org.dashj.platform.sdk.platform.Documents
 import org.dashj.platform.sdk.platform.Platform
@@ -42,11 +43,14 @@ class Profiles(
         val profileDocument = createProfileDocument(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint, identity)
         profileDocument.createdAt = Date().time
 
+        val highIdentityPublicKey = identity.getFirstPublicKey(SecurityLevel.HIGH)
+            ?: error("can't find a public key with HIGH security level")
+
         val profileResult = dashsdk.platformMobilePutPutDocument(
             profileDocument.toNative(),
             profileDocument.dataContractId!!.toNative(),
             profileDocument.type,
-            identity.publicKeys[id].toNative(),
+            highIdentityPublicKey.toNative(),
             BlockHeight(10000),
             CoreBlockHeight(platform.coreBlockHeight),
             BigInteger.valueOf(signer.signerCallback),
@@ -91,13 +95,16 @@ class Profiles(
         profileDocument.updatedAt = Date().time
         profileDocument.revision += 1
 
+        val highIdentityPublicKey = identity.getFirstPublicKey(SecurityLevel.HIGH)
+            ?: error("can't find a public key with HIGH security level")
+
         // under the hood this calls new_document_creation_transition_from_document
         // an not new_document_replacement_transition_from_document
-        val profileResult = dashsdk.platformMobilePutPutDocument(
+        val profileResult = dashsdk.platformMobilePutReplaceDocument(
             profileDocument.toNative(),
             profileDocument.dataContractId!!.toNative(),
             profileDocument.type,
-            identity.publicKeys[id].toNative(),
+            highIdentityPublicKey.toNative(),
             BlockHeight(10000),
             CoreBlockHeight(platform.coreBlockHeight),
             BigInteger.valueOf(signer.signerCallback),
@@ -207,9 +214,7 @@ class Profiles(
     ): List<Document> {
         val documentQuery = DocumentQuery.builder()
             .whereIn("\$ownerId", userIds)
-            .where("\$updatedAt", ">", timestamp)
             .orderBy("\$ownerId", true)
-            .orderBy("\$updatedAt", true)
             .build()
 
         return platform.documents.get(DOCUMENT, documentQuery)

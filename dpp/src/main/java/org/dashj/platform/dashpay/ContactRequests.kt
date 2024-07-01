@@ -59,12 +59,14 @@ class ContactRequests(val platform: Platform) {
                 .build().document
 
             val signer = WalletSignerCallback(fromUser.wallet!!, aesKey)
+            val highIdentityPublicKey = fromUser.identity!!.getFirstPublicKey(SecurityLevel.HIGH)
+                ?: error("can't find a public key with HIGH security level")
 
             val documentResult = dashsdk.platformMobilePutPutDocument(
                 contactRequestDocument.toNative(),
                 contactRequestDocument.dataContractId!!.toNative(),
                 contactRequestDocument.type,
-                fromUser.identity!!.publicKeys[1].toNative(),
+                highIdentityPublicKey.toNative(),
                 BlockHeight(10000),
                 CoreBlockHeight(platform.coreBlockHeight),
                 BigInteger.valueOf(signer.signerCallback),

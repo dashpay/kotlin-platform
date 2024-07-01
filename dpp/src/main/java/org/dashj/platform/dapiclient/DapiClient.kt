@@ -57,6 +57,7 @@ import org.dashj.platform.dpp.statetransition.StateTransitionIdentitySigned
 import org.dashj.platform.dpp.toBase58
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Cbor
+import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.Start
 import org.dashj.platform.sdk.base.Result
 import org.dashj.platform.sdk.callbacks.ContextProvider
@@ -121,7 +122,7 @@ class DapiClient(
         const val DEFAULT_HTTP_TIMEOUT = 10L
         const val REQUIRED_SUCCESS_RATE = 0.50 // 50%
     }
-    val contextProvider = object : ContextProvider() {
+    var contextProvider = object : ContextProvider() {
         override fun getQuorumPublicKey(
             quorumType: Int,
             quorumHashBytes: ByteArray?,
@@ -977,14 +978,25 @@ class DapiClient(
      */
     fun getTransactionBytes(txHex: String): ByteArray? {
         logger.info("getTransaction($txHex)")
-        return ByteArray(227)
+        try {
+            val transactionResult =
+                dashsdk.platformMobileCoreGetTransaction(Converters.fromHex(txHex), BigInteger.ZERO, BigInteger.ZERO)
+            return transactionResult.ok
+        } catch (e: NullPointerException) {
+            logger.error("transaction $txHex not found:", e)
+            return null
+        }
     }
 
     /**
      *
-     * @param txHex String
+     * @param txIdHex String
      * @return GetTransactionResponse?
      */
+
+    fun getTransaction(txIdHex: String): ByteArray? {
+        return getTransactionBytes(txIdHex)
+    }
 //    fun getTransaction(txHex: String): GetTransactionResponse? {
 //        logger.info("getTransaction($txHex)")
 //        val method = GetTransactionMethod(txHex)
@@ -1148,9 +1160,5 @@ class DapiClient(
             }
         }
         return matches != 0
-    }
-
-    fun getTransaction(toString: String): ByteArray? {
-        TODO()
     }
 }

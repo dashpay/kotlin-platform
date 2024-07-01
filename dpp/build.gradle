@@ -72,7 +72,7 @@ sourceSets {
 
 test {
     useJUnitPlatform()
-    systemProperty "java.library.path", "../dash-sdk-kotlin/build/cmake"
+    systemProperty "java.library.path", "../dash-sdk-java/build/cmake"
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {

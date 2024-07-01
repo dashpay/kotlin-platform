@@ -10,13 +10,10 @@ import com.google.common.base.Stopwatch
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import org.bitcoinj.core.AbstractBlockChain
-import kotlin.collections.HashMap
 import org.bitcoinj.core.ECKey
 import org.bitcoinj.core.NetworkParameters
-import org.bitcoinj.core.StoredBlock
 import org.bitcoinj.core.listeners.NewBestBlockListener
 import org.bitcoinj.evolution.SimplifiedMasternodeListManager
-import org.bitcoinj.params.MainNetParams
 import org.dashj.platform.dapiclient.DapiClient
 import org.dashj.platform.dapiclient.MaxRetriesReachedException
 import org.dashj.platform.dapiclient.NoAvailableAddressesForRetryException
@@ -59,6 +56,7 @@ class Platform(val params: NetworkParameters) {
     var names = Names(this)
     lateinit var client: DapiClient
     private var useWhiteList = false
+    // TODO: we might need this retry system in dash-sdk?
 //    val documentsRetryCallback = object : DefaultGetDocumentsWithContractIdRetryCallback(apps.map { it.value.contractId }) {
 //        override val retryContractIds
 //            get() = getAppList() // always use the latest app list
@@ -78,7 +76,7 @@ class Platform(val params: NetworkParameters) {
         when {
             params.id.contains("test") -> {
                 useWhiteList = true
-                apps["dashwallet"] = ClientAppDefinition("HC6MbZAX5PjXnwektAZYeCpmKncrn6aLxtuQr7WAhwyj")
+                apps["dashwallet"] = ClientAppDefinition("FbGQVGqhKF7GMKwfpfdfWiexV9XWmEbtgCFMp3wnkNeP")
             }
             params.id.contains("bintang") -> {
                 apps["dashwallet"] = ClientAppDefinition("Fds5DDfXoLwpUZ71AAVYZP1uod8S7Ze2bR28JExBvZKR")
@@ -156,6 +154,7 @@ class Platform(val params: NetworkParameters) {
     }
 
     fun useValidNodes() {
+        // TODO: restore this?
         //val mnList = getMnList()
         //val validList = mnList.filter {
         //    it["isValid"] == true
@@ -224,10 +223,10 @@ class Platform(val params: NetworkParameters) {
             log.warn("platform check: $e")
             false
         } catch (e: MaxRetriesReachedException) {
-            log.warn("platform check: $e")
+            log.warn("platform check: max retries: $e")
             false
         } catch (e: NoAvailableAddressesForRetryException) {
-            log.warn("platform check: $e")
+            log.warn("platform check: no available addresses: $e")
             false
         }
     }
