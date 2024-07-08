@@ -4,7 +4,6 @@
 #include "config.h"
 #include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 
-#include <stdlib.h>
 #include "dpp.h"
 #include "conversions.h"
 #include "jnihelper.h"
