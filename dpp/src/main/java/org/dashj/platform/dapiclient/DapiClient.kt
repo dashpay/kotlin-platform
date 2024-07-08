@@ -58,6 +58,7 @@ import org.dashj.platform.dpp.toBase58
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Cbor
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.sdk.SWIGTYPE_p_RustSdk
 import org.dashj.platform.sdk.Start
 import org.dashj.platform.sdk.base.Result
 import org.dashj.platform.sdk.callbacks.ContextProvider
@@ -152,6 +153,8 @@ class DapiClient(
     val contextProviderFunction: Long
         get() = if (useContextProvider) contextProvider.quorumPublicKeyCallback else 0L
 
+    lateinit var rustSdk: SWIGTYPE_p_RustSdk
+
     init {
         val loggingInterceptor = HttpLoggingInterceptor { msg: String? -> logger.info(msg) }
         loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
@@ -172,6 +175,11 @@ class DapiClient(
         } catch (e: RuntimeException) {
             false
         }
+
+        rustSdk = dashsdk.platformMobileConfigCreateSdk(
+            BigInteger.valueOf(contextProviderFunction),
+            BigInteger.ZERO
+        )
     }
 
     constructor(
@@ -453,10 +461,9 @@ class DapiClient(
     ): Identity? {
         logger.info("getIdentity(${id.toBase58()}, $prove)")
         val identityId = Identifier.from(id)
-        val result = dashsdk.fetchIdentity(
-            RustIdentifier(id),
-            BigInteger.valueOf(contextProviderFunction),
-            BigInteger.ZERO
+        val result = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(
+            rustSdk,
+            RustIdentifier(id)
         )
         return try {
             Identity(result.unwrap())
@@ -472,10 +479,9 @@ class DapiClient(
      */
     fun getIdentityByFirstPublicKey(pubKeyHash: ByteArray, prove: Boolean = false): Identity? {
         logger.info("getIdentityByFirstPublicKey(${pubKeyHash.toHex()})")
-        val result = dashsdk.getIdentityByPublicKeyHash(
-            pubKeyHash,
-            BigInteger.valueOf(contextProviderFunction),
-            BigInteger.ZERO
+        val result = dashsdk.platformMobileFetchIdentityFetchIdentityWithKeyhashSdk(
+            rustSdk,
+            pubKeyHash
         )
         return try {
             Identity(result.unwrap())
@@ -671,9 +677,7 @@ class DapiClient(
             documentQuery.encodeWhere(),
             documentQuery.encodeOrderBy(),
             if (documentQuery.limit == -1) 100 else documentQuery.limit.toLong(),
-            start,
-            BigInteger.valueOf(contextProviderFunction),
-            BigInteger.ZERO
+            start
         )
         return result.unwrap().map {
             Document(it, contractIdentifier)
@@ -980,7 +984,10 @@ class DapiClient(
         logger.info("getTransaction($txHex)")
         try {
             val transactionResult =
-                dashsdk.platformMobileCoreGetTransaction(Converters.fromHex(txHex), BigInteger.ZERO, BigInteger.ZERO)
+                dashsdk.platformMobileCoreGetTransactionSdk(
+                    rustSdk,
+                    Converters.fromHex(txHex)
+                )
             return transactionResult.ok
         } catch (e: NullPointerException) {
             logger.error("transaction $txHex not found:", e)

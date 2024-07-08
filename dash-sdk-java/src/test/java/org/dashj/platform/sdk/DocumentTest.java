@@ -236,4 +236,18 @@ public class DocumentTest extends BaseTest {
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void createSDKTest() throws Exception {
+        SWIGTYPE_p_RustSdk sdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
+        ArrayList list = new ArrayList();
+        Result<List<Document>, String> result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                sdk, new Identifier(dpnsContractId),
+                "domain", list, list, 100, null);
+        List<Document> documentList = result.unwrap();
+        documentList.forEach(doc -> {
+            System.out.println(doc.getV0().get_0().getId().getBytes().length);
+        });
+        //dashsdk.platformMobileConfigRustSdkDestroy(sdk);
+    }
 }

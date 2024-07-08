@@ -62,16 +62,15 @@ class ContactRequests(val platform: Platform) {
             val highIdentityPublicKey = fromUser.identity!!.getFirstPublicKey(SecurityLevel.HIGH)
                 ?: error("can't find a public key with HIGH security level")
 
-            val documentResult = dashsdk.platformMobilePutPutDocument(
+            val documentResult = dashsdk.platformMobilePutPutDocumentSdk(
+                platform.rustSdk,
                 contactRequestDocument.toNative(),
                 contactRequestDocument.dataContractId!!.toNative(),
                 contactRequestDocument.type,
                 highIdentityPublicKey.toNative(),
                 BlockHeight(10000),
                 CoreBlockHeight(platform.coreBlockHeight),
-                BigInteger.valueOf(signer.signerCallback),
-                BigInteger.valueOf(platform.client.contextProviderFunction),
-                BigInteger.ZERO
+                BigInteger.valueOf(signer.signerCallback)
             )
             val publishedContactRequest = documentResult.unwrap()
 

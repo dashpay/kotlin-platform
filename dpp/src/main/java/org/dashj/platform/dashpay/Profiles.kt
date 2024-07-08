@@ -46,16 +46,15 @@ class Profiles(
         val highIdentityPublicKey = identity.getFirstPublicKey(SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
 
-        val profileResult = dashsdk.platformMobilePutPutDocument(
+        val profileResult = dashsdk.platformMobilePutPutDocumentSdk(
+            platform.rustSdk,
             profileDocument.toNative(),
             profileDocument.dataContractId!!.toNative(),
             profileDocument.type,
             highIdentityPublicKey.toNative(),
             BlockHeight(10000),
             CoreBlockHeight(platform.coreBlockHeight),
-            BigInteger.valueOf(signer.signerCallback),
-            BigInteger.valueOf(platform.client.contextProviderFunction),
-            BigInteger.ZERO
+            BigInteger.valueOf(signer.signerCallback)
         )
         return Document(profileResult.unwrap(), profileDocument.dataContractId!!)
     }

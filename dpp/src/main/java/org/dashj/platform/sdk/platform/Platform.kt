@@ -47,6 +47,8 @@ class Platform(val params: NetworkParameters) {
     } else {
         PlatformStateRepository(this)
     }
+    val rustSdk
+        get() = client.rustSdk
 
     val dpp = DashPlatformProtocol(stateRepository, params)
     val apps = HashMap<String, ClientAppDefinition>()
@@ -82,6 +84,7 @@ class Platform(val params: NetworkParameters) {
                 apps["dashwallet"] = ClientAppDefinition("Fds5DDfXoLwpUZ71AAVYZP1uod8S7Ze2bR28JExBvZKR")
             }
         }
+        System.loadLibrary("sdklib")
         client = DapiClient(params.defaultHPMasternodeList.toList(), dpp, true)
         System.loadLibrary("sdklib")
     }

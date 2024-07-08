@@ -33,4 +33,14 @@ extern JavaVM* javaVM;
 inline void logInfo(const char *message) {
     LOGI("%s", message);
 }
+
+// missing items from dash_sdk_bindings.h
+struct RustSdk {};
+struct RustSdk5 {};
+struct Processor;
+struct DashSharedCore;
+struct dash_sdk_sdk_Sdk;
+
+//uint8_t * (QuorumPublicKeyCallbackExport)();
+
 #endif
