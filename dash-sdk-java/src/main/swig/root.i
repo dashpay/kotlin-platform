@@ -88,3 +88,9 @@ import org.dashj.platform.sdk.base.BaseObject;
 // header files to convert to Java
 %include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 %include "src/main/cpp/dpp.h"
+
+// put missing structs here
+struct OutPoint {
+    Arr_u8_32 * txid;
+    uint32_t vout;
+};

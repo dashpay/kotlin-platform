@@ -1,5 +1,6 @@
 package org.dashj.platform.sdk;
 
+import org.bitcoinj.core.Base58;
 import org.dashj.platform.sdk.base.Result;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

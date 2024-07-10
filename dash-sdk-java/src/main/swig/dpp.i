@@ -22,8 +22,25 @@ DEFINE_ALIAS(
     0
 );
 
+%ignore OutPoint::txid;
+%ignore OutPoint::vout;
+%extend OutPoint {
+    OutPoint(Arr_u8_32 * txid, uint32_t vout) {
+        OutPoint * out_point = new OutPoint;
+        out_point->txid = clone(txid);
+        out_point->vout = vout;
+        return out_point;
+    }
+    ~OutPoint() {
+        Arr_u8_32_destroy($self->txid);
+        delete $self;
+    }
+    Arr_u8_32 * getTxid() { return $self->txid; }
+    long getIndex() { return $self->vout; }
+}
+
 START_CLASS(
-    OutPoint,
+    OutPointFFI,
     platform_mobile_put_OutPointFFI
 );
     platform_mobile_put_OutPointFFI(Arr_u8_32 *txid, uint32_t vout) {
@@ -53,7 +70,7 @@ START_CLASS(
     ChainAssetLockProof,
     platform_mobile_put_ChainAssetLockProofFFI
 );
-    platform_mobile_put_ChainAssetLockProofFFI(uint32_t core_chain_locked_height, platform_mobile_put_OutPointFFI *out_point) {
+    platform_mobile_put_ChainAssetLockProofFFI(uint32_t core_chain_locked_height, OutPoint *out_point) {
         return platform_mobile_put_ChainAssetLockProofFFI_ctor(
             core_chain_locked_height,
             clone(out_point)
@@ -61,6 +78,8 @@ START_CLASS(
     }
 
 END_CLASS();
+
+
 
 START_CLASS(
     InstantAssetLockProof,
