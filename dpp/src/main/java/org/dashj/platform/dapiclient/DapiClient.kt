@@ -131,8 +131,8 @@ class DapiClient(
         ): ByteArray? {
             val quorumHash = Sha256Hash.wrap(quorumHashBytes)
             var quorumPublicKey: ByteArray? = null
-            println("searching for quorum: $quorumType, $quorumHash, $coreChainLockedHeight")
-            Context.get().masternodeListManager.getQuorumListAtTip(
+            logger.info("searching for quorum: $quorumType, $quorumHash, $coreChainLockedHeight")
+            masternodeListManager.getQuorumListAtTip(
                 LLMQParameters.LLMQType.fromValue(
                     quorumType
                 )
@@ -141,7 +141,7 @@ class DapiClient(
                     quorumPublicKey = it.quorumPublicKey.serialize(false)
                 }
             }
-            println("searching for quorum: result: ${quorumPublicKey?.toHex()}")
+            logger.info("searching for quorum: result: ${quorumPublicKey?.toHex()}")
             return quorumPublicKey
         }
 
@@ -671,7 +671,8 @@ class DapiClient(
             documentQuery.startAfter != null -> Start(documentQuery.startAfter!!.toBuffer(), false)
             else -> null
         }
-        val result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQuery(
+        val result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+            rustSdk,
             rustContractIdentifier,
             type,
             documentQuery.encodeWhere(),
@@ -1167,5 +1168,10 @@ class DapiClient(
             }
         }
         return matches != 0
+    }
+
+    fun getIdentityBalance(identifier: Identifier) : Long {
+        val result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(rustSdk, identifier.toNative())
+        return result.unwrap()
     }
 }
