@@ -86,7 +86,6 @@ class Platform(val params: NetworkParameters) {
         }
         System.loadLibrary("sdklib")
         client = DapiClient(params.defaultHPMasternodeList.toList(), dpp, true)
-        System.loadLibrary("sdklib")
     }
 
     fun getAppList(): List<Identifier> {

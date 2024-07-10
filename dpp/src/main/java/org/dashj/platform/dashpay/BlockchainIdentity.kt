@@ -597,16 +597,15 @@ class BlockchainIdentity {
             // TODO: check for existing preorder
             log.info("checking for preorder {} with saltedDomainHash {}", preorder.ownerId, (preorder.data["saltedDomainHash"]!! as ByteArray).toBase64())
             if (platform.documents.get("dpns.preorder", DocumentQuery.builder().where(listOf("saltedDomainHash", "==", preorder.data["saltedDomainHash"]!!)).build()).isEmpty()) {
-                val documentResult = dashsdk.platformMobilePutPutDocument(
+                val documentResult = dashsdk.platformMobilePutPutDocumentSdk(
+                    platform.rustSdk,
                     preorder.toNative(),
                     preorder.dataContractId!!.toNative(),
                     preorder.type,
                     highIdentityPublicKey.toNative(),
                     BlockHeight(10000),
                     CoreBlockHeight(platform.coreBlockHeight),
-                    BigInteger.valueOf(signer.signerCallback),
-                    BigInteger.valueOf(platform.client.contextProviderFunction),
-                    BigInteger.ZERO
+                    BigInteger.valueOf(signer.signerCallback)
                 )
                 val preorderDocument = documentResult.unwrap()
                 log.info("preorder document: {}", preorderDocument.v0._0.id.bytes.toBase58())
@@ -708,16 +707,15 @@ class BlockchainIdentity {
             ?: error("can't find a public key with HIGH security level")
 
         for (i in 0 .. 2) {
-            val document_result = dashsdk.platformMobilePutPutDocument(
+            val document_result = dashsdk.platformMobilePutPutDocumentSdk(
+                platform.rustSdk,
                 domain.toNative(),
                 domain.dataContractId!!.toNative(),
                 domain.type,
                 highIdentityPublicKey.toNative(),
                 BlockHeight(10000),
                 CoreBlockHeight(platform.coreBlockHeight),
-                BigInteger.valueOf(signer.signerCallback),
-                BigInteger.valueOf(platform.client.contextProviderFunction),
-                BigInteger.ZERO
+                BigInteger.valueOf(signer.signerCallback)
             )
             try {
                 return document_result.unwrap()

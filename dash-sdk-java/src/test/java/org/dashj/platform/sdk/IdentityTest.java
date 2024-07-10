@@ -228,7 +228,7 @@ public class IdentityTest extends BaseTest {
     @Test
     public void assetLockTest() {
         OutPoint outPoint = new OutPoint(identifier, 0);
-        assertEquals(0, outPoint.getVout());
+        assertEquals(0, outPoint.getIndex());
         assertArrayEquals(identifier, outPoint.getTxid());
 
         InstantAssetLockProof instantAssetLockProof = new InstantAssetLockProof(identifier, identifier, 0);
@@ -297,4 +297,15 @@ public class IdentityTest extends BaseTest {
 //        SWIGTYPE_p_void p_void = new SWIGTYPE_p_void();
 //        //String result = dashsdk.ffiGetChainTypeStringAsync(p_void, mainNet);
 //    }
+
+    @Test
+    public void identityBalanceTest() throws Exception {
+        SWIGTYPE_p_RustSdk sdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
+        Result<Long, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(sdk, new Identifier(identifier));
+        result.unwrapError();
+
+        Identifier id = new Identifier(Base58.decode("Cxo56ta5EMrWok8yp2Gpzm8cjBoa3mGYKZaAp9yqD3gW"));
+        Result<Long, String> result2 = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(sdk, id);
+        result2.unwrap();
+    }
 }
