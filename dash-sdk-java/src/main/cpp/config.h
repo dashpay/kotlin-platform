@@ -42,5 +42,13 @@ struct DashSharedCore;
 struct dash_sdk_sdk_Sdk;
 
 //uint8_t * (QuorumPublicKeyCallbackExport)();
+struct Arr_u8_32;
+
+struct OutPoint {
+    Arr_u8_32 *txid;
+    uint32_t vout;
+};
+
+struct platform_mobile_config_EntryPoint;
 
 #endif
