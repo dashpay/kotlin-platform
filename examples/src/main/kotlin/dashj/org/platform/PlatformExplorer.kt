@@ -304,11 +304,11 @@ object PlatformExplorer {
                     printDocument(doc)
                 }
                 "5" -> {
-                    val docs = dashsdk.platformMobileFetchDocumentGetDocuments(
-                        Identifier(dpnsContractId),
-                        "domain",
-                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-                        BigInteger.ZERO)
+                    val result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                        sdk, Identifier(dpnsContractId),
+                        "domain", listOf(), listOf(), 100, null
+                    )
+                    val docs = result.unwrap()
                     docs.forEach { doc ->
                         printDomainDocument(doc)
                     }
