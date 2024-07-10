@@ -2,7 +2,7 @@ extern crate cbindgen;
 extern crate ferment;
 
 use std::process::Command;
-use ferment::builder::{Builder, Crate};
+use ferment::{Builder, Crate};
 
 pub const SELF_NAME: &str = "dash_sdk_bindings";
 fn main() {
