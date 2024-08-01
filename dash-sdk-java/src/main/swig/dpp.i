@@ -27,15 +27,17 @@ DEFINE_ALIAS(
 %extend OutPoint {
     OutPoint(Arr_u8_32 * txid, uint32_t vout) {
         OutPoint * out_point = new OutPoint;
-        out_point->txid = clone(txid);
+        out_point->txid = (uint8_t (*)[32])memoryFactory.clone((uint8_t*)txid->values, 32);
         out_point->vout = vout;
         return out_point;
     }
     ~OutPoint() {
-        Arr_u8_32_destroy($self->txid);
+        memoryFactory.destroy($self->txid);
         delete $self;
     }
-    Arr_u8_32 * getTxid() { return $self->txid; }
+    uint8_t (* getTxid())[32] {
+        return $self->txid;
+    }
     long getIndex() { return $self->vout; }
 }
 

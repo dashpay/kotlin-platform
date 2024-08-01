@@ -165,13 +165,13 @@
                 printf("int item: %d\n", *$1->ok);
                 jclass integerClass = (jenv)->FindClass("java/lang/Integer");
                 jmethodID constructor = (jenv)->GetMethodID(integerClass, "<init>", "(I)V");
-                elementObj = (jenv)->NewObject(integerClass, constructor, (int)(long)$1->ok); // ok is a pointer, but acts as a value
+                elementObj = (jenv)->NewObject(integerClass, constructor, (int)(long)*$1->ok); // ok is a pointer, but acts as a value
             } else if (strcmp(#RETURN_TYPE, "Long") == 0) {
                 printf("long item\n");
                 printf("long item: %lld\n", $1->ok);
                 jclass integerClass = (jenv)->FindClass("java/lang/Long");
                 jmethodID constructor = (jenv)->GetMethodID(integerClass, "<init>", "(J)V");
-                elementObj = (jenv)->NewObject(integerClass, constructor, (long)$1->ok);  // ok is a pointer, but acts as a value
+                elementObj = (jenv)->NewObject(integerClass, constructor, (long)*$1->ok);  // ok is a pointer, but acts as a value
             } else {
                 printf("invalid? item\n");
             }

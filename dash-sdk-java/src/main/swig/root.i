@@ -90,7 +90,9 @@ import org.dashj.platform.sdk.base.BaseObject;
 %include "src/main/cpp/dpp.h"
 
 // put missing structs here
-struct OutPoint {
-    Arr_u8_32 * txid;
-    uint32_t vout;
+
+struct InstantLock {
+    void * ptr;
 };
+
+%ignore platform_mobile_config_RustSdk_ctor(platform_mobile_config_EntryPoint *entry_point);
