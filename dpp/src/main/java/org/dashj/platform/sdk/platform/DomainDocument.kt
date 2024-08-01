@@ -16,6 +16,7 @@ class DomainDocument(document: Document) : AbstractDocument(document) {
         get() = getFieldString("normalizedLabel")!!
     val normalizedParentDomainName: String
         get() = getFieldString("normalizedParentDomainName")!!
+    @Deprecated("this field is no longer used")
     val dashAliasIdentityId: Identifier?
         get() {
             val records = getFieldMap("records")
@@ -28,8 +29,8 @@ class DomainDocument(document: Document) : AbstractDocument(document) {
     val dashUniqueIdentityId: Identifier?
         get() {
             val records = getFieldMap("records")
-            return if (records != null && records.containsKey("dashUniqueIdentityId")) {
-                Identifier.from(records["dashUniqueIdentityId"])
+            return if (records != null && records.containsKey("identity")) {
+                Identifier.from(records["identity"])
             } else {
                 null
             }
@@ -47,6 +48,6 @@ class DomainDocument(document: Document) : AbstractDocument(document) {
         get() = getFieldByteArray("preorderSalt")!!
 
     override fun toString(): String {
-        return "DomainDocument(label=$label, records.dashUniqueIdentityId=$dashUniqueIdentityId)"
+        return "DomainDocument(label=$label, records.identity=$dashUniqueIdentityId)"
     }
 }

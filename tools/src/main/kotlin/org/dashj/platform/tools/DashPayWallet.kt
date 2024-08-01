@@ -237,7 +237,7 @@ class DashPayWallet(val blockchainIdentity: BlockchainIdentity, val peerGroup: P
 
     fun getIdentityForName(nameDocument: Document): Identifier {
         val records = nameDocument.data["records"] as Map<String, Any?>
-        return Identifier.from(records["dashUniqueIdentityId"])
+        return Identifier.from(records["identity"])
     }
 
     /**

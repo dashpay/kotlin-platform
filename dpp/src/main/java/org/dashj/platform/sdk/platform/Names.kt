@@ -156,7 +156,7 @@ class Names(val platform: Platform) {
         isUniqueIdentity: Boolean = true
     ): Document {
         val recordType = if (isUniqueIdentity) {
-            "dashUniqueIdentityId"
+            "identity"
         } else {
             "dashAliasIdentityId"
         }
@@ -264,7 +264,7 @@ class Names(val platform: Platform) {
     }
 
     fun getByOwnerId(ownerId: Identifier): List<Document> {
-        return resolveByRecord("dashUniqueIdentityId", ownerId)
+        return resolveByRecord("identity", ownerId)
     }
 
     /**
@@ -332,8 +332,8 @@ class Names(val platform: Platform) {
         userIds: List<Identifier>
     ): List<Document> {
         val documentQuery = DocumentQuery.Builder()
-        documentQuery.whereIn("records.dashUniqueIdentityId", userIds)
-            .orderBy("records.dashUniqueIdentityId", true)
+        documentQuery.whereIn("records.identity", userIds)
+            .orderBy("records.identity", true)
 
         val documents = platform.documents.get(DPNS_DOMAIN_DOCUMENT, documentQuery.build())
 

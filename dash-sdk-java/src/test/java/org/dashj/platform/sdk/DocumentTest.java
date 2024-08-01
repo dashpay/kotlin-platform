@@ -72,7 +72,7 @@ public class DocumentTest extends BaseTest {
         List<Document> all = dashsdk.platformMobileFetchDocumentGetDocuments(domainId, "domain", BigInteger.ZERO, BigInteger.ZERO);
         Identifier id = null;
         for (Document d : all) {
-            PlatformValue value = d.getV0().get_0().getProperties().get("records").getMap().get_0().get(new PlatformValue("dashUniqueIdentityId"));
+            PlatformValue value = d.getV0().get_0().getProperties().get("records").getMap().get_0().get(new PlatformValue("identity"));
             if (value != null)
                 id = new Identifier(value.getIdentifier().getBytes());
         }
