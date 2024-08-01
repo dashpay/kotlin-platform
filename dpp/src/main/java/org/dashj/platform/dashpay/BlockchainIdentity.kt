@@ -670,6 +670,8 @@ class BlockchainIdentity {
 
         var i = 0
         domainDocuments.forEach { domain ->
+            val balance = platform.client.getIdentityBalance(identity!!.id)
+            log.info("current balance: {}", balance)
             val document = broadcastDomainDocument(domain, signer)
 
             log.info("domain doc id: {}", Identifier(document.v0._0.id.bytes))
@@ -726,7 +728,8 @@ class BlockchainIdentity {
         var error = ""
         val highIdentityPublicKey = identity!!.getFirstPublicKey(SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
-
+        val credits = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(platform.rustSdk, identity!!.id.toNative()).unwrap()
+        log.info("credit balance: {}", credits)
         for (i in 0 .. 2) {
             val document_result = dashsdk.platformMobilePutPutDocumentSdk(
                 platform.rustSdk,
