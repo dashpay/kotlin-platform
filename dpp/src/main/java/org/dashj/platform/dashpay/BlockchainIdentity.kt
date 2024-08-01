@@ -597,18 +597,17 @@ class BlockchainIdentity {
             // TODO: check for existing preorder
             log.info("checking for preorder {} with saltedDomainHash {}", preorder.ownerId, (preorder.data["saltedDomainHash"]!! as ByteArray).toBase64())
             if (platform.documents.get("dpns.preorder", DocumentQuery.builder().where(listOf("saltedDomainHash", "==", preorder.data["saltedDomainHash"]!!)).build()).isEmpty()) {
-                val documentResult = dashsdk.platformMobilePutPutDocumentSdk(
-                    platform.rustSdk,
-                    preorder.toNative(),
-                    preorder.dataContractId!!.toNative(),
-                    preorder.type,
-                    highIdentityPublicKey.toNative(),
-                    BlockHeight(10000),
-                    CoreBlockHeight(platform.coreBlockHeight),
-                    BigInteger.valueOf(signer.signerCallback)
-                )
-                val preorderDocument = documentResult.unwrap()
-                log.info("preorder document: {}", preorderDocument.v0._0.id.bytes.toBase58())
+                try {
+                    registerPreorder(preorder, highIdentityPublicKey, signer)
+                } catch (e: Exception) {
+                    // if the identity doesn't exist, wait 10 seconds for network propagation
+                    // TODO: move this to rust
+                    if (e.message!!.contains("Identifier Error: Identity not found")) {
+                        Thread.sleep(10000);
+                        platform.client.getIdentityBalance(uniqueIdentifier)
+                        registerPreorder(preorder, highIdentityPublicKey, signer)
+                    }
+                }
             }
 
             val string = usernames[i++]
@@ -640,6 +639,28 @@ class BlockchainIdentity {
             }
         }
         saveUsernames(usernames, UsernameStatus.PREORDER_REGISTRATION_PENDING)
+    }
+
+    private fun registerPreorder(
+        preorder: Document,
+        highIdentityPublicKey: IdentityPublicKey,
+        signer: WalletSignerCallback
+    ) {
+        val balance = platform.client.getIdentityBalance(identity!!.id)
+        log.info("current balance: {}", balance)
+
+        val documentResult = dashsdk.platformMobilePutPutDocumentSdk(
+            platform.rustSdk,
+            preorder.toNative(),
+            preorder.dataContractId!!.toNative(),
+            preorder.type,
+            highIdentityPublicKey.toNative(),
+            BlockHeight(10000),
+            CoreBlockHeight(platform.coreBlockHeight),
+            BigInteger.valueOf(signer.signerCallback)
+        )
+        val preorderDocument = documentResult.unwrap()
+        log.info("preorder document: {}", preorderDocument.v0._0.id.bytes.toBase58())
     }
 
     fun registerUsernameDomainsForUsernames(usernames: List<String>, keyParameter: KeyParameter?, alias: Boolean) {
@@ -758,12 +779,11 @@ class BlockchainIdentity {
 
         val nameDocuments = arrayListOf<Document>()
         nameDocuments.addAll(platform.names.getByOwnerId(uniqueIdentifier))
-        nameDocuments.addAll(platform.names.getByUserIdAlias(uniqueIdentifier))
         val usernames = ArrayList<String>()
 
         for (nameDocument in nameDocuments) {
             val username = nameDocument.data["normalizedLabel"] as String
-            var usernameStatusDictionary = HashMap<String, Any>()
+            val usernameStatusDictionary = HashMap<String, Any>()
             usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.CONFIRMED
             usernameStatusDictionary[BLOCKCHAIN_USERNAME_UNIQUE] = Names.isUniqueIdentity(nameDocument)
             usernameStatuses[username] = usernameStatusDictionary
