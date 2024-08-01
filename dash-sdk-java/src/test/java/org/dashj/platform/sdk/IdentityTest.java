@@ -305,7 +305,7 @@ public class IdentityTest extends BaseTest {
         Result<Long, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(sdk, new Identifier(identifier));
         result.unwrapError();
 
-        Identifier id = new Identifier(Base58.decode("Cxo56ta5EMrWok8yp2Gpzm8cjBoa3mGYKZaAp9yqD3gW"));
+        Identifier id = new Identifier(Base58.decode("9Qv1fnN59iNWYBmQNk3a63N1ciW7oEKr6dXNQH8ryUaj"));
         Result<Long, String> result2 = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(sdk, id);
         result2.unwrap();
     }
