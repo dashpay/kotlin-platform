@@ -66,20 +66,15 @@ FermentVectorValueMapTuple * java_map_Value_Value_to_fermented_ValueMap(JNIEnv *
 
 jobject fermented_tree_to_java_map_Value_Value(JNIEnv * jenv, FermentVectorValueMapTuple * input) {
     jclass mapClass = jenv->FindClass("java/util/HashMap");
-    printf("mapClass = 0x%ld\n", (long) mapClass);
     jmethodID hashMapInit = jenv->GetMethodID(mapClass, "<init>", "()V");
-    printf("hashMapInit = 0x%ld\n", (long) hashMapInit);
     jobject hashMapInstance = jenv->NewObject(mapClass, hashMapInit);
-    printf("hashMapInstance = 0x%ld\n", (long) hashMapInstance);
     jmethodID putMethod = jenv->GetMethodID(mapClass, "put",
                                             "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
     jclass valueClass = jenv->FindClass("org/dashj/platform/sdk/PlatformValue");
     jmethodID valueConstructor = jenv->GetMethodID(valueClass, "<init>", "(JZ)V");
 
-    // printf("ready to process map of size %d: %lx\n", input->count, input);
     for (uintptr_t i = 0; i < input->count; ++i) {
-        //printf("map item %d: %lx (%d)\n", i, input->values[i], input->values[i]->o_1->tag);
         jobject key = jenv->NewObject(valueClass, valueConstructor, (jlong) input->values[i]->o_0, false);
         jobject value = jenv->NewObject(valueClass, valueConstructor,
                                         (jlong) input->values[i]->o_1, false);

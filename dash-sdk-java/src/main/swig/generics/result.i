@@ -93,7 +93,6 @@
                 return $null;
             }
             for (uintptr_t i = 0; i < $1->ok->count; ++i) {
-                printf("list item %d\n", i);
                 auto * valueClone = clone((CTYPE_ITEM *)$1->ok->values[i]);
                 jobject elementObj = jenv->NewObject(valueClass, valueConstructor, valueClone, true);
                 jenv->CallBooleanMethod(listObj, addMethod, elementObj);
