@@ -1136,42 +1136,6 @@ class DapiClient(
         return dapiAddressListProvider.getErrorStatistics()
     }
 
-    fun verifyIdentityWithPublicKeyHashCbor(pubKeyHash: ByteArray, identityBytes: ByteArray): Identity? {
-        val identityList = Cbor.decodeList(identityBytes) as List<ByteArray>
-        val identity = dpp.identity.createFromBuffer(identityList[0])
-        return if (identity.publicKeys.find { Utils.sha256hash160(it.data).contentEquals(pubKeyHash) } != null) {
-            identity
-        } else {
-            null
-        }
-    }
-
-    fun verifyIdentityWithPublicKeyHash(pubKeyHash: ByteArray, identityBytes: ByteArray): Identity? {
-        val identity = dpp.identity.createFromBuffer(identityBytes)
-        return if (identity.publicKeys.find { Utils.sha256hash160(it.data).contentEquals(pubKeyHash) } != null) {
-            identity
-        } else {
-            null
-        }
-    }
-
-    fun verifyIdentitiesWithPublicKeyHashes(pubKeyHashes: List<ByteArray>, identityBytesLists: List<ByteArray>):
-        Boolean {
-        var matches = 0
-        identityBytesLists.forEach { identityBytes ->
-            val identityList = Cbor.decodeList(identityBytes) as List<ByteArray>
-            val identity = dpp.identity.createFromBuffer(identityList[0])
-            identity.publicKeys.forEach { publicKey ->
-                pubKeyHashes.forEach { pubKeyHash ->
-                    if (Utils.sha256hash160(publicKey.data).contentEquals(pubKeyHash)) {
-                        matches += 1
-                    }
-                }
-            }
-        }
-        return matches != 0
-    }
-
     fun getIdentityBalance(identifier: Identifier) : Long {
         logger.info("getIdentityBalance({})", identifier)
         val result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(rustSdk, identifier.toNative())
