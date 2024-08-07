@@ -664,6 +664,7 @@ class DapiClient(
         prove: Boolean = false,
         //retryCallback: GrpcMethodShouldRetryCallback = DefaultGetDocumentsRetryCallback()
     ): List<Document> {
+        logger.info("getDocuments(contractId={}, type={}, {})", contractId.toHex(), type, documentQuery)
         val contractIdentifier = Identifier(contractId)
         val rustContractIdentifier = contractIdentifier.toNative()
         val start = when {
@@ -1003,6 +1004,7 @@ class DapiClient(
      */
 
     fun getTransaction(txIdHex: String): ByteArray? {
+        logger.info("getTransaction($txIdHex)")
         return getTransactionBytes(txIdHex)
     }
 //    fun getTransaction(txHex: String): GetTransactionResponse? {
@@ -1171,6 +1173,7 @@ class DapiClient(
     }
 
     fun getIdentityBalance(identifier: Identifier) : Long {
+        logger.info("getIdentityBalance({})", identifier)
         val result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(rustSdk, identifier.toNative())
         return result.unwrap()
     }
