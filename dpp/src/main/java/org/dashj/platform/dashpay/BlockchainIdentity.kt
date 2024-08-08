@@ -790,8 +790,6 @@ class BlockchainIdentity {
             usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.CONFIRMED
             usernameStatusDictionary[BLOCKCHAIN_USERNAME_UNIQUE] = Names.isUniqueIdentity(nameDocument)
             usernameStatuses[username] = usernameStatusDictionary
-            usernameSalts[username] = Converters.byteArrayFromBase64orByteArray(nameDocument.data["preorderSalt"]!!)
-            usernameStatusDictionary[BLOCKCHAIN_USERNAME_SALT] = usernameSalts[username] as ByteArray
             usernames.add(username)
         }
         currentUsername = usernames.firstOrNull()
@@ -803,7 +801,7 @@ class BlockchainIdentity {
     // MARK: Username Helpers
 
     fun saltForUsername(username: String, saveSalt: Boolean): ByteArray {
-        var salt: ByteArray
+        val salt: ByteArray
         if (statusOfUsername(username) == UsernameStatus.INITIAL || !(usernameSalts.containsKey(username))) {
             salt = ECKey().privKeyBytes
             usernameSalts[username] = salt
