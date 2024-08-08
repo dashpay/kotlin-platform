@@ -183,7 +183,7 @@
             $result = jenv->CallStaticObjectMethod(resultClass, midFailure, errorString);
         }
         // destroy the Result<T, E>
-        //CTYPE##_destroy($1);  // since ok is not a pointer for ints, this will crash the app
+        CTYPE##_destroy($1);
     }
 }
 
