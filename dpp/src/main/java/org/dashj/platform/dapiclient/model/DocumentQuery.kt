@@ -210,4 +210,8 @@ class DocumentQuery private constructor(
     fun clone(): DocumentQuery {
         return DocumentQuery(where, orderBy, limit, startAt, startAfter)
     }
+
+    override fun toString(): String {
+        return toJSON().toString()
+    }
 }
