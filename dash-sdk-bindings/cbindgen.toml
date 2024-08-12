@@ -5,12 +5,12 @@ line_length = 80
 tab_width = 4
 documentation_style = "c"
 style = "tag"
-include_guard = "dash_sdk_bindings"
+include_guard = "dash_sdk_bindings_h"
 
 [parse]
 parse_deps = true
-include = []
-extra_bindings = []
+include = ["platform-mobile"]
+extra_bindings = ["platform-mobile"]
 
 [enum]
 prefix_with_name = false

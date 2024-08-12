@@ -4,7 +4,6 @@
 #include "config.h"
 #include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 
-#include <stdlib.h>
 #include "dpp.h"
 #include "conversions.h"
 #include "jnihelper.h"
@@ -89,3 +88,11 @@ import org.dashj.platform.sdk.base.BaseObject;
 // header files to convert to Java
 %include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 %include "src/main/cpp/dpp.h"
+
+// put missing structs here
+
+struct InstantLock {
+    void * ptr;
+};
+
+%ignore platform_mobile_config_RustSdk_ctor(platform_mobile_config_EntryPoint *entry_point);

@@ -66,8 +66,8 @@ set(JAVA_INCLUDE_PATH2 NotNeeded)
 set(JAVA_AWT_INCLUDE_PATH NotNeeded)
 find_package(JNI REQUIRED)
 # required for android log
-# find_library(LOG_LIB log)
-# find_library(ANDROID_LIB android)
+find_library(LOG_LIB log)
+find_library(ANDROID_LIB android)
 
 # Create the shared library that links C++ and Rust code
 include_directories(${JNI_INCLUDE_DIRS}, ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-java/src/main/cpp)

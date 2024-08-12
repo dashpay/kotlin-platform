@@ -69,7 +69,7 @@ class NetworkActivity {
         fun getIdentityForName(nameDocument: Document): Identifier {
             val records = nameDocument.data["records"] as Map<String, Any?>
             return try {
-                Identifier.from(records["dashUniqueIdentityId"])
+                Identifier.from(records["identity"])
             } catch (e: Exception) {
                 Identifier.from(records["dashAliasIdentityId"])
             }

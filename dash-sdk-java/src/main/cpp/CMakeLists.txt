@@ -26,6 +26,13 @@ add_library(sdklib SHARED ${C_SOURCE_FILE})
 
 # Check if building on macOS
 if(APPLE)
+    if(NOT DEFINED MACOS_VERSION)
+        set(MACOS_VERSION "14.5")
+    endif()
+    #option(MACOS_VERSION "Minimum macOS version to target" "14.5")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET ${MACOS_VERSION})
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=${MACOS_VERSION}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=${MACOS_VERSION}")
     # Find the Core Foundation framework
     find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation)
     if(NOT CORE_FOUNDATION_FRAMEWORK)

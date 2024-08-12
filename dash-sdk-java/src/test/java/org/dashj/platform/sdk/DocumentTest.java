@@ -72,9 +72,11 @@ public class DocumentTest extends BaseTest {
         List<Document> all = dashsdk.platformMobileFetchDocumentGetDocuments(domainId, "domain", BigInteger.ZERO, BigInteger.ZERO);
         Identifier id = null;
         for (Document d : all) {
-            PlatformValue value = d.getV0().get_0().getProperties().get("records").getMap().get_0().get(new PlatformValue("dashUniqueIdentityId"));
-            if (value != null)
+            PlatformValue value = d.getV0().get_0().getProperties().get("records").getMap().get_0().get(new PlatformValue("identity"));
+            if (value != null) {
                 id = new Identifier(value.getIdentifier().getBytes());
+                break;
+            }
         }
         assertNotNull(id);
         List<Document> docs = dashsdk.platformMobileFetchDocumentGetDomainDocument(id, BigInteger.ZERO, BigInteger.ZERO);
@@ -83,7 +85,7 @@ public class DocumentTest extends BaseTest {
 
     @Test
     public void getDocumentStartsWithTest() {
-        List<Document> docs = dashsdk.platformMobileFetchDocumentGetDomainDocumentStartsWith("dq-", BigInteger.ZERO, BigInteger.ZERO);
+        List<Document> docs = dashsdk.platformMobileFetchDocumentGetDomainDocumentStartsWith("Rion", BigInteger.ZERO, BigInteger.ZERO);
         assertFalse(docs.isEmpty());
         docs.forEach(document -> {
             Map<String, PlatformValue> props = document.getV0().get_0().getProperties();
@@ -213,7 +215,7 @@ public class DocumentTest extends BaseTest {
             ArrayList<WhereClause> where = new ArrayList<>();
             ArrayList<OrderClause> orderBy = new ArrayList<>();
 
-            where.add(new WhereClause("normalizedLabel", WhereOperator.StartsWith, new PlatformValue("dq-t")));
+            where.add(new WhereClause("normalizedLabel", WhereOperator.StartsWith, new PlatformValue("Rion")));
             where.add(new WhereClause("normalizedParentDomainName", WhereOperator.Equal, new PlatformValue("dash")));
             orderBy.add(new OrderClause("normalizedLabel"));
             Result<List<Document>, String> docs2 = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQuery(
@@ -235,5 +237,19 @@ public class DocumentTest extends BaseTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void createSDKTest() throws Exception {
+        SWIGTYPE_p_RustSdk sdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
+        ArrayList list = new ArrayList();
+        Result<List<Document>, String> result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                sdk, new Identifier(dpnsContractId),
+                "domain", list, list, 100, null);
+        List<Document> documentList = result.unwrap();
+        documentList.forEach(doc -> {
+            System.out.println(doc.getV0().get_0().getId().getBytes().length);
+        });
+        //dashsdk.platformMobileConfigRustSdkDestroy(sdk);
     }
 }

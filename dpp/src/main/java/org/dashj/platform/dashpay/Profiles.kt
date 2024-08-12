@@ -20,6 +20,7 @@ import org.dashj.platform.sdk.SecurityLevel
 import org.dashj.platform.sdk.dashsdk
 import org.dashj.platform.sdk.platform.Documents
 import org.dashj.platform.sdk.platform.Platform
+import org.slf4j.LoggerFactory
 import java.math.BigInteger
 
 class Profiles(
@@ -28,6 +29,7 @@ class Profiles(
 
     companion object {
         const val DOCUMENT: String = "dashpay.profile"
+        val log = LoggerFactory.getLogger(Profiles::class.java)
     }
 
     fun create(
@@ -46,16 +48,18 @@ class Profiles(
         val highIdentityPublicKey = identity.getFirstPublicKey(SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
 
-        val profileResult = dashsdk.platformMobilePutPutDocument(
+        val credits = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(platform.rustSdk, identity!!.id.toNative()).unwrap()
+        log.info("credit balance: {}", credits)
+
+        val profileResult = dashsdk.platformMobilePutPutDocumentSdk(
+            platform.rustSdk,
             profileDocument.toNative(),
             profileDocument.dataContractId!!.toNative(),
             profileDocument.type,
             highIdentityPublicKey.toNative(),
             BlockHeight(10000),
             CoreBlockHeight(platform.coreBlockHeight),
-            BigInteger.valueOf(signer.signerCallback),
-            BigInteger.valueOf(platform.client.contextProviderFunction),
-            BigInteger.ZERO
+            BigInteger.valueOf(signer.signerCallback)
         )
         return Document(profileResult.unwrap(), profileDocument.dataContractId!!)
     }
@@ -97,6 +101,9 @@ class Profiles(
 
         val highIdentityPublicKey = identity.getFirstPublicKey(SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
+
+        val credits = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(platform.rustSdk, identity!!.id.toNative()).unwrap()
+        log.info("credit balance: {}", credits)
 
         // under the hood this calls new_document_creation_transition_from_document
         // an not new_document_replacement_transition_from_document

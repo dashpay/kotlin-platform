@@ -47,6 +47,8 @@ class Platform(val params: NetworkParameters) {
     } else {
         PlatformStateRepository(this)
     }
+    val rustSdk
+        get() = client.rustSdk
 
     val dpp = DashPlatformProtocol(stateRepository, params)
     val apps = HashMap<String, ClientAppDefinition>()
@@ -76,14 +78,14 @@ class Platform(val params: NetworkParameters) {
         when {
             params.id.contains("test") -> {
                 useWhiteList = true
-                apps["dashwallet"] = ClientAppDefinition("FbGQVGqhKF7GMKwfpfdfWiexV9XWmEbtgCFMp3wnkNeP")
+                apps["dashwallet"] = ClientAppDefinition("BnsbVhX1sgGyr26njLjPisfbzHQfgQaAs3dZs2JyLnbv")
             }
             params.id.contains("bintang") -> {
                 apps["dashwallet"] = ClientAppDefinition("Fds5DDfXoLwpUZ71AAVYZP1uod8S7Ze2bR28JExBvZKR")
             }
         }
-        client = DapiClient(params.defaultHPMasternodeList.toList(), dpp, true)
         System.loadLibrary("sdklib")
+        client = DapiClient(params.defaultHPMasternodeList.toList(), dpp, true)
     }
 
     fun getAppList(): List<Identifier> {

@@ -1,5 +1,8 @@
 #ifndef __config_h
 #define __config_h
+
+#include <stdlib.h>
+
 typedef __int128 i128;
 typedef unsigned __int128 u128;
 
@@ -30,4 +33,21 @@ extern JavaVM* javaVM;
 inline void logInfo(const char *message) {
     LOGI("%s", message);
 }
+
+// missing items from dash_sdk_bindings.h
+struct RustSdk {};
+struct RustSdk5 {};
+struct Processor;
+struct DashSharedCore;
+struct dash_sdk_sdk_Sdk;
+
+//uint8_t * (QuorumPublicKeyCallbackExport)();
+struct Arr_u8_32;
+
+struct InstantLock {
+    void * ptr;
+};
+
+struct platform_mobile_config_EntryPoint;
+
 #endif

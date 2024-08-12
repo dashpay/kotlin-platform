@@ -13,14 +13,16 @@ platform-value = { path = "../../platform/packages/rs-platform-value" }
 #data-contracts = { path = "../../platform/packages/data-contracts" }
 dpp = { path = "../../platform/packages/rs-dpp" }
 dash-sdk = { path = "../../platform/packages/rs-sdk"}
+# drive-proof-verifier = { path = "../../platform/packages/rs-drive-proof-verifier"}
 #rs-dapi-client = { path = "../../platform/packages/rs-dapi-client", default-features = false}
 #platform-version = { path = "../../platform/packages/rs-platform-version" }
-
-
 drive = { path = "../../platform/packages/rs-drive", default-features = false, features = [
     "verify",
     "serde",
 ] }
+#tokio = { version = "1.34", features = ["full"] }
+#tokio-util = "0.7.11"
+
 [build-dependencies]
 cbindgen = "0.26.0"
 ferment = { path = "../../ferment/ferment" }

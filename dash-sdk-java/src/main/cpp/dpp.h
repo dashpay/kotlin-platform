@@ -94,6 +94,15 @@ public:
         return nullptr;
     }
 
+    uint8_t * clone(uint8_t * str, uint32_t len) {
+        if (str != nullptr) {
+            uint8_t * strClone = reinterpret_cast<uint8_t*>(alloc(len));
+            memcpy(strClone, str, len);
+            return strClone;
+        }
+        return nullptr;
+    }
+
     void * alloc(void * root, size_t size) {
         uint8_t * memory = new uint8_t[size];
         if (memoryMap.count((long)root)) {

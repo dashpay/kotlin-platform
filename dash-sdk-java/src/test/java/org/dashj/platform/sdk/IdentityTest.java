@@ -1,5 +1,6 @@
 package org.dashj.platform.sdk;
 
+import org.bitcoinj.core.Base58;
 import org.dashj.platform.sdk.base.Result;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -49,7 +50,7 @@ public class IdentityTest extends BaseTest {
 
     @Test
     public void fetchIdentity3AndDestroy() throws Exception {
-        Identifier identifier1 = new Identifier(contractIdentifier);
+        Identifier identifier1 = new Identifier(Base58.decode("3GupYWrQggzFBVZgL7fyHWensbWLwZBYFSbTXiSjXN5S"));
         Result<Identity, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityWithCore(identifier1);
         Identity identity = result.unwrap();
         assertEquals(Identity.Tag.V0, identity.getTag());
@@ -57,7 +58,7 @@ public class IdentityTest extends BaseTest {
         assertNotNull(identityV0);
         assertEquals(identifier1, identityV0.getId());
         assertEquals(0L, identityV0.getRevision().toLong());
-        assertEquals(0L, identityV0.getBalance());
+        assertTrue(identityV0.getBalance() > 0);
         assertNotNull(identityV0.getPublicKey(0));
         identity.delete();
         identifier1.delete();
@@ -228,7 +229,7 @@ public class IdentityTest extends BaseTest {
     @Test
     public void assetLockTest() {
         OutPoint outPoint = new OutPoint(identifier, 0);
-        assertEquals(0, outPoint.getVout());
+        assertEquals(0, outPoint.getIndex());
         assertArrayEquals(identifier, outPoint.getTxid());
 
         InstantAssetLockProof instantAssetLockProof = new InstantAssetLockProof(identifier, identifier, 0);
@@ -297,4 +298,15 @@ public class IdentityTest extends BaseTest {
 //        SWIGTYPE_p_void p_void = new SWIGTYPE_p_void();
 //        //String result = dashsdk.ffiGetChainTypeStringAsync(p_void, mainNet);
 //    }
+
+    @Test
+    public void identityBalanceTest() throws Exception {
+        SWIGTYPE_p_RustSdk sdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
+        Result<Long, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(sdk, new Identifier(identifier));
+        result.unwrapError();
+
+        Identifier id = new Identifier(Base58.decode("3GupYWrQggzFBVZgL7fyHWensbWLwZBYFSbTXiSjXN5S"));
+        Result<Long, String> result2 = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(sdk, id);
+        result2.unwrap();
+    }
 }

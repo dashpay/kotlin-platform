@@ -93,7 +93,6 @@
                 return $null;
             }
             for (uintptr_t i = 0; i < $1->ok->count; ++i) {
-                printf("list item %d\n", i);
                 auto * valueClone = clone((CTYPE_ITEM *)$1->ok->values[i]);
                 jobject elementObj = jenv->NewObject(valueClass, valueConstructor, valueClone, true);
                 jenv->CallBooleanMethod(listObj, addMethod, elementObj);
@@ -140,7 +139,83 @@
 %ignore CTYPE;
 %enddef
 
+%define DEFINE_PRIMITIVE_RESULT(RETURN_TYPE, ERROR_TYPE, CTYPE)
+%typemap(javaclassname) CTYPE* "org.dashj.platform.sdk.base.Result<RETURN_TYPE, String>"
+%typemap(javatype) CTYPE* "org.dashj.platform.sdk.base.Result<RETURN_TYPE,String>"
+%typemap(jtype) CTYPE* "org.dashj.platform.sdk.base.Result<RETURN_TYPE,String>"
+%typemap(jstype) CTYPE* "org.dashj.platform.sdk.base.Result<RETURN_TYPE,String>"
+%typemap(jni) CTYPE* "jobject"
+
+%typemap(out) CTYPE* {
+    if (!$1) {
+        $result = NULL;
+    } else {
+        jclass resultClass = jenv->FindClass("org/dashj/platform/sdk/base/Result");
+
+        if ($1->ok != NULL) {
+            printf("ok is non-null: %lx\n", $1->ok);
+            jobject elementObj = nullptr;
+            if (strcmp(#RETURN_TYPE, "String") == 0) {
+                printf("string item\n");
+                printf("string item: %s\n", $1->ok);
+                elementObj = jenv->NewStringUTF((const char *)$1->ok);
+            } else if (strcmp(#RETURN_TYPE, "Integer") == 0) {
+                printf("int item\n");
+                printf("int item: %d\n", *$1->ok);
+                jclass integerClass = (jenv)->FindClass("java/lang/Integer");
+                jmethodID constructor = (jenv)->GetMethodID(integerClass, "<init>", "(I)V");
+                elementObj = (jenv)->NewObject(integerClass, constructor, (int)(long)*$1->ok); // ok is a pointer, but acts as a value
+            } else if (strcmp(#RETURN_TYPE, "Long") == 0) {
+                printf("long item\n");
+                printf("long item: %lld\n", $1->ok);
+                jclass integerClass = (jenv)->FindClass("java/lang/Long");
+                jmethodID constructor = (jenv)->GetMethodID(integerClass, "<init>", "(J)V");
+                elementObj = (jenv)->NewObject(integerClass, constructor, (long)*$1->ok);  // ok is a pointer, but acts as a value
+            } else {
+                printf("invalid? item\n");
+            }
+            printf("ok value is assigned, now create result\n");
+            jmethodID midSuccess = jenv->GetStaticMethodID(resultClass, "Ok", "(Ljava/lang/Object;)Lorg/dashj/platform/sdk/base/Result;");
+            $result = jenv->CallStaticObjectMethod(resultClass, midSuccess, elementObj);
+        } else {
+            jstring errorString = jenv->NewStringUTF($1->error);
+            jmethodID midFailure = jenv->GetStaticMethodID(resultClass, "Err", "(Ljava/lang/Object;)Lorg/dashj/platform/sdk/base/Result;");
+            $result = jenv->CallStaticObjectMethod(resultClass, midFailure, errorString);
+        }
+        // destroy the Result<T, E>
+        CTYPE##_destroy($1);
+    }
+}
+
+%typemap(in) CTYPE* {
+    SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "This operation is not supported: convert from Result<T, E> to " #CTYPE);
+    return $null;
+}
+
+%typemap(freearg) struct CTYPE* {
+    // not used, not created
+}
+
+%typemap(javain) CTYPE * "$javainput"
+
+%typemap(javaout) CTYPE * {
+    return $jnicall;
+  }
+
+
+%typemap(throws) CTYPE *
+%{ SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "null CTYPE");
+   return $null; %}
+
+%apply struct CTYPE {struct CTYPE};
+%ignore CTYPE;
+%enddef
+
 DEFINE_RESULT(Identity, String, Result_ok_dpp_identity_identity_Identity_err_String, platform_mobile_identity_Identity_clone);
-DEFINE_LIST_RESULT(Document, String, Result_ok_Vec_dpp_document_Document_err_String, dpp_document_Document);
 DEFINE_RESULT(Document, String, Result_ok_dpp_document_Document_err_String, clone);
 DEFINE_RESULT(DataContract, String, Result_ok_platform_mobile_data_contracts_DataContractFFI_err_String, clone);
+
+DEFINE_LIST_RESULT(Document, String, Result_ok_Vec_dpp_document_Document_err_String, dpp_document_Document);
+
+// primitive types
+DEFINE_PRIMITIVE_RESULT(Long, String, Result_ok_u64_err_String);

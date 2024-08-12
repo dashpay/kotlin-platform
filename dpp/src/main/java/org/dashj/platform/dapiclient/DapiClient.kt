@@ -58,6 +58,7 @@ import org.dashj.platform.dpp.toBase58
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Cbor
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.sdk.SWIGTYPE_p_RustSdk
 import org.dashj.platform.sdk.Start
 import org.dashj.platform.sdk.base.Result
 import org.dashj.platform.sdk.callbacks.ContextProvider
@@ -130,8 +131,8 @@ class DapiClient(
         ): ByteArray? {
             val quorumHash = Sha256Hash.wrap(quorumHashBytes)
             var quorumPublicKey: ByteArray? = null
-            println("searching for quorum: $quorumType, $quorumHash, $coreChainLockedHeight")
-            Context.get().masternodeListManager.getQuorumListAtTip(
+            logger.info("searching for quorum: $quorumType, $quorumHash, $coreChainLockedHeight")
+            masternodeListManager.getQuorumListAtTip(
                 LLMQParameters.LLMQType.fromValue(
                     quorumType
                 )
@@ -140,7 +141,7 @@ class DapiClient(
                     quorumPublicKey = it.quorumPublicKey.serialize(false)
                 }
             }
-            println("searching for quorum: result: ${quorumPublicKey?.toHex()}")
+            logger.info("searching for quorum: result: ${quorumPublicKey?.toHex()}")
             return quorumPublicKey
         }
 
@@ -151,6 +152,8 @@ class DapiClient(
 
     val contextProviderFunction: Long
         get() = if (useContextProvider) contextProvider.quorumPublicKeyCallback else 0L
+
+    lateinit var rustSdk: SWIGTYPE_p_RustSdk
 
     init {
         val loggingInterceptor = HttpLoggingInterceptor { msg: String? -> logger.info(msg) }
@@ -172,6 +175,11 @@ class DapiClient(
         } catch (e: RuntimeException) {
             false
         }
+
+        rustSdk = dashsdk.platformMobileConfigCreateSdk(
+            BigInteger.valueOf(contextProviderFunction),
+            BigInteger.ZERO
+        )
     }
 
     constructor(
@@ -453,10 +461,9 @@ class DapiClient(
     ): Identity? {
         logger.info("getIdentity(${id.toBase58()}, $prove)")
         val identityId = Identifier.from(id)
-        val result = dashsdk.fetchIdentity(
-            RustIdentifier(id),
-            BigInteger.valueOf(contextProviderFunction),
-            BigInteger.ZERO
+        val result = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(
+            rustSdk,
+            RustIdentifier(id)
         )
         return try {
             Identity(result.unwrap())
@@ -472,10 +479,9 @@ class DapiClient(
      */
     fun getIdentityByFirstPublicKey(pubKeyHash: ByteArray, prove: Boolean = false): Identity? {
         logger.info("getIdentityByFirstPublicKey(${pubKeyHash.toHex()})")
-        val result = dashsdk.getIdentityByPublicKeyHash(
-            pubKeyHash,
-            BigInteger.valueOf(contextProviderFunction),
-            BigInteger.ZERO
+        val result = dashsdk.platformMobileFetchIdentityFetchIdentityWithKeyhashSdk(
+            rustSdk,
+            pubKeyHash
         )
         return try {
             Identity(result.unwrap())
@@ -658,6 +664,7 @@ class DapiClient(
         prove: Boolean = false,
         //retryCallback: GrpcMethodShouldRetryCallback = DefaultGetDocumentsRetryCallback()
     ): List<Document> {
+        logger.info("getDocuments(contractId={}, type={}, {})", contractId.toHex(), type, documentQuery)
         val contractIdentifier = Identifier(contractId)
         val rustContractIdentifier = contractIdentifier.toNative()
         val start = when {
@@ -665,15 +672,14 @@ class DapiClient(
             documentQuery.startAfter != null -> Start(documentQuery.startAfter!!.toBuffer(), false)
             else -> null
         }
-        val result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQuery(
+        val result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+            rustSdk,
             rustContractIdentifier,
             type,
             documentQuery.encodeWhere(),
             documentQuery.encodeOrderBy(),
             if (documentQuery.limit == -1) 100 else documentQuery.limit.toLong(),
-            start,
-            BigInteger.valueOf(contextProviderFunction),
-            BigInteger.ZERO
+            start
         )
         return result.unwrap().map {
             Document(it, contractIdentifier)
@@ -980,7 +986,10 @@ class DapiClient(
         logger.info("getTransaction($txHex)")
         try {
             val transactionResult =
-                dashsdk.platformMobileCoreGetTransaction(Converters.fromHex(txHex), BigInteger.ZERO, BigInteger.ZERO)
+                dashsdk.platformMobileCoreGetTransactionSdk(
+                    rustSdk,
+                    Converters.fromHex(txHex)
+                )
             return transactionResult.ok
         } catch (e: NullPointerException) {
             logger.error("transaction $txHex not found:", e)
@@ -995,6 +1004,7 @@ class DapiClient(
      */
 
     fun getTransaction(txIdHex: String): ByteArray? {
+        logger.info("getTransaction($txIdHex)")
         return getTransactionBytes(txIdHex)
     }
 //    fun getTransaction(txHex: String): GetTransactionResponse? {
@@ -1126,39 +1136,9 @@ class DapiClient(
         return dapiAddressListProvider.getErrorStatistics()
     }
 
-    fun verifyIdentityWithPublicKeyHashCbor(pubKeyHash: ByteArray, identityBytes: ByteArray): Identity? {
-        val identityList = Cbor.decodeList(identityBytes) as List<ByteArray>
-        val identity = dpp.identity.createFromBuffer(identityList[0])
-        return if (identity.publicKeys.find { Utils.sha256hash160(it.data).contentEquals(pubKeyHash) } != null) {
-            identity
-        } else {
-            null
-        }
-    }
-
-    fun verifyIdentityWithPublicKeyHash(pubKeyHash: ByteArray, identityBytes: ByteArray): Identity? {
-        val identity = dpp.identity.createFromBuffer(identityBytes)
-        return if (identity.publicKeys.find { Utils.sha256hash160(it.data).contentEquals(pubKeyHash) } != null) {
-            identity
-        } else {
-            null
-        }
-    }
-
-    fun verifyIdentitiesWithPublicKeyHashes(pubKeyHashes: List<ByteArray>, identityBytesLists: List<ByteArray>):
-        Boolean {
-        var matches = 0
-        identityBytesLists.forEach { identityBytes ->
-            val identityList = Cbor.decodeList(identityBytes) as List<ByteArray>
-            val identity = dpp.identity.createFromBuffer(identityList[0])
-            identity.publicKeys.forEach { publicKey ->
-                pubKeyHashes.forEach { pubKeyHash ->
-                    if (Utils.sha256hash160(publicKey.data).contentEquals(pubKeyHash)) {
-                        matches += 1
-                    }
-                }
-            }
-        }
-        return matches != 0
+    fun getIdentityBalance(identifier: Identifier) : Long {
+        logger.info("getIdentityBalance({})", identifier)
+        val result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(rustSdk, identifier.toNative())
+        return result.unwrap()
     }
 }

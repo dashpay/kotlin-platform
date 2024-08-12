@@ -8,11 +8,8 @@
 
 %typemap(out) STRUCT_TYPE* {
     jclass hashMapClass = jenv->FindClass("java/util/HashMap");
-    printf("hashMapClass = 0x%ld\n", (long) hashMapClass);
     jmethodID hashMapInit = jenv->GetMethodID(hashMapClass, "<init>", "()V");
-    printf("hashMapInit = 0x%ld\n", (long) hashMapInit);
     jobject hashMapInstance = jenv->NewObject(hashMapClass, hashMapInit);
-    printf("hashMapInstance = 0x%ld", (long) hashMapInstance);
     jmethodID putMethod = jenv->GetMethodID(hashMapClass, "put",
                                             "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
@@ -44,17 +41,14 @@
     jmethodID iteratorMethod = jenv->GetMethodID(setClass, "iterator", "()Ljava/util/Iterator;");
     jobject iterator = jenv->CallObjectMethod(setOfEntries, iteratorMethod);
 
-// Get Iterator class and methods
     jclass iteratorClass = jenv->FindClass("java/util/Iterator");
     jmethodID hasNextMethod = jenv->GetMethodID(iteratorClass, "hasNext", "()Z");
     jmethodID nextMethod = jenv->GetMethodID(iteratorClass, "next", "()Ljava/lang/Object;");
 
-// Get Map.Entry class and methods
     jclass entryClass = jenv->FindClass("java/util/Map$Entry");
     jmethodID getKeyMethod = jenv->GetMethodID(entryClass, "getKey", "()Ljava/lang/Object;");
     jmethodID getValueMethod = jenv->GetMethodID(entryClass, "getValue", "()Ljava/lang/Object;");
 
-// Count the number of entries and allocate memory
     jint entryCount = jenv->CallIntMethod(setOfEntries, jenv->GetMethodID(setClass, "size", "()I"));
     int count = (uintptr_t) entryCount;
     auto **keys = (KEY_TYPE **) malloc(

@@ -144,4 +144,8 @@ publishing {
     }
 }
 
+tasks.withType(Copy) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 // apply from: 'ktlint.gradle'

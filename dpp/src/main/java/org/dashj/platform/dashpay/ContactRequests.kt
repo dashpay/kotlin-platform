@@ -17,12 +17,14 @@ import org.dashj.platform.sdk.SecurityLevel
 import org.dashj.platform.sdk.dashsdk
 import org.dashj.platform.sdk.platform.Documents
 import org.dashj.platform.sdk.platform.Platform
+import org.slf4j.LoggerFactory
 import java.math.BigInteger
 
 class ContactRequests(val platform: Platform) {
 
     companion object {
         const val CONTACTREQUEST_DOCUMENT = "dashpay.contactRequest"
+        val log = LoggerFactory.getLogger(ContactRequest::class.java)
     }
 
     fun create(fromUser: BlockchainIdentity, toUser: Identity, aesKey: KeyParameter?): ContactRequest {
@@ -62,16 +64,18 @@ class ContactRequests(val platform: Platform) {
             val highIdentityPublicKey = fromUser.identity!!.getFirstPublicKey(SecurityLevel.HIGH)
                 ?: error("can't find a public key with HIGH security level")
 
-            val documentResult = dashsdk.platformMobilePutPutDocument(
+            val credits = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(platform.rustSdk, fromUser.identity!!.id.toNative()).unwrap()
+            log.info("credit balance: {}", credits)
+
+            val documentResult = dashsdk.platformMobilePutPutDocumentSdk(
+                platform.rustSdk,
                 contactRequestDocument.toNative(),
                 contactRequestDocument.dataContractId!!.toNative(),
                 contactRequestDocument.type,
                 highIdentityPublicKey.toNative(),
                 BlockHeight(10000),
                 CoreBlockHeight(platform.coreBlockHeight),
-                BigInteger.valueOf(signer.signerCallback),
-                BigInteger.valueOf(platform.client.contextProviderFunction),
-                BigInteger.ZERO
+                BigInteger.valueOf(signer.signerCallback)
             )
             val publishedContactRequest = documentResult.unwrap()
 

@@ -1,7 +1,11 @@
 package dashj.org.platform
 
 import com.google.common.util.concurrent.SettableFuture
-import org.bitcoinj.core.*
+import org.bitcoinj.core.Base58
+import org.bitcoinj.core.Context
+import org.bitcoinj.core.ECKey
+import org.bitcoinj.core.NetworkParameters
+import org.bitcoinj.core.Sha256Hash
 import org.bitcoinj.kits.WalletAppKit
 import org.bitcoinj.net.discovery.ThreeMethodPeerDiscovery
 import org.bitcoinj.params.MainNetParams
@@ -11,13 +15,20 @@ import org.bitcoinj.params.TestNet3Params
 import org.bitcoinj.quorums.LLMQParameters
 import org.bitcoinj.utils.BriefLogFormatter
 import org.bitcoinj.utils.Threading
-import org.bitcoinj.wallet.*
+import org.bitcoinj.wallet.AuthenticationKeyChain
+import org.bitcoinj.wallet.Wallet
+import org.bitcoinj.wallet.WalletExtension
 import org.bitcoinj.wallet.authentication.AuthenticationGroupExtension
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
-import org.dashj.platform.sdk.*
+import org.dashj.platform.sdk.DataContract
+import org.dashj.platform.sdk.Document
+import org.dashj.platform.sdk.Identifier
+import org.dashj.platform.sdk.Identity
+import org.dashj.platform.sdk.PlatformValue
 import org.dashj.platform.sdk.callbacks.ContextProvider
 import org.dashj.platform.sdk.callbacks.Signer
+import org.dashj.platform.sdk.dashsdk
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -207,9 +218,8 @@ object PlatformExplorer {
                 return byteArrayOf(0)
             }
         }
+        val sdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
 
-        //val identifier = example.platformMobileFetchIdentityGetDocumentWithCallbacks(BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
-        //println(Base58.encode(identifier._0._0))
         println("4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF")
         val scanner = Scanner(System.`in`)
         var quit = false
@@ -294,11 +304,11 @@ object PlatformExplorer {
                     printDocument(doc)
                 }
                 "5" -> {
-                    val docs = dashsdk.platformMobileFetchDocumentGetDocuments(
-                        Identifier(dpnsContractId),
-                        "domain",
-                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-                        BigInteger.ZERO)
+                    val result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                        sdk, Identifier(dpnsContractId),
+                        "domain", listOf(), listOf(), 100, null
+                    )
+                    val docs = result.unwrap()
                     docs.forEach { doc ->
                         printDomainDocument(doc)
                     }
