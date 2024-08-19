@@ -215,6 +215,9 @@ DEFINE_RESULT(Identity, String, Result_ok_dpp_identity_identity_Identity_err_Str
 DEFINE_RESULT(Document, String, Result_ok_dpp_document_Document_err_String, clone);
 DEFINE_RESULT(DataContract, String, Result_ok_platform_mobile_data_contracts_DataContractFFI_err_String, clone);
 
+DEFINE_RESULT(ContestedResources, String, Result_ok_drive_proof_verifier_types_ContestedResources_err_String, clone);
+DEFINE_RESULT(Contenders, String, Result_ok_drive_proof_verifier_types_Contenders_err_String, clone);
+DEFINE_RESULT(Vote, String, Result_ok_dpp_voting_votes_Vote_err_String, clone)
 DEFINE_LIST_RESULT(Document, String, Result_ok_Vec_dpp_document_Document_err_String, dpp_document_Document);
 
 // primitive types

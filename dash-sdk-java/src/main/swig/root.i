@@ -61,6 +61,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "enums.i"
 %include "platform_value.i"
 %include "platform_value_array.i"
+%include "vote.i"
 
 // modules and crates
 %include "dpp.i"

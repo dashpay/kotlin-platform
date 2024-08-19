@@ -7,36 +7,17 @@
 
 package org.dashj.platform.dapiclient
 
-import com.google.common.base.Preconditions
+//import org.dashj.platform.dapiclient.grpc.GrpcMethod
 import com.google.common.base.Stopwatch
-import com.google.common.primitives.UnsignedBytes
-import com.google.protobuf.ByteString
-import io.grpc.Status
-import io.grpc.StatusRuntimeException
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import org.bitcoinj.core.BloomFilter
-import org.bitcoinj.core.Context
 import org.bitcoinj.core.Sha256Hash
-import org.bitcoinj.core.Utils
 import org.bitcoinj.evolution.SimplifiedMasternodeListManager
-import org.bitcoinj.params.DevNetParams
 import org.bitcoinj.quorums.LLMQParameters
 import org.dashj.platform.dapiclient.errors.NotFoundException
 import org.dashj.platform.dapiclient.errors.ResponseException
-//import org.dashj.platform.dapiclient.grpc.GrpcMethod
-import org.dashj.platform.dapiclient.model.Chain
 import org.dashj.platform.dapiclient.model.DocumentQuery
-import org.dashj.platform.dapiclient.model.GetStatusResponse
-import org.dashj.platform.dapiclient.model.GetTransactionResponse
-import org.dashj.platform.dapiclient.model.GrpcExceptionInfo
 import org.dashj.platform.dapiclient.model.JsonRPCRequest
-import org.dashj.platform.dapiclient.model.Masternode
-import org.dashj.platform.dapiclient.model.Network
-import org.dashj.platform.dapiclient.model.NetworkFee
-import org.dashj.platform.dapiclient.model.StateTransitionBroadcastException
-import org.dashj.platform.dapiclient.model.Time
-import org.dashj.platform.dapiclient.model.Version
 import org.dashj.platform.dapiclient.provider.DAPIAddress
 import org.dashj.platform.dapiclient.provider.DAPIAddressListProvider
 import org.dashj.platform.dapiclient.provider.ListDAPIAddressProvider
@@ -44,35 +25,24 @@ import org.dashj.platform.dapiclient.provider.SimplifiedMasternodeListDAPIAddres
 import org.dashj.platform.dapiclient.rest.DapiService
 import org.dashj.platform.dpp.DashPlatformProtocol
 import org.dashj.platform.dpp.contract.DataContract
-import org.dashj.platform.dpp.contract.DataContractTransition
 import org.dashj.platform.dpp.document.Document
-import org.dashj.platform.dpp.document.DocumentsBatchTransition
-import org.dashj.platform.dpp.errors.concensus.ConcensusException
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identifier.RustIdentifier
 import org.dashj.platform.dpp.identity.Identity
-import org.dashj.platform.dpp.identity.IdentityStateTransition
 import org.dashj.platform.dpp.statetransition.StateTransition
-import org.dashj.platform.dpp.statetransition.StateTransitionIdentitySigned
 import org.dashj.platform.dpp.toBase58
 import org.dashj.platform.dpp.toHex
-import org.dashj.platform.dpp.util.Cbor
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.dpp.voting.Contenders
+import org.dashj.platform.sdk.PlatformValue
 import org.dashj.platform.sdk.SWIGTYPE_p_RustSdk
 import org.dashj.platform.sdk.Start
-import org.dashj.platform.sdk.base.Result
 import org.dashj.platform.sdk.callbacks.ContextProvider
 import org.dashj.platform.sdk.dashsdk
-import org.dashj.platform.sdk.platform.Documents
 import org.slf4j.LoggerFactory
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigInteger
-import java.util.Date
-import java.util.concurrent.Callable
-import java.util.concurrent.CancellationException
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 class DapiClient(
@@ -555,7 +525,7 @@ class DapiClient(
         return try {
             DataContract.from(dataContract.unwrap())
         } catch (e: Exception) {
-            null
+            throw NotFoundException("DataContract ${contractIdByteArray.toHex()} not found")
         }
     }
 
@@ -1140,5 +1110,16 @@ class DapiClient(
         logger.info("getIdentityBalance({})", identifier)
         val result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(rustSdk, identifier.toNative())
         return result.unwrap()
+    }
+
+    fun getVoteContenders(dataContractId: Identifier, documentType: String, indexName: String, indexes: List<String>): Contenders {
+        val result = dashsdk.platformMobileVotingGetVoteContenders(
+            rustSdk,
+            indexName,
+            indexes.map { PlatformValue(it) },
+            documentType,
+            dataContractId.toNative()
+        )
+        return Contenders(result.unwrap())
     }
 }
