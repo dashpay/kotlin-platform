@@ -71,7 +71,7 @@ class DashPayWalletExtension(
                     identityProto.protocolVersion
                 )
 
-                it.registrationStatus = BlockchainIdentity.RegistrationStatus.REGISTERED
+                it.registrationStatus = IdentityStatus.REGISTERED
                 it.uniqueId = it.identity!!.id.toSha256Hash()
             }
         }

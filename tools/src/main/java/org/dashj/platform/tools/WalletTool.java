@@ -1554,7 +1554,7 @@ public class WalletTool {
             }
         }
 
-        if (blockchainIdentity != null && blockchainIdentity.getCurrentUsername() == null && blockchainIdentity.registrationStatus == BlockchainIdentity.RegistrationStatus.REGISTERED) {
+        if (blockchainIdentity != null && blockchainIdentity.getCurrentUsername() == null && blockchainIdentity.registrationStatus == IdentityStatus.REGISTERED) {
             blockchainIdentity.recoverUsernames();
         }
 
@@ -2232,7 +2232,7 @@ public class WalletTool {
     }
 
     private static void createDomain(OptionSpec<WaitForEnum> waitForFlag) {
-        List<String> names = blockchainIdentity.getUsernamesWithStatus(BlockchainIdentity.UsernameStatus.PREORDERED);
+        List<String> names = blockchainIdentity.getUsernamesWithStatus(UsernameStatus.PREORDERED);
         boolean alias = options.has(aliasFlag);
         blockchainIdentity.registerUsernameDomainsForUsernames(names, null, alias);
 
