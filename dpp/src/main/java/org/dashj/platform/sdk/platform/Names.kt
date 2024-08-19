@@ -30,13 +30,13 @@ class Names(val platform: Platform) {
         const val DPNS_PREORDER_DOCUMENT = "dpns.preorder"
 
         fun isUniqueIdentity(domainDocument: Document): Boolean {
-            val records = domainDocument.data["records"] as Map<String, Any>
-            return records.containsKey("dashUniqueIdentityId")
+            val records = domainDocument.data["records"] as Map<*, *>
+            return records.containsKey("identity")
         }
 
         fun isUniqueIdentity(dataDocumentTransition: DataDocumentTransition): Boolean {
-            val records = dataDocumentTransition.data["records"] as Map<String, Any>
-            return records.containsKey("dashUniqueIdentityId")
+            val records = dataDocumentTransition.data["records"] as Map<*, *>
+            return records.containsKey("identity")
         }
 
         fun normalizedNames(name: String): Pair<String, String> {
