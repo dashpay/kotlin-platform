@@ -15,6 +15,7 @@ import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.util.Entropy
+import org.dashj.platform.dpp.voting.Contenders
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -24,6 +25,7 @@ class Names(val platform: Platform) {
         private val log: Logger = LoggerFactory.getLogger(Names::class.java)
 
         const val DEFAULT_PARENT_DOMAIN = "dash"
+        const val DPNS_DATA_CONTRACT = "dpns"
         const val DPNS_DOMAIN_DOCUMENT = "dpns.domain"
         const val DPNS_PREORDER_DOCUMENT = "dpns.preorder"
 
@@ -73,6 +75,11 @@ class Names(val platform: Platform) {
             baos.write(preOrderSaltRaw)
             baos.write(normalizeString(fullName).toByteArray())
             return Sha256Hash.twiceOf(baos.toByteArray())
+        }
+
+        fun isUsernameContestable(username: String): Boolean {
+            val regex = Regex("^[a-zA-Z01-]{3,19}$")
+            return regex.matches(username)
         }
     }
 
@@ -338,5 +345,14 @@ class Names(val platform: Platform) {
         val documents = platform.documents.get(DPNS_DOMAIN_DOCUMENT, documentQuery.build())
 
         return documents
+    }
+
+    fun getVoteContenders(name: String): Contenders {
+        return platform.client.getVoteContenders(
+            platform.apps[DPNS_DATA_CONTRACT]!!.contractId,
+            DPNS_DOMAIN_DOCUMENT,
+            "parentNameAndLabel",
+            listOf(DEFAULT_PARENT_DOMAIN, name)
+        )
     }
 }
