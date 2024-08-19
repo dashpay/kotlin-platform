@@ -37,6 +37,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "generics/lists.i"
 %include "generics/maps.i"
 %include "generics/result.i"
+%include "generics/sets.i"
 %include "generics/byte_array.i"
 
 // Platform Related Structures
