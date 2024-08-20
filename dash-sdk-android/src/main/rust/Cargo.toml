@@ -31,6 +31,7 @@ drive = { path = "../../../../../platform/packages/rs-drive", default-features =
     "verify",
     "serde",
 ] }
+drive-proof-verifier = { path = "../../../../../platform/packages/rs-drive-proof-verifier"}
 
 [build-dependencies]
 cbindgen = "0.26.0"
