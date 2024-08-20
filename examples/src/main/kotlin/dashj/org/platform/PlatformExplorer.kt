@@ -25,7 +25,10 @@ import org.dashj.platform.sdk.DataContract
 import org.dashj.platform.sdk.Document
 import org.dashj.platform.sdk.Identifier
 import org.dashj.platform.sdk.Identity
+import org.dashj.platform.sdk.OrderClause
 import org.dashj.platform.sdk.PlatformValue
+import org.dashj.platform.sdk.WhereClause
+import org.dashj.platform.sdk.WhereOperator
 import org.dashj.platform.sdk.callbacks.ContextProvider
 import org.dashj.platform.sdk.callbacks.Signer
 import org.dashj.platform.sdk.dashsdk
@@ -233,7 +236,8 @@ object PlatformExplorer {
             println("3. Query Identity from public key")
             println("4. Query a random DPNS document")
             println("5. Query all DPNS DOMAIN documents")
-            println("6. Query DOMAIN documents for id")
+            println("6a. Query DPNS DOMAIN documents for name")
+            println("6b. Query DPNS DOMAIN documents for id")
             println("7. Query DPNS DOMAIN documents starting with")
             println("8. Query Data contract by id")
 
@@ -312,8 +316,34 @@ object PlatformExplorer {
                     docs.forEach { doc ->
                         printDomainDocument(doc)
                     }
+//                    docs.forEach { doc ->
+//                        printDocument(doc)
+//                    }
                 }
-                "6" -> {
+                "6a" -> {
+                    println("Enter the username:")
+                    val startsWith = scanner.nextLine()
+
+                    println(" > $startsWith")
+
+                    val docs = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                        sdk,
+                        Identifier(dpnsContractId),
+                        "domain",
+                        listOf(
+                            WhereClause("normalizedLabel", WhereOperator.Equal, PlatformValue(startsWith)),
+                            WhereClause("normalizedParentDomainName", WhereOperator.Equal, PlatformValue("dash"))
+                        ),
+                        listOf(OrderClause("normalizedLabel", true)),
+                        100,
+                        null
+                    )
+
+                    docs.unwrap().forEach { doc ->
+                        printDomainDocument(doc)
+                    }
+                }
+                "6b" -> {
                     println("Enter an id:")
                     val id = scanner.nextLine()
                     val identifier = Identifier(Base58.decode(id))
@@ -338,11 +368,24 @@ object PlatformExplorer {
 
                     println(" > $startsWith")
 
-                    val docs = dashsdk.platformMobileFetchDocumentGetDomainDocumentStartsWith(
-                        startsWith,
-                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-                        BigInteger.ZERO)
-                    docs.forEach { doc ->
+                    val docs = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                        sdk,
+                        Identifier(dpnsContractId),
+                        "domain",
+                        listOf(
+                            WhereClause("normalizedLabel", WhereOperator.StartsWith, PlatformValue(startsWith)),
+                            WhereClause("normalizedParentDomainName", WhereOperator.Equal, PlatformValue("dash"))
+                        ),
+                        listOf(OrderClause("normalizedLabel", true)),
+                        100,
+                        null
+                    )
+
+//                    val docs = dashsdk.platformMobileFetchDocumentGetDomainDocumentStartsWith(
+//                        startsWith,
+//                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+//                        BigInteger.ZERO)
+                    docs.unwrap().forEach { doc ->
                         printDomainDocument(doc)
                     }
                 }
@@ -432,6 +475,7 @@ object PlatformExplorer {
                 }
             }
         }
+        // dashsdk.platformMobileConfigRustSdkDestroy(sdk);
         quitFuture.set(true)
     }
 
@@ -474,7 +518,7 @@ object PlatformExplorer {
             if (record == "dashAliasIdentityId") {
                 print("alias ->")
                 print(Base58.encode(recordsMap.values.first().identifier.bytes))
-            } else if (record == "dashUniqueIdentityId") {
+            } else if (record == "identity") {
                 print("unique ")
                 print(Base58.encode(recordsMap.values.first().identifier.bytes))
 
