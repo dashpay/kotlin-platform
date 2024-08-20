@@ -215,7 +215,7 @@ public class DocumentTest extends BaseTest {
             ArrayList<WhereClause> where = new ArrayList<>();
             ArrayList<OrderClause> orderBy = new ArrayList<>();
 
-            where.add(new WhereClause("normalizedLabel", WhereOperator.StartsWith, new PlatformValue("Rion")));
+            where.add(new WhereClause("normalizedLabel", WhereOperator.StartsWith, new PlatformValue("b0b")));
             where.add(new WhereClause("normalizedParentDomainName", WhereOperator.Equal, new PlatformValue("dash")));
             orderBy.add(new OrderClause("normalizedLabel"));
             Result<List<Document>, String> docs2 = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQuery(
@@ -240,12 +240,45 @@ public class DocumentTest extends BaseTest {
     }
 
     @Test
+    public void startsWithQueryWithSDKTest() {
+        try {
+            Identifier dpnsId = new Identifier(dpnsContractId);
+            ArrayList<WhereClause> where = new ArrayList<>();
+            ArrayList<OrderClause> orderBy = new ArrayList<>();
+
+            where.add(new WhereClause("normalizedLabel", WhereOperator.StartsWith, new PlatformValue("b0b")));
+            where.add(new WhereClause("normalizedParentDomainName", WhereOperator.Equal, new PlatformValue("dash")));
+            orderBy.add(new OrderClause("normalizedLabel"));
+
+            SWIGTYPE_p_RustSdk sdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
+            Result<List<Document>, String> docs2 = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                    sdk,
+                    dpnsId,
+                    "domain",
+                    where,
+                    orderBy,
+                    100,
+                    null
+            );
+            List<Document> documents = docs2.unwrap();
+            assertFalse(documents.isEmpty());
+            documents.forEach(document -> {
+                Map<String, PlatformValue> props = document.getV0().get_0().getProperties();
+                System.out.println(props.get("label").getText());
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
     public void createSDKTest() throws Exception {
         SWIGTYPE_p_RustSdk sdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
-        ArrayList list = new ArrayList();
+        List<WhereClause> list = new ArrayList<>();
+        List<OrderClause> list2 = new ArrayList<>();
         Result<List<Document>, String> result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
                 sdk, new Identifier(dpnsContractId),
-                "domain", list, list, 100, null);
+                "domain", list, list2, 100, null);
         List<Document> documentList = result.unwrap();
         documentList.forEach(doc -> {
             System.out.println(doc.getV0().get_0().getId().getBytes().length);
