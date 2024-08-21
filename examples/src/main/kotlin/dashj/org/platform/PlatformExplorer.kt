@@ -231,15 +231,18 @@ object PlatformExplorer {
             println("Platform Explorer")
             println("-----------------")
             println("Main Menu")
-            println("1. Query Identity from id")
-            println("2. Query Identity from public key hash")
-            println("3. Query Identity from public key")
-            println("4. Query a random DPNS document")
-            println("5. Query all DPNS DOMAIN documents")
+            println("1.  101Query Identity from id")
+            println("2.  Query Identity from public key hash")
+            println("3.  Query Identity from public key")
+            println("4.  Query a random DPNS document")
+            println("5.  Query all DPNS DOMAIN documents")
             println("6a. Query DPNS DOMAIN documents for name")
             println("6b. Query DPNS DOMAIN documents for id")
-            println("7. Query DPNS DOMAIN documents starting with")
-            println("8. Query Data contract by id")
+            println("7.  Query DPNS DOMAIN documents starting with")
+            println("8.  Query Data contract by id")
+            println("10. Query all contested resources for DOMAIN")
+            println("11. Query votes for DOMAIN documents for a name")
+
 
             println("w. Wallet info")
             println("q. Quit")
@@ -463,6 +466,45 @@ object PlatformExplorer {
                         85
                     )
                     println(Base58.encode(dpnsContractId))
+                }
+                "10" -> {
+                    val result = dashsdk.platformMobileVotingGetContestedResources(
+                        sdk,
+                        "domain",
+                        Identifier(dpnsContractId)
+                    )
+                    val contestedResources = result.unwrap()
+                    val list = contestedResources._0
+                    for (item in list) {
+                        println(item.value.text)
+                    }
+                }
+                "11" -> {
+                    println("Enter an data contract id:")
+                    val name = scanner.nextLine()
+
+                    println(" > $name")
+
+                    val indexes = ArrayList<PlatformValue>()
+                    indexes.add(PlatformValue("dash"))
+                    indexes.add(PlatformValue(name))
+                    val result = dashsdk.platformMobileVotingGetVoteContenders(
+                        sdk,
+                        "parentNameAndLabel",
+                        indexes,
+                        "domain",
+                        Identifier(dpnsContractId)
+                    )
+                    val contenders = result.unwrap()
+
+                    println("Contenders: " + contenders.contenders.size)
+                    println("  Abstain: " + contenders.abstainVoteTally)
+                    println("  Lock: " + contenders.lockVoteTally)
+                    for ((key, value) in contenders.contenders) {
+                        println("  Identifier: " + Base58.encode(key._0._0))
+                        println("  Serialized:" + Base64.getEncoder().encodeToString(value.v0._0.serialized_document))
+                        println("  Votes: " + value.v0._0.voteTally)
+                    }
                 }
                 "w" -> {
                     println("Wallet")

@@ -34,6 +34,7 @@ import org.dashj.platform.dpp.toBase58
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.dpp.voting.Contenders
+import org.dashj.platform.dpp.voting.ContestedResources
 import org.dashj.platform.sdk.PlatformValue
 import org.dashj.platform.sdk.SWIGTYPE_p_RustSdk
 import org.dashj.platform.sdk.Start
@@ -634,7 +635,7 @@ class DapiClient(
         prove: Boolean = false,
         //retryCallback: GrpcMethodShouldRetryCallback = DefaultGetDocumentsRetryCallback()
     ): List<Document> {
-        logger.info("getDocuments(contractId={}, type={}, {})", contractId.toHex(), type, documentQuery)
+        logger.info("getDocuments(contractId={}, type={}, {})", contractId.toBase58(), type, documentQuery)
         val contractIdentifier = Identifier(contractId)
         val rustContractIdentifier = contractIdentifier.toNative()
         val start = when {
@@ -1121,5 +1122,14 @@ class DapiClient(
             dataContractId.toNative()
         )
         return Contenders(result.unwrap())
+    }
+
+    fun getContestedResources(dataContractId: Identifier, documentType: String): ContestedResources {
+        val result = dashsdk.platformMobileVotingGetContestedResources(
+            rustSdk,
+            documentType,
+            dataContractId.toNative()
+        )
+        return ContestedResources(result.unwrap())
     }
 }

@@ -166,3 +166,10 @@ LIST_STRUCT_TYPEMAP(Vec_drive_proof_verifier_types_ContestedResource, drive_proo
     char *document_type_name,
     platform_value_types_identifier_Identifier *contract_id
 );
+
+%newobject platform_mobile_voting_get_contested_resources(
+    RustSdk *rust_sdk,
+    char *document_type_name,
+    platform_value_types_identifier_Identifier *data_contract_id
+);
+

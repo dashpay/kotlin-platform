@@ -4,7 +4,7 @@ data class UsernameInfo(
     var salt: ByteArray?,
     var usernameStatus: UsernameStatus,
     var username: String?,
-    var requested: Boolean? = null,
+    var requestStatus: UsernameRequestStatus? = null,
     var votingStartedAt: Long? = null
 ) {
     override fun equals(other: Any?): Boolean {

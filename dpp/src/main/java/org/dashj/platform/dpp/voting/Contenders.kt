@@ -2,9 +2,12 @@ package org.dashj.platform.dpp.voting
 
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identifier.RustIdentifier
+import org.dashj.platform.dpp.util.convertPlatformValue
 
 typealias RustContenders = org.dashj.platform.sdk.Contenders
 typealias RustContenderWithSerializedDocument = org.dashj.platform.sdk.ContenderWithSerializedDocument
+typealias RustContestedResources = org.dashj.platform.sdk.ContestedResources
+typealias RustContestedResource = org.dashj.platform.sdk.ContestedResource
 
 
 data class ContenderWithSerializedDocument(val identityId: Identifier, val seralizedDocument: ByteArray, val votes: Int) {
@@ -29,4 +32,25 @@ class Contenders(val map: Map<Identifier, ContenderWithSerializedDocument>, val 
     )
 
     fun isEmpty() = map.isEmpty()
+}
+
+private fun convertContestedResource(contestedResource: RustContestedResource): Any? {
+    return when (contestedResource.tag) {
+        org.dashj.platform.sdk.ContestedResource.Tag.Value -> {
+            convertPlatformValue(contestedResource.value)
+        }
+        else -> error("${contestedResource.tag} not supported")
+    }
+}
+
+class ContestedResource(val value: Any?) {
+    constructor(contestedResource: RustContestedResource) : this(
+        convertContestedResource(contestedResource)
+    )
+}
+
+class ContestedResources(val list: List<ContestedResource>) {
+    constructor(contestedResources: RustContestedResources): this (
+        contestedResources._0.map { ContestedResource(it) }
+    )
 }

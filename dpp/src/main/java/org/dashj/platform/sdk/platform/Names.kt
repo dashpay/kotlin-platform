@@ -26,6 +26,8 @@ class Names(val platform: Platform) {
 
         const val DEFAULT_PARENT_DOMAIN = "dash"
         const val DPNS_DATA_CONTRACT = "dpns"
+        const val DOMAIN_DOCUMENT = "domain"
+        const val PREORDER_DOCUMENT = "preorder"
         const val DPNS_DOMAIN_DOCUMENT = "dpns.domain"
         const val DPNS_PREORDER_DOCUMENT = "dpns.preorder"
 
@@ -350,9 +352,27 @@ class Names(val platform: Platform) {
     fun getVoteContenders(name: String): Contenders {
         return platform.client.getVoteContenders(
             platform.apps[DPNS_DATA_CONTRACT]!!.contractId,
-            DPNS_DOMAIN_DOCUMENT,
+            DOMAIN_DOCUMENT,
             "parentNameAndLabel",
             listOf(DEFAULT_PARENT_DOMAIN, name)
         )
+    }
+
+    fun getContestedNames(): List<String> {
+        val resources = platform.client.getContestedResources(
+            platform.apps[DPNS_DATA_CONTRACT]!!.contractId,
+            DOMAIN_DOCUMENT
+        )
+        return if (resources.list.isNotEmpty()) {
+            resources.list.map {
+                if (it.value is String) {
+                    it.value
+                } else {
+                    error("${it.value} is not a String")
+                }
+            }
+        } else {
+            listOf()
+        }
     }
 }
