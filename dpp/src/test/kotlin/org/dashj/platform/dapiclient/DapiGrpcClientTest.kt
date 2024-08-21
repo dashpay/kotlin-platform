@@ -292,7 +292,7 @@ class DapiGrpcClientTest : BaseTest() {
             "domain",
             DocumentQuery.builder()
                 .where("normalizedParentDomainName", "==", "dash")
-                .where("normalizedLabel", "startsWith", "test")
+                .where("normalizedLabel", "startsWith", "tut")
                 .orderBy("normalizedLabel", true)
                 .build()
         )
@@ -363,5 +363,32 @@ class DapiGrpcClientTest : BaseTest() {
                 .where("saltedDomainHash", "==", Sha256Hash.ZERO_HASH.bytes)
                 .build()
         )
+
+        val domainsAsc = client.getDocuments(
+            dpnsContractId.toBuffer(),
+            "domain",
+            DocumentQuery.builder()
+                .where("records.identity", "<", Identifier.from("AYN4srupPWDrp833iG5qtmaAsbapNvaV7svAdncLN5Rh"))
+                .orderBy("records.identity")
+                //.limit(3)
+                .build()
+        )
+        println("Ascending Order")
+        domainsAsc.forEach {
+            println(it.data["records"])
+        }
+        val domainsDesc = client.getDocuments(
+            dpnsContractId.toBuffer(),
+            "domain",
+            DocumentQuery.builder()
+                .where("records.identity", "<", Identifier.from("AYN4srupPWDrp833iG5qtmaAsbapNvaV7svAdncLN5Rh"))
+                .orderBy("records.identity", false)
+                //.limit(3)
+                .build()
+        )
+        println("Descending Order")
+        domainsDesc.forEach {
+            println(it.data["records"]?.let { ((it as Map<String, Any?>)["identity"] as Identifier).toBuffer().toHex() })
+        }
     }
 }

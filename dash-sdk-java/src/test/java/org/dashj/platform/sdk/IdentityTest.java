@@ -50,7 +50,7 @@ public class IdentityTest extends BaseTest {
 
     @Test
     public void fetchIdentity3AndDestroy() throws Exception {
-        Identifier identifier1 = new Identifier(Base58.decode("3GupYWrQggzFBVZgL7fyHWensbWLwZBYFSbTXiSjXN5S"));
+        Identifier identifier1 = new Identifier(Base58.decode("HLWuAX1TebsXFNC8W2e8yUzaqLRCaB29pPxomNcRbBjK"));
         Result<Identity, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityWithCore(identifier1);
         Identity identity = result.unwrap();
         assertEquals(Identity.Tag.V0, identity.getTag());
@@ -305,7 +305,7 @@ public class IdentityTest extends BaseTest {
         Result<Long, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(sdk, new Identifier(identifier));
         result.unwrapError();
 
-        Identifier id = new Identifier(Base58.decode("3GupYWrQggzFBVZgL7fyHWensbWLwZBYFSbTXiSjXN5S"));
+        Identifier id = new Identifier(Base58.decode("HLWuAX1TebsXFNC8W2e8yUzaqLRCaB29pPxomNcRbBjK"));
         Result<Long, String> result2 = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(sdk, id);
         result2.unwrap();
     }
