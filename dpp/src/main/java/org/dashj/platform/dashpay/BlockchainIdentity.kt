@@ -106,8 +106,8 @@ class BlockchainIdentity {
 
     lateinit var usernameStatuses: MutableMap<String, UsernameInfo?>
 
-    fun getUsernameRequested(username: String): Boolean {
-        return usernameStatuses[username]?.requested ?: false
+    fun getUsernameRequestStatus(username: String): UsernameRequestStatus {
+        return usernameStatuses[username]?.requestStatus ?: UsernameRequestStatus.NONE
     }
 
     fun getUsernameVotingStart(username: String): Long {
@@ -282,10 +282,10 @@ class BlockchainIdentity {
         if (getUsernames().isNotEmpty()) {
             val usernameSalts = HashMap<String, ByteArray>()
             for (username in usernameStatus.keys) {
-                val data = usernameStatus[username] as MutableMap<String, Any?>
-                val salt = data[BLOCKCHAIN_USERNAME_SALT]
+                val data = usernameStatus[username]
+                val salt = data?.salt
                 if (salt != null) {
-                    usernameSalts[username] = salt as ByteArray
+                    usernameSalts[username] = salt
                 }
             }
             this.usernameStatuses = copyMap(usernameStatus)
@@ -673,7 +673,7 @@ class BlockchainIdentity {
                     val usernameInfo = usernameStatuses[username]!!
                     usernameInfo.usernameStatus = UsernameStatus.CONFIRMED
                     if (Names.isUsernameContestable(username)) {
-                        usernameInfo.requested = true
+                        usernameInfo.requestStatus = UsernameRequestStatus.SUBMITTED
                         usernameInfo.votingStartedAt = Utils.currentTimeMillis()
                     }
                     saveUsername(username, UsernameStatus.CONFIRMED, null, true)
@@ -870,9 +870,10 @@ class BlockchainIdentity {
 
     fun statusOfUsername(username: String): UsernameStatus {
         return if (usernameStatuses.containsKey(username)) {
-            (usernameStatuses[username] as MutableMap<String, Any>)[BLOCKCHAIN_USERNAME_STATUS] as? UsernameStatus
-                ?: UsernameStatus.INITIAL
-        } else UsernameStatus.NOT_PRESENT
+            usernameStatuses[username]?.usernameStatus ?: UsernameStatus.INITIAL
+        } else {
+            UsernameStatus.NOT_PRESENT
+        }
     }
 
     fun getUsernames(): List<String> {
@@ -882,8 +883,8 @@ class BlockchainIdentity {
     fun getUsernamesWithStatus(usernameStatus: UsernameStatus): MutableList<String> {
         val usernames = ArrayList<String>()
         for (username in usernameStatuses.keys) {
-            val usernameInfo = usernameStatuses[username] as MutableMap<String, Any?>
-            val status = usernameInfo[BLOCKCHAIN_USERNAME_STATUS] as? UsernameStatus ?: UsernameStatus.INITIAL
+            val usernameInfo = usernameStatuses[username]
+            val status = usernameInfo?.usernameStatus ?: UsernameStatus.INITIAL
             if (status == usernameStatus) {
                 usernames.add(username)
             }
