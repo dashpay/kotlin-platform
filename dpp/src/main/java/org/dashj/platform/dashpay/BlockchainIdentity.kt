@@ -316,21 +316,21 @@ class BlockchainIdentity {
 
     // MARK: - Full Registration agglomerate
 
-    fun createAssetLockTransaction(credits: Coin, keyParameter: KeyParameter?, useCoinJoin: Boolean, returnChange: Boolean): AssetLockTransaction {
+    fun createAssetLockTransaction(credits: Coin, keyParameter: KeyParameter?, useCoinJoin: Boolean, returnChange: Boolean, emptyWallet: Boolean): AssetLockTransaction {
         checkState(assetLockTransaction == null, "The credit funding transaction must not exist")
         checkState(
             registrationStatus == IdentityStatus.UNKNOWN,
             "The identity must not be registered"
         )
-        return createFundingTransaction(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY_FUNDING, credits, keyParameter, useCoinJoin, returnChange)
+        return createFundingTransaction(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY_FUNDING, credits, keyParameter, useCoinJoin, returnChange, emptyWallet)
     }
 
-    fun createTopupFundingTransaction(credits: Coin, keyParameter: KeyParameter?, useCoinJoin: Boolean, returnChange: Boolean): AssetLockTransaction {
-        return createFundingTransaction(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY_TOPUP, credits, keyParameter, useCoinJoin, returnChange)
+    fun createTopupFundingTransaction(credits: Coin, keyParameter: KeyParameter?, useCoinJoin: Boolean, returnChange: Boolean, emptyWallet: Boolean): AssetLockTransaction {
+        return createFundingTransaction(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY_TOPUP, credits, keyParameter, useCoinJoin, returnChange, emptyWallet)
     }
 
-    fun createInviteFundingTransaction(credits: Coin, keyParameter: KeyParameter?, useCoinJoin: Boolean, returnChange: Boolean): AssetLockTransaction {
-        return createFundingTransaction(AuthenticationKeyChain.KeyChainType.INVITATION_FUNDING, credits, keyParameter, useCoinJoin, returnChange)
+    fun createInviteFundingTransaction(credits: Coin, keyParameter: KeyParameter?, useCoinJoin: Boolean, returnChange: Boolean, emptyWallet: Boolean): AssetLockTransaction {
+        return createFundingTransaction(AuthenticationKeyChain.KeyChainType.INVITATION_FUNDING, credits, keyParameter, useCoinJoin, returnChange, emptyWallet)
     }
 
     private fun createFundingTransaction(
@@ -338,11 +338,12 @@ class BlockchainIdentity {
         credits: Coin,
         keyParameter: KeyParameter?,
         useCoinJoin: Boolean,
-        returnChange: Boolean
+        returnChange: Boolean,
+        emptyWallet: Boolean
     ): AssetLockTransaction {
         Preconditions.checkArgument(if (wallet!!.isEncrypted) keyParameter != null else true)
         val privateKey = authenticationGroup!!.currentKey(type)
-        val request = SendRequest.creditFundingTransaction(wallet!!.params, privateKey as ECKey, credits)
+        var request = SendRequest.assetLock(wallet!!.params, privateKey as ECKey, credits, emptyWallet)
         if (useCoinJoin) {
             // these are the settings for coinjoin
             request.coinSelector = CoinJoinCoinSelector(wallet!!)
@@ -351,6 +352,24 @@ class BlockchainIdentity {
             request.coinSelector = ZeroConfCoinSelector.get()
         }
         request.aesKey = keyParameter
+
+        if (emptyWallet) {
+            wallet!!.completeTx(request)
+
+            // make sure that the asset lock payload matches the OP_RETURN output
+            val outputValue = request.tx.outputs.first().value
+            val assetLockedValue = (request.tx as AssetLockTransaction).assetLockPayload.creditOutputs.first().value
+            if (assetLockedValue != outputValue) {
+                val newRequest = SendRequest.assetLock(wallet!!.params, privateKey as ECKey, outputValue, true)
+                newRequest.coinSelector = request.coinSelector
+                newRequest.returnChange = request.returnChange
+                newRequest.aesKey = request.aesKey
+                request = newRequest
+            } else {
+                // this shouldn't happen
+                error("The asset lock value is the same as the output though emptying the wallet")
+            }
+        }
 
         return wallet!!.sendCoinsOffline(request) as AssetLockTransaction
     }
