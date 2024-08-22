@@ -27,7 +27,6 @@ package org.dashj.platform.tools;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.Resources;
@@ -83,8 +82,6 @@ import org.bitcoinj.crypto.MnemonicCode;
 import org.bitcoinj.crypto.MnemonicException;
 import org.bitcoinj.crypto.TransactionSignature;
 import org.bitcoinj.evolution.AssetLockTransaction;
-import org.bitcoinj.evolution.SimplifiedMasternodeList;
-import org.bitcoinj.evolution.SimplifiedMasternodeListEntry;
 import org.bitcoinj.net.discovery.ThreeMethodPeerDiscovery;
 import org.bitcoinj.params.BinTangDevNetParams;
 import org.bitcoinj.params.MainNetParams;
@@ -126,25 +123,20 @@ import org.bitcoinj.wallet.listeners.WalletCoinsSentEventListener;
 import org.bitcoinj.wallet.listeners.WalletReorganizeEventListener;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.dashj.bls.BLSJniLibrary;
-import org.dashj.platform.dapiclient.model.GetStatusResponse;
-import org.dashj.platform.dapiclient.provider.DAPIAddress;
 import org.dashj.platform.dashpay.BlockchainIdentity;
 import org.dashj.platform.dashpay.Contact;
 import org.dashj.platform.dashpay.ContactRequest;
 import org.dashj.platform.dashpay.ContactRequests;
 import org.dashj.platform.dashpay.DashPayWalletExtension;
+import org.dashj.platform.dashpay.IdentityStatus;
 import org.dashj.platform.dashpay.Profile;
-import org.dashj.platform.dashpay.RetryDelayType;
-import org.dashj.platform.dashpay.callback.RegisterIdentityCallback;
-import org.dashj.platform.dashpay.callback.RegisterNameCallback;
-import org.dashj.platform.dashpay.callback.RegisterPreorderCallback;
+import org.dashj.platform.dashpay.UsernameStatus;
 import org.dashj.platform.dpp.document.Document;
 import org.dashj.platform.dpp.identifier.Identifier;
 import org.dashj.platform.dpp.identity.Identity;
 import org.dashj.platform.sdk.platform.DomainDocument;
 import org.dashj.platform.sdk.platform.Names;
 import org.dashj.platform.sdk.platform.Platform;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,11 +160,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -2047,7 +2037,7 @@ public class WalletTool {
 
                 blockchainIdentity = new BlockchainIdentity(platform, 0, wallet, authenticationGroupExtension);
 
-                AssetLockTransaction cftx = blockchainIdentity.createAssetLockTransaction(credits, null, useCoinJoin, returnChange);
+                AssetLockTransaction cftx = blockchainIdentity.createAssetLockTransaction(credits, null, useCoinJoin, returnChange, false);
                 boolean wait = true;
                 cftx.getConfidence().addEventListener(new TransactionConfidence.Listener() {
                     @Override
