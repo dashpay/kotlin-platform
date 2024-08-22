@@ -8,6 +8,7 @@ package org.dashj.platform.dashpay
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
+import com.google.common.base.Preconditions.checkArgument
 import com.google.common.base.Preconditions.checkState
 import com.google.common.collect.ImmutableList
 import java.io.ByteArrayOutputStream
@@ -104,7 +105,7 @@ class BlockchainIdentity {
         ENCRYPTION
     }
 
-    lateinit var usernameStatuses: MutableMap<String, UsernameInfo?>
+    lateinit var usernameStatuses: LinkedHashMap<String, UsernameInfo?>
 
     fun getUsernameRequestStatus(username: String): UsernameRequestStatus {
         return usernameStatuses[username]?.requestStatus ?: UsernameRequestStatus.NONE
@@ -184,7 +185,7 @@ class BlockchainIdentity {
         this.keysCreated = 0
         this.currentMainKeyIndex = 0
         this.currentMainKeyType = KeyType.ECDSA_SECP256K1
-        this.usernameStatuses = HashMap()
+        this.usernameStatuses = LinkedHashMap()
         this.keyInfo = HashMap()
         this.registrationStatus = IdentityStatus.REGISTERED
     }
@@ -201,7 +202,7 @@ class BlockchainIdentity {
         this.currentMainKeyIndex = 0
         this.currentMainKeyType = KeyType.ECDSA_SECP256K1
         this.index = index
-        this.usernameStatuses = HashMap()
+        this.usernameStatuses = LinkedHashMap()
         this.keyInfo = HashMap()
         this.registrationStatus = IdentityStatus.UNKNOWN
         this.usernameSalts = HashMap()
@@ -293,8 +294,8 @@ class BlockchainIdentity {
         }
     }
 
-    private fun copyMap(map: Map<String, UsernameInfo?>): MutableMap<String, UsernameInfo?> {
-        val copy = hashMapOf<String, UsernameInfo?>()
+    private fun copyMap(map: Map<String, UsernameInfo?>): LinkedHashMap<String, UsernameInfo?> {
+        val copy = linkedMapOf<String, UsernameInfo?>()
         map.forEach { (t, u) ->  copy[t] = u?.copy() }
         return copy
     }
@@ -595,6 +596,7 @@ class BlockchainIdentity {
     // Preorder stage
     fun registerPreorderedSaltedDomainHashesForUsernames(usernames: List<String>, keyParameter: KeyParameter?) {
         val preorderDocuments = createPreorderDocuments(usernames)
+        checkArgument(preorderDocuments.size == usernames.size)
 
         val signer = WalletSignerCallback(wallet!!, keyParameter)
 
@@ -635,6 +637,8 @@ class BlockchainIdentity {
                     saveUsername(username, UsernameStatus.PREORDERED, null, true)
                     platform.stateRepository.addValidDocument(preorderTransition.id)
                     platform.stateRepository.addValidPreorderSalt(saltForUsername(username, false), saltedDomainHashData)
+                } else {
+                    error("salted domain hash not found ${saltedDomainHashData.toHex()}")
                 }
             }
         }
@@ -665,6 +669,7 @@ class BlockchainIdentity {
 
     fun registerUsernameDomainsForUsernames(usernames: List<String>, keyParameter: KeyParameter?, alias: Boolean) {
         val domainDocuments = createDomainDocuments(usernames, alias)
+        checkArgument(domainDocuments.size == usernames.size)
 
         val signer = WalletSignerCallback(wallet!!, keyParameter)
 
@@ -794,7 +799,7 @@ class BlockchainIdentity {
 
     fun saltForUsername(username: String, saveSalt: Boolean): ByteArray {
         val salt: ByteArray
-        if (statusOfUsername(username) == UsernameStatus.INITIAL || !(usernameSalts.containsKey(username))) {
+        if (!(usernameSalts.containsKey(username))) {
             salt = ECKey().privKeyBytes
             usernameSalts[username] = salt
             if (saveSalt) {
@@ -912,34 +917,22 @@ class BlockchainIdentity {
     }
 
     fun getUniqueUsername(): String {
-        for (username in usernameStatuses.keys) {
-            val usernameInfo = usernameStatuses[username] as MutableMap<String, Any?>
-            val isUnique = usernameInfo[BLOCKCHAIN_USERNAME_UNIQUE] as Boolean
-            if (isUnique) {
-                return username
-            }
-        }
-        throw IllegalStateException("There is no unique username")
+        return usernameStatuses.keys.first()
     }
 
     fun getAliasList(): List<String> {
-        val usernames = arrayListOf<String>()
-        for (username in usernameStatuses.keys) {
-            val usernameInfo = usernameStatuses[username] as MutableMap<String, Any?>
-            val isUnique = usernameInfo[BLOCKCHAIN_USERNAME_UNIQUE] as Boolean
-
-            if (!isUnique) {
-                usernames.add(username)
-            }
+        return if (usernameStatuses.size == 1) {
+            listOf()
+        } else {
+            usernameStatuses.entries.drop(1).map { it.key }
         }
-        return usernames
     }
 
-    fun getUnregisteredUsernames(): MutableList<String> {
-        return getUsernamesWithStatus(UsernameStatus.INITIAL)
+    fun getUnregisteredUsernames(): List<String> {
+        return usernameStatuses.filter { it.value?.let { info -> info.usernameStatus.value <= UsernameStatus.CONFIRMED.value } ?: false }.map { it.key }
     }
 
-    fun preorderedUsernames(): MutableList<String> {
+    fun preorderedUsernames(): List<String> {
         return getUsernamesWithStatus(UsernameStatus.PREORDERED)
     }
 
