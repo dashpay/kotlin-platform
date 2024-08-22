@@ -74,6 +74,7 @@ dependencies {
     //testImplentnation group: 'junit', name: 'junit', version: '4.12'
     implementation project(':dpp')
     implementation project(':dash-sdk-java')
+    implementation 'org.bouncycastle:bcprov-jdk15to18:1.74'
     implementation 'com.google.guava:guava:32.0.0-android'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 //    implementation "org.dashj.platform:dpp:$dpp_version"
