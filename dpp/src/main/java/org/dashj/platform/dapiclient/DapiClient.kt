@@ -1132,4 +1132,16 @@ class DapiClient(
         )
         return ContestedResources(result.unwrap())
     }
+
+    fun deserializeDocument(serializedDocument: ByteArray, dataContractId: Identifier, documentType: String): Document {
+        return Document(
+            dashsdk.platformMobileFetchDocumentDeserializeDocumentSdk(
+                rustSdk,
+                serializedDocument,
+                dataContractId.toNative(),
+                documentType
+            ).unwrap(),
+            dataContractId
+        )
+    }
 }
