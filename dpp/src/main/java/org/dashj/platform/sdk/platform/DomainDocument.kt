@@ -16,6 +16,8 @@ class DomainDocument(document: Document) : AbstractDocument(document) {
         get() = getFieldString("normalizedLabel")!!
     val normalizedParentDomainName: String
         get() = getFieldString("normalizedParentDomainName")!!
+    val parentDomainName: String
+        get() = getFieldString("parentDomainName")!!
     @Deprecated("this field is no longer used")
     val dashAliasIdentityId: Identifier?
         get() {
