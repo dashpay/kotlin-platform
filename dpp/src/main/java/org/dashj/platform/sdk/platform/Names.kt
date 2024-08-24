@@ -375,4 +375,12 @@ class Names(val platform: Platform) {
             listOf()
         }
     }
+
+    fun deserialize(bytes: ByteArray): Document {
+        return platform.documents.deserialize(
+            bytes,
+            platform.apps[DPNS_DATA_CONTRACT]!!.contractId,
+            DOMAIN_DOCUMENT
+        )
+    }
 }

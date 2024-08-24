@@ -171,4 +171,12 @@ class Documents(val platform: Platform) {
             throw e
         }
     }
+
+    fun deserialize(bytes: ByteArray, dataContractId: Identifier, documentType: String): Document {
+        return platform.client.deserializeDocument(
+            bytes,
+            dataContractId,
+            documentType
+        )
+    }
 }
