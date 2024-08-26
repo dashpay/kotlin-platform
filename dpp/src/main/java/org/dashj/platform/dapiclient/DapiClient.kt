@@ -36,7 +36,7 @@ import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.dpp.voting.Contenders
 import org.dashj.platform.dpp.voting.ContestedResources
 import org.dashj.platform.sdk.PlatformValue
-import org.dashj.platform.sdk.SWIGTYPE_p_RustSdk
+import org.dashj.platform.sdk.SWIGTYPE_p_DashSdk
 import org.dashj.platform.sdk.Start
 import org.dashj.platform.sdk.callbacks.ContextProvider
 import org.dashj.platform.sdk.dashsdk
@@ -124,7 +124,7 @@ class DapiClient(
     val contextProviderFunction: Long
         get() = if (useContextProvider) contextProvider.quorumPublicKeyCallback else 0L
 
-    lateinit var rustSdk: SWIGTYPE_p_RustSdk
+    var rustSdk: SWIGTYPE_p_DashSdk
 
     init {
         val loggingInterceptor = HttpLoggingInterceptor { msg: String? -> logger.info(msg) }
@@ -147,7 +147,7 @@ class DapiClient(
             false
         }
 
-        rustSdk = dashsdk.platformMobileConfigCreateSdk(
+        rustSdk = dashsdk.platformMobileSdkCreateDashSdk(
             BigInteger.valueOf(contextProviderFunction),
             BigInteger.ZERO
         )

@@ -221,7 +221,7 @@ object PlatformExplorer {
                 return byteArrayOf(0)
             }
         }
-        val sdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
+        val sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
 
         println("4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF")
         val scanner = Scanner(System.`in`)
