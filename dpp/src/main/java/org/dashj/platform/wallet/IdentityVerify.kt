@@ -95,7 +95,6 @@ class IdentityVerify(
     fun get(userId: Identifier, createdAfter: Long = -1): List<IdentityVerifyDocument> {
         val queryBuilder = DocumentQuery.Builder()
             .where("\$ownerId", "==", userId)
-            .orderBy("\$createdAt")
 
         if (createdAfter != -1L) {
             queryBuilder.where(listOf("\$createdAt", ">=", createdAfter))
@@ -112,11 +111,10 @@ class IdentityVerify(
 
     fun get(userId: Identifier, normalizedLabel: String, normalizedParentDomainName: String): IdentityVerifyDocument? {
         val queryBuilder = DocumentQuery.Builder()
-            .where("normalizedLabel", "==", normalizedLabel)
-            .where("normalizedParentDomainName", "==", normalizedParentDomainName)
             .where("\$ownerId", "==", userId)
+            .where("normalizedParentDomainName", "==", normalizedParentDomainName)
+            .where("normalizedLabel", "==", normalizedLabel)
             .orderBy("normalizedLabel")
-            .orderBy("\$createdAt")
 
         val query = queryBuilder.build()
 
