@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class VoteTest extends BaseTest {
     @Test
     void getVoteContendorsTest() throws Exception {
-        SWIGTYPE_p_RustSdk rustSdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
+        SWIGTYPE_p_DashSdk rustSdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         ArrayList<PlatformValue> indexes = new ArrayList<>();
         indexes.add(new PlatformValue("dash"));
         indexes.add(new PlatformValue("test11"));
@@ -45,7 +45,7 @@ public class VoteTest extends BaseTest {
 
     @Test
     void getVoteContendorsForNonExistantTest() throws Exception {
-        SWIGTYPE_p_RustSdk rustSdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
+        SWIGTYPE_p_DashSdk rustSdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         ArrayList<PlatformValue> indexes = new ArrayList<>();
         indexes.add(new PlatformValue("dash"));
         indexes.add(new PlatformValue("test11101010010110101010"));
@@ -70,7 +70,7 @@ public class VoteTest extends BaseTest {
 
     @Test
     void getContestedResources() throws Exception {
-        SWIGTYPE_p_RustSdk rustSdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
+        SWIGTYPE_p_DashSdk rustSdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         Result<ContestedResources, String> result = dashsdk.platformMobileVotingGetContestedResources(
                 rustSdk,
                 "domain",
@@ -86,7 +86,7 @@ public class VoteTest extends BaseTest {
 
     @Test
     void putToPlatformTest() throws Exception {
-        SWIGTYPE_p_RustSdk rustSdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
+        SWIGTYPE_p_DashSdk rustSdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         ArrayList<PlatformValue> indexes = new ArrayList<>();
         indexes.add(new PlatformValue("dash"));
         indexes.add(new PlatformValue("b0b1ee"));

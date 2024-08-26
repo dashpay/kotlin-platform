@@ -50,14 +50,14 @@ public class DocumentTest extends BaseTest {
     public void getDocumentsTest() {
         Identifier domainId = new Identifier(dpnsContractId);
         List<Document> docs = dashsdk.platformMobileFetchDocumentGetDocuments(domainId, "domain", BigInteger.ZERO, BigInteger.ZERO);
-        assertTrue(!docs.isEmpty());
+        assertFalse(docs.isEmpty());
     }
 
     @Test
     public void getDocumentMapTest() {
         Identifier domainId = new Identifier(dpnsContractId);
         List<Document> docs = dashsdk.platformMobileFetchDocumentGetDocuments(domainId, "domain", BigInteger.ZERO, BigInteger.ZERO);
-        assertTrue(!docs.isEmpty());
+        assertFalse(docs.isEmpty());
     }
 
 
@@ -250,7 +250,7 @@ public class DocumentTest extends BaseTest {
             where.add(new WhereClause("normalizedParentDomainName", WhereOperator.Equal, new PlatformValue("dash")));
             orderBy.add(new OrderClause("normalizedLabel"));
 
-            SWIGTYPE_p_RustSdk sdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
+            SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
             Result<List<Document>, String> docs2 = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
                     sdk,
                     dpnsId,
@@ -273,7 +273,7 @@ public class DocumentTest extends BaseTest {
 
     @Test
     public void createSDKTest() throws Exception {
-        SWIGTYPE_p_RustSdk sdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
+        SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         List<WhereClause> list = new ArrayList<>();
         List<OrderClause> list2 = new ArrayList<>();
         Result<List<Document>, String> result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(

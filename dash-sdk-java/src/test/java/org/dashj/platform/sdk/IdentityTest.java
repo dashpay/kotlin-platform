@@ -18,6 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IdentityTest extends BaseTest {
+
+    private static final String testIdentifier = "7Yowk46VwwHqmD5yZyyygggh937aP6h2UW7aQWBdWpM5";
     @Test
     public void basicIdentityInRustAndDestroy() {
         Identifier identifier1 = new Identifier(identifier);
@@ -50,7 +52,7 @@ public class IdentityTest extends BaseTest {
 
     @Test
     public void fetchIdentity3AndDestroy() throws Exception {
-        Identifier identifier1 = new Identifier(Base58.decode("HLWuAX1TebsXFNC8W2e8yUzaqLRCaB29pPxomNcRbBjK"));
+        Identifier identifier1 = new Identifier(Base58.decode(testIdentifier));
         Result<Identity, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityWithCore(identifier1);
         Identity identity = result.unwrap();
         assertEquals(Identity.Tag.V0, identity.getTag());
@@ -173,8 +175,6 @@ public class IdentityTest extends BaseTest {
         IdentityPublicKeyV0 identityPublicKeyV0ById = identityWithBounds.getV0().get_0().getPublicKeyById(1);
         assertEquals(ipkv0.getData().get_0().length, identityPublicKeyV0ById.getData().get_0().length);
         assertArrayEquals(ipkv0.getData().get_0(), identityPublicKeyV0ById.getData().get_0());
-        // this crashes the system, it was created in Rust
-        // this crashes with ContractBounds::drop
         identityWithBounds.delete();
         id.delete();
         idContract.delete();
@@ -301,11 +301,11 @@ public class IdentityTest extends BaseTest {
 
     @Test
     public void identityBalanceTest() throws Exception {
-        SWIGTYPE_p_RustSdk sdk = dashsdk.platformMobileConfigCreateSdk(BigInteger.ZERO, BigInteger.ZERO);
+        SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         Result<Long, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(sdk, new Identifier(identifier));
         result.unwrapError();
 
-        Identifier id = new Identifier(Base58.decode("HLWuAX1TebsXFNC8W2e8yUzaqLRCaB29pPxomNcRbBjK"));
+        Identifier id = new Identifier(Base58.decode(testIdentifier));
         Result<Long, String> result2 = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(sdk, id);
         result2.unwrap();
     }
