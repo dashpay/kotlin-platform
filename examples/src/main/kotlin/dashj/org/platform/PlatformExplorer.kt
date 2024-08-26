@@ -231,7 +231,7 @@ object PlatformExplorer {
             println("Platform Explorer")
             println("-----------------")
             println("Main Menu")
-            println("1.  101Query Identity from id")
+            println("1.  Query Identity from id")
             println("2.  Query Identity from public key hash")
             println("3.  Query Identity from public key")
             println("4.  Query a random DPNS document")
