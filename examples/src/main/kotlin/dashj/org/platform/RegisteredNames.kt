@@ -50,7 +50,7 @@ class RegisteredNames {
                     }
 
                     lastItem = documents.last().id
-                    if (documents.isNotEmpty()) {
+                    if (documents.size == 100) {
                         queryOpts = DocumentQuery.Builder().startAfter(lastItem).limit(100).build()
                     }
                 } catch (e: Exception) {
@@ -58,7 +58,7 @@ class RegisteredNames {
                     println(e.message)
                     return
                 }
-            } while (requests >= 0 || documents!!.size >= limit)
+            } while (requests >= 0 && documents!!.size >= limit)
         }
     }
 }
