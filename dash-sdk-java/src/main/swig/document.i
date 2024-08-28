@@ -78,3 +78,11 @@ START_CLASS(DocumentV0, dpp_document_v0_DocumentV0);
         );
   }
 END_CLASS();
+
+MAP_STRUCT_TYPEMAP(
+    std_collections_Map_keys_platform_value_types_identifier_Identifier_values_Option_dpp_document_Document,
+    platform_value_types_identifier_Identifier,
+    Identifier,
+    dpp_document_Document,
+    Document
+);

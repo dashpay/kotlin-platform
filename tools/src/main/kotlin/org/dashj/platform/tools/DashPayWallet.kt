@@ -19,6 +19,7 @@ import org.dashj.platform.dashpay.BlockchainIdentity
 import org.dashj.platform.dashpay.Contact
 import org.dashj.platform.dashpay.ContactRequest
 import org.dashj.platform.dashpay.ContactRequests
+import org.dashj.platform.dashpay.IdentityStatus
 import org.dashj.platform.dashpay.Profile
 import org.dashj.platform.dashpay.Profiles
 import org.dashj.platform.dpp.document.Document
@@ -91,7 +92,7 @@ class DashPayWallet(val blockchainIdentity: BlockchainIdentity, val peerGroup: P
                 return
             }
 
-            if (blockchainIdentity.registrationStatus != BlockchainIdentity.RegistrationStatus.REGISTERED) {
+            if (blockchainIdentity.registrationStatus != IdentityStatus.REGISTERED) {
                 log.info("update contacts not completed username registration/recovery is not complete")
                 return
             }

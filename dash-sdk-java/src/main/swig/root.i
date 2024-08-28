@@ -37,6 +37,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "generics/lists.i"
 %include "generics/maps.i"
 %include "generics/result.i"
+%include "generics/sets.i"
 %include "generics/byte_array.i"
 
 // Platform Related Structures
@@ -60,6 +61,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "enums.i"
 %include "platform_value.i"
 %include "platform_value_array.i"
+%include "vote.i"
 
 // modules and crates
 %include "dpp.i"

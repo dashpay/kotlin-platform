@@ -7,6 +7,7 @@
 package org.dashj.platform.sdk.platform
 
 import org.dashj.platform.dpp.document.Document
+import org.dashj.platform.dpp.document.RustDocument
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.util.Converters
 
@@ -26,6 +27,8 @@ abstract class AbstractDocument(val document: Document) {
         get() = document.createdAt
     val updatedAt: Long?
         get() = document.updatedAt
+    val type: String
+        get() = document.type!!
 
     fun toJSON(): Map<String, Any?> {
         return document.toJSON()
@@ -86,4 +89,6 @@ abstract class AbstractDocument(val document: Document) {
     override fun toString(): String {
         return "Document(${document.toJSON()})"
     }
+
+    fun toNative(): RustDocument = document.toNative()
 }

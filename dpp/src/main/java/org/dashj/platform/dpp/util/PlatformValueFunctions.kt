@@ -125,7 +125,6 @@ fun convertPlatformValueMap(map: PlatformValue): Map<String, Any?> {
 }
 
 fun convertListToPlatformValue(list: List<Any>): PlatformValue {
-//
     return PlatformValue(
         list.map { item ->
             convertToPlatformValue(item)

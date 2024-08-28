@@ -55,7 +55,7 @@
             entryCount * sizeof(KEY_TYPE * ));
     auto **values = (VALUE_TYPE **) malloc(
             entryCount * sizeof(VALUE_TYPE * ));
-    FermentMapKeyIDIdentityPublicKey * result = STRUCT_TYPE##_ctor(count, keys, values);
+    auto * result = STRUCT_TYPE##_ctor(count, keys, values);
 
     jclass keyClass = jenv->FindClass("org/dashj/platform/sdk/" #KEY_TYPE_JAVA);
     jmethodID keyPtrMethod = jenv->GetMethodID(keyClass, "getCPointer", "()J");

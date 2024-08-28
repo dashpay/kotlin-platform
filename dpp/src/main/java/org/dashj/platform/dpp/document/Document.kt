@@ -22,8 +22,6 @@ import kotlin.collections.HashMap
 
 typealias RustDocument = org.dashj.platform.sdk.Document
 
-
-
 class Document : BaseObject {
 
     var dataContract: DataContract? = null

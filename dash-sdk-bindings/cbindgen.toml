@@ -15,3 +15,6 @@ extra_bindings = ["platform-mobile"]
 [enum]
 prefix_with_name = false
 enum_class = true
+
+[export]
+exclude = ["__android_log_write"]

@@ -13,7 +13,7 @@ platform-value = { path = "../../platform/packages/rs-platform-value" }
 #data-contracts = { path = "../../platform/packages/data-contracts" }
 dpp = { path = "../../platform/packages/rs-dpp" }
 dash-sdk = { path = "../../platform/packages/rs-sdk"}
-# drive-proof-verifier = { path = "../../platform/packages/rs-drive-proof-verifier"}
+drive-proof-verifier = { path = "../../platform/packages/rs-drive-proof-verifier"}
 #rs-dapi-client = { path = "../../platform/packages/rs-dapi-client", default-features = false}
 #platform-version = { path = "../../platform/packages/rs-platform-version" }
 drive = { path = "../../platform/packages/rs-drive", default-features = false, features = [

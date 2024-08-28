@@ -24,6 +24,7 @@ import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.statetransition.StateTransitionIdentitySigned
 import org.dashj.platform.dpp.util.Entropy
+import org.dashj.platform.sdk.SWIGTYPE_p_DashSdk
 import org.dashj.platform.sdk.client.ClientAppDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -47,7 +48,7 @@ class Platform(val params: NetworkParameters) {
     } else {
         PlatformStateRepository(this)
     }
-    val rustSdk
+    val rustSdk: SWIGTYPE_p_DashSdk
         get() = client.rustSdk
 
     val dpp = DashPlatformProtocol(stateRepository, params)
@@ -78,7 +79,7 @@ class Platform(val params: NetworkParameters) {
         when {
             params.id.contains("test") -> {
                 useWhiteList = true
-                apps["dashwallet"] = ClientAppDefinition("BnsbVhX1sgGyr26njLjPisfbzHQfgQaAs3dZs2JyLnbv")
+                apps["dashwallet"] = ClientAppDefinition("FRsKDsmpZkzRuHN9d8nHrvhTeQjRou5h5A5Qw6RXbsrx")
             }
             params.id.contains("bintang") -> {
                 apps["dashwallet"] = ClientAppDefinition("Fds5DDfXoLwpUZ71AAVYZP1uod8S7Ze2bR28JExBvZKR")

@@ -8,6 +8,7 @@ package org.dashj.platform.dashpay
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
+import com.google.common.base.Preconditions.checkArgument
 import com.google.common.base.Preconditions.checkState
 import com.google.common.collect.ImmutableList
 import java.io.ByteArrayOutputStream
@@ -24,6 +25,7 @@ import org.bitcoinj.core.Sha256Hash
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.core.TransactionConfidence
 import org.bitcoinj.core.TransactionOutPoint
+import org.bitcoinj.core.Utils
 import org.bitcoinj.crypto.ChildNumber
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.EncryptedData
@@ -70,7 +72,7 @@ import java.math.BigInteger
 class BlockchainIdentity {
 
     var platform: Platform
-    var profiles: Profiles
+    private var profiles: Profiles
     var params: NetworkParameters
 
     private constructor(platform: Platform) {
@@ -83,33 +85,10 @@ class BlockchainIdentity {
         const val BLOCKCHAIN_USERNAME_SALT = "BLOCKCHAIN_USERNAME_SALT"
         const val BLOCKCHAIN_USERNAME_STATUS = "BLOCKCHAIN_USERNAME_STATUS"
         const val BLOCKCHAIN_USERNAME_UNIQUE = "BLOCKCHAIN_USERNAME_UNIQUE"
+        const val BLOCKCHAIN_USERNAME_REQUESTED = "BLOCKCHAIN_USERNAME_REQUESTED"
+        const val BLOCKCHAIN_USERNAME_VOTING_STARTS = "BLOCKCHAIN_USERNAME_VOTING_STARTS"
 
         private val log = LoggerFactory.getLogger(BlockchainIdentity::class.java)
-    }
-
-    enum class RegistrationStatus {
-        UNKNOWN,
-        REGISTERING,
-        REGISTERED,
-        NOT_REGISTERED,
-        RETRY
-    }
-
-    enum class UsernameStatus(val value: Int) {
-        NOT_PRESENT(0),
-        INITIAL(1),
-        PREORDER_REGISTRATION_PENDING(2),
-        PREORDERED(3),
-        REGISTRATION_PENDING(4),
-        CONFIRMED(5),
-        TAKEN_ON_NETWORK(6);
-
-        companion object {
-            private val values = values()
-            fun getByCode(code: Int): UsernameStatus {
-                return values.filter { it.value == code }[0]
-            }
-        }
     }
 
     enum class IdentityKeyStatus {
@@ -126,7 +105,15 @@ class BlockchainIdentity {
         ENCRYPTION
     }
 
-    lateinit var usernameStatuses: MutableMap<String, Any?>
+    lateinit var usernameStatuses: LinkedHashMap<String, UsernameInfo?>
+
+    fun getUsernameRequestStatus(username: String): UsernameRequestStatus {
+        return usernameStatuses[username]?.requestStatus ?: UsernameRequestStatus.NONE
+    }
+
+    fun getUsernameVotingStart(username: String): Long {
+        return usernameStatuses[username]?.votingStartedAt ?: -1L
+    }
 
     /** This is the unique identifier representing the blockchain identity. It is derived from the credit funding transaction credit burn UTXO */
     lateinit var uniqueId: Sha256Hash
@@ -159,6 +146,8 @@ class BlockchainIdentity {
     // lateinit var usernames: List<String>
 
     var currentUsername: String? = null
+    var currentUsernameRequested = false
+    var currentVotingPeriodStarts = -1L
 
     var accountLabel: String = "Default Account"
     var account: Int = 0
@@ -168,7 +157,7 @@ class BlockchainIdentity {
 
     // var dashpayBioString: String
 
-    lateinit var registrationStatus: RegistrationStatus
+    lateinit var registrationStatus: IdentityStatus
 
     lateinit var usernameSalts: MutableMap<String, ByteArray>
 
@@ -196,9 +185,9 @@ class BlockchainIdentity {
         this.keysCreated = 0
         this.currentMainKeyIndex = 0
         this.currentMainKeyType = KeyType.ECDSA_SECP256K1
-        this.usernameStatuses = HashMap()
+        this.usernameStatuses = LinkedHashMap()
         this.keyInfo = HashMap()
-        this.registrationStatus = RegistrationStatus.REGISTERED
+        this.registrationStatus = IdentityStatus.REGISTERED
     }
 
     constructor(platform: Platform, index: Int, wallet: Wallet, authenticationGroupExtension: AuthenticationGroupExtension) : this(
@@ -213,9 +202,9 @@ class BlockchainIdentity {
         this.currentMainKeyIndex = 0
         this.currentMainKeyType = KeyType.ECDSA_SECP256K1
         this.index = index
-        this.usernameStatuses = HashMap()
+        this.usernameStatuses = LinkedHashMap()
         this.keyInfo = HashMap()
-        this.registrationStatus = RegistrationStatus.UNKNOWN
+        this.registrationStatus = IdentityStatus.UNKNOWN
         this.usernameSalts = HashMap()
     }
 
@@ -254,20 +243,20 @@ class BlockchainIdentity {
         try {
             identity = registeredIdentity ?: platform.identities.get(uniqueIdString)
             registrationStatus = if (identity != null) {
-                RegistrationStatus.REGISTERED
+                IdentityStatus.REGISTERED
             } else {
-                RegistrationStatus.NOT_REGISTERED
+                IdentityStatus.NOT_REGISTERED
             }
         } catch (e: MaxRetriesReachedException) {
             // network is unavailable, so retry later
             log.info("unable to obtain identity from network.  Retry later.")
-            registrationStatus = RegistrationStatus.RETRY
+            registrationStatus = IdentityStatus.RETRY
             if (throwException) {
                 throw IllegalStateException("unable to obtain identity from Platform. Retry allowed", e)
             }
         } catch (e: Exception) {
             // swallow and leave the status as unknown
-            registrationStatus = RegistrationStatus.UNKNOWN
+            registrationStatus = IdentityStatus.UNKNOWN
             if (throwException) {
                 throw IllegalStateException("unable to obtain identity from Platform: Reason unknown", e)
             }
@@ -275,7 +264,7 @@ class BlockchainIdentity {
     }
 
     fun isRegistered(): Boolean {
-        return registrationStatus == RegistrationStatus.REGISTERED
+        return registrationStatus == IdentityStatus.REGISTERED
     }
 
     fun checkIdentity() {
@@ -287,17 +276,17 @@ class BlockchainIdentity {
     constructor(
         platform: Platform,
         transaction: AssetLockTransaction,
-        usernameStatus: MutableMap<String, Any>,
+        usernameStatus: MutableMap<String, UsernameInfo?>,
         wallet: Wallet,
         authenticationGroupExtension: AuthenticationGroupExtension
     ) : this(platform, transaction, wallet, authenticationGroupExtension) {
         if (getUsernames().isNotEmpty()) {
             val usernameSalts = HashMap<String, ByteArray>()
             for (username in usernameStatus.keys) {
-                val data = usernameStatus[username] as MutableMap<String, Any?>
-                val salt = data[BLOCKCHAIN_USERNAME_SALT]
+                val data = usernameStatus[username]
+                val salt = data?.salt
                 if (salt != null) {
-                    usernameSalts[username] = salt as ByteArray
+                    usernameSalts[username] = salt
                 }
             }
             this.usernameStatuses = copyMap(usernameStatus)
@@ -305,17 +294,19 @@ class BlockchainIdentity {
         }
     }
 
-    private fun copyMap(map: MutableMap<String, Any>): MutableMap<String, Any?> {
-        return Cbor.decode(Cbor.encode(map))
+    private fun copyMap(map: Map<String, UsernameInfo?>): LinkedHashMap<String, UsernameInfo?> {
+        val copy = linkedMapOf<String, UsernameInfo?>()
+        map.forEach { (t, u) ->  copy[t] = u?.copy() }
+        return copy
     }
 
     constructor(
         platform: Platform,
         index: Int,
         transaction: AssetLockTransaction,
-        usernameStatus: MutableMap<String, Any>,
+        usernameStatus: MutableMap<String, UsernameInfo?>,
         credits: Coin,
-        registrationStatus: RegistrationStatus,
+        registrationStatus: IdentityStatus,
         wallet: Wallet,
         authenticationGroupExtension: AuthenticationGroupExtension
     ) :
@@ -326,21 +317,21 @@ class BlockchainIdentity {
 
     // MARK: - Full Registration agglomerate
 
-    fun createAssetLockTransaction(credits: Coin, keyParameter: KeyParameter?, useCoinJoin: Boolean, returnChange: Boolean): AssetLockTransaction {
+    fun createAssetLockTransaction(credits: Coin, keyParameter: KeyParameter?, useCoinJoin: Boolean, returnChange: Boolean, emptyWallet: Boolean): AssetLockTransaction {
         checkState(assetLockTransaction == null, "The credit funding transaction must not exist")
         checkState(
-            registrationStatus == RegistrationStatus.UNKNOWN,
+            registrationStatus == IdentityStatus.UNKNOWN,
             "The identity must not be registered"
         )
-        return createFundingTransaction(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY_FUNDING, credits, keyParameter, useCoinJoin, returnChange)
+        return createFundingTransaction(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY_FUNDING, credits, keyParameter, useCoinJoin, returnChange, emptyWallet)
     }
 
-    fun createTopupFundingTransaction(credits: Coin, keyParameter: KeyParameter?, useCoinJoin: Boolean, returnChange: Boolean): AssetLockTransaction {
-        return createFundingTransaction(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY_TOPUP, credits, keyParameter, useCoinJoin, returnChange)
+    fun createTopupFundingTransaction(credits: Coin, keyParameter: KeyParameter?, useCoinJoin: Boolean, returnChange: Boolean, emptyWallet: Boolean): AssetLockTransaction {
+        return createFundingTransaction(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY_TOPUP, credits, keyParameter, useCoinJoin, returnChange, emptyWallet)
     }
 
-    fun createInviteFundingTransaction(credits: Coin, keyParameter: KeyParameter?, useCoinJoin: Boolean, returnChange: Boolean): AssetLockTransaction {
-        return createFundingTransaction(AuthenticationKeyChain.KeyChainType.INVITATION_FUNDING, credits, keyParameter, useCoinJoin, returnChange)
+    fun createInviteFundingTransaction(credits: Coin, keyParameter: KeyParameter?, useCoinJoin: Boolean, returnChange: Boolean, emptyWallet: Boolean): AssetLockTransaction {
+        return createFundingTransaction(AuthenticationKeyChain.KeyChainType.INVITATION_FUNDING, credits, keyParameter, useCoinJoin, returnChange, emptyWallet)
     }
 
     private fun createFundingTransaction(
@@ -348,11 +339,12 @@ class BlockchainIdentity {
         credits: Coin,
         keyParameter: KeyParameter?,
         useCoinJoin: Boolean,
-        returnChange: Boolean
+        returnChange: Boolean,
+        emptyWallet: Boolean
     ): AssetLockTransaction {
         Preconditions.checkArgument(if (wallet!!.isEncrypted) keyParameter != null else true)
         val privateKey = authenticationGroup!!.currentKey(type)
-        val request = SendRequest.creditFundingTransaction(wallet!!.params, privateKey as ECKey, credits)
+        var request = SendRequest.assetLock(wallet!!.params, privateKey as ECKey, credits, emptyWallet)
         if (useCoinJoin) {
             // these are the settings for coinjoin
             request.coinSelector = CoinJoinCoinSelector(wallet!!)
@@ -362,13 +354,31 @@ class BlockchainIdentity {
         }
         request.aesKey = keyParameter
 
+        if (emptyWallet) {
+            wallet!!.completeTx(request)
+
+            // make sure that the asset lock payload matches the OP_RETURN output
+            val outputValue = request.tx.outputs.first().value
+            val assetLockedValue = (request.tx as AssetLockTransaction).assetLockPayload.creditOutputs.first().value
+            if (assetLockedValue != outputValue) {
+                val newRequest = SendRequest.assetLock(wallet!!.params, privateKey as ECKey, outputValue, true)
+                newRequest.coinSelector = request.coinSelector
+                newRequest.returnChange = request.returnChange
+                newRequest.aesKey = request.aesKey
+                request = newRequest
+            } else {
+                // this shouldn't happen
+                error("The asset lock value is the same as the output though emptying the wallet")
+            }
+        }
+
         return wallet!!.sendCoinsOffline(request) as AssetLockTransaction
     }
 
     fun initializeAssetLockTransaction(creditFundingTransaction: AssetLockTransaction) {
         this.assetLockTransaction = creditFundingTransaction
         this.uniqueId = assetLockTransaction!!.identityId
-        registrationStatus = RegistrationStatus.NOT_REGISTERED
+        registrationStatus = IdentityStatus.NOT_REGISTERED
     }
 
     fun registerIdentity(keyParameter: KeyParameter?, useISLock: Boolean = true) {
@@ -385,7 +395,7 @@ class BlockchainIdentity {
 
     private fun registerIdentityWithChainLock(keyParameter: KeyParameter?) {
         checkState(
-            registrationStatus != RegistrationStatus.REGISTERED,
+            registrationStatus != IdentityStatus.REGISTERED,
             "The identity must not be registered"
         )
         checkState(assetLockTransaction != null, "The credit funding transaction must exist")
@@ -413,16 +423,16 @@ class BlockchainIdentity {
             signer = WalletSignerCallback(wallet!!, keyParameter)
         )
 
-        registrationStatus = RegistrationStatus.REGISTERED
+        registrationStatus = IdentityStatus.REGISTERED
 
         finalizeIdentityRegistration(assetLockTransaction!!)
 
-        registrationStatus = RegistrationStatus.REGISTERED
+        registrationStatus = IdentityStatus.REGISTERED
     }
 
     private fun registerIdentityWithISLock(keyParameter: KeyParameter?) {
         checkState(
-            registrationStatus != RegistrationStatus.REGISTERED,
+            registrationStatus != IdentityStatus.REGISTERED,
             "The identity must not be registered"
         )
         checkState(assetLockTransaction != null, "The credit funding transaction must exist")
@@ -477,7 +487,7 @@ class BlockchainIdentity {
             )
         }
 
-        registrationStatus = RegistrationStatus.REGISTERED
+        registrationStatus = IdentityStatus.REGISTERED
 
         finalizeIdentityRegistration(assetLockTransaction!!)
     }
@@ -522,7 +532,7 @@ class BlockchainIdentity {
 
     fun recoverIdentity(creditFundingTransaction: AssetLockTransaction): Boolean {
         checkState(
-            registrationStatus == RegistrationStatus.UNKNOWN,
+            registrationStatus == IdentityStatus.UNKNOWN,
             "The identity must not be registered"
         )
 
@@ -530,7 +540,7 @@ class BlockchainIdentity {
             platform.identities.get(creditFundingTransaction.identityId.toStringBase58())
             ?: return false
 
-        registrationStatus = RegistrationStatus.REGISTERED
+        registrationStatus = IdentityStatus.REGISTERED
 
         finalizeIdentityRegistration(creditFundingTransaction)
 
@@ -544,13 +554,13 @@ class BlockchainIdentity {
 
     fun recoverIdentity(pubKeyId: ByteArray): Boolean {
         checkState(
-            registrationStatus == RegistrationStatus.UNKNOWN,
+            registrationStatus == IdentityStatus.UNKNOWN,
             "The identity must not be registered"
         )
 
         identity = platform.identities.getByPublicKeyHash(pubKeyId) ?: return false
 
-        registrationStatus = RegistrationStatus.REGISTERED
+        registrationStatus = IdentityStatus.REGISTERED
 
         finalizeIdentityRegistration(identity!!.id)
 
@@ -586,6 +596,7 @@ class BlockchainIdentity {
     // Preorder stage
     fun registerPreorderedSaltedDomainHashesForUsernames(usernames: List<String>, keyParameter: KeyParameter?) {
         val preorderDocuments = createPreorderDocuments(usernames)
+        checkArgument(preorderDocuments.size == usernames.size)
 
         val signer = WalletSignerCallback(wallet!!, keyParameter)
 
@@ -611,12 +622,7 @@ class BlockchainIdentity {
             }
 
             val string = usernames[i++]
-            var usernameStatusDictionary = usernameStatuses[string] as MutableMap<String, Any>
-            if (usernameStatusDictionary == null) {
-                usernameStatusDictionary = hashMapOf()
-            }
-            usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.PREORDER_REGISTRATION_PENDING
-            usernameStatuses[string] = usernameStatusDictionary
+            usernameStatuses[string] = UsernameInfo(saltForUsername(string, false), UsernameStatus.PREORDER_REGISTRATION_PENDING, string)
         }
 
         val saltedDomainHashes = saltedDomainHashesForUsernames(usernames)
@@ -625,16 +631,14 @@ class BlockchainIdentity {
             val saltedDomainHashData = saltedDomainHashes[username] as ByteArray
             for (preorderTransition in preorderDocuments) {
                 if ((preorderTransition.data["saltedDomainHash"] as ByteArray).contentEquals(saltedDomainHashData)) {
-                    val usernameStatus = if (usernameStatuses.containsKey(username)) {
-                        usernameStatuses[username] as MutableMap<String, Any>
-                    } else {
-                        HashMap()
-                    }
-                    usernameStatus[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.PREORDERED
-                    usernameStatuses[username] = usernameStatus
+                    val usernameInfo = usernameStatuses[username] ?: UsernameInfo(saltedDomainHashData, UsernameStatus.PREORDERED, null)
+                    usernameInfo.usernameStatus = UsernameStatus.PREORDERED
+                    usernameStatuses[username] = usernameInfo
                     saveUsername(username, UsernameStatus.PREORDERED, null, true)
                     platform.stateRepository.addValidDocument(preorderTransition.id)
                     platform.stateRepository.addValidPreorderSalt(saltForUsername(username, false), saltedDomainHashData)
+                } else {
+                    error("salted domain hash not found ${saltedDomainHashData.toHex()}")
                 }
             }
         }
@@ -665,6 +669,7 @@ class BlockchainIdentity {
 
     fun registerUsernameDomainsForUsernames(usernames: List<String>, keyParameter: KeyParameter?, alias: Boolean) {
         val domainDocuments = createDomainDocuments(usernames, alias)
+        checkArgument(domainDocuments.size == usernames.size)
 
         val signer = WalletSignerCallback(wallet!!, keyParameter)
 
@@ -677,12 +682,9 @@ class BlockchainIdentity {
             log.info("domain doc id: {}", Identifier(document.v0._0.id.bytes))
 
             val string = usernames[i++]
-            var usernameStatusDictionary = usernameStatuses[string] as MutableMap<String, Any>
-            if (usernameStatusDictionary == null) {
-                usernameStatusDictionary = HashMap<String, Any>()
-            }
-            usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.REGISTRATION_PENDING
-            usernameStatuses[string] = usernameStatusDictionary
+            val usernameInfo = usernameStatuses[string] ?: UsernameInfo(null, UsernameStatus.PREORDERED, string)
+            usernameInfo.usernameStatus = UsernameStatus.REGISTRATION_PENDING
+            usernameStatuses[string] = usernameInfo
         }
 
        saveUsernames(usernames, UsernameStatus.REGISTRATION_PENDING)
@@ -692,14 +694,12 @@ class BlockchainIdentity {
             val normalizedName = username.toLowerCase()
             for (nameDocumentTransition in domainDocuments) {
                 if (nameDocumentTransition.data["normalizedLabel"] == normalizedName) {
-                    val usernameStatus = if (usernameStatuses.containsKey(username)) {
-                        usernameStatuses[username] as MutableMap<String, Any>
-                    } else {
-                        HashMap()
+                    val usernameInfo = usernameStatuses[username]!!
+                    usernameInfo.usernameStatus = UsernameStatus.CONFIRMED
+                    if (Names.isUsernameContestable(username)) {
+                        usernameInfo.requestStatus = UsernameRequestStatus.SUBMITTED
+                        usernameInfo.votingStartedAt = Utils.currentTimeMillis()
                     }
-                    usernameStatus[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.CONFIRMED
-                    usernameStatus[BLOCKCHAIN_USERNAME_UNIQUE] = Names.isUniqueIdentity(nameDocumentTransition)
-                    usernameStatuses[username] = usernameStatus
                     saveUsername(username, UsernameStatus.CONFIRMED, null, true)
                     usernamesLeft.remove(username)
                     platform.stateRepository.addValidDocument(nameDocumentTransition.id)
@@ -731,7 +731,7 @@ class BlockchainIdentity {
         val credits = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(platform.rustSdk, identity!!.id.toNative()).unwrap()
         log.info("credit balance: {}", credits)
         for (i in 0 .. 2) {
-            val document_result = dashsdk.platformMobilePutPutDocumentSdk(
+            val documentResult = dashsdk.platformMobilePutPutDocumentSdk(
                 platform.rustSdk,
                 domain.toNative(),
                 domain.dataContractId!!.toNative(),
@@ -742,7 +742,7 @@ class BlockchainIdentity {
                 BigInteger.valueOf(signer.signerCallback)
             )
             try {
-                return document_result.unwrap()
+                return documentResult.unwrap()
             } catch (e: Exception) {
                 // swallow
                 error = e.toString()
@@ -776,7 +776,7 @@ class BlockchainIdentity {
      */
     fun recoverUsernames() {
         checkState(
-            registrationStatus == RegistrationStatus.REGISTERED,
+            registrationStatus == IdentityStatus.REGISTERED,
             "Identity must be registered before recovering usernames"
         )
 
@@ -786,10 +786,7 @@ class BlockchainIdentity {
 
         for (nameDocument in nameDocuments) {
             val username = nameDocument.data["normalizedLabel"] as String
-            val usernameStatusDictionary = HashMap<String, Any>()
-            usernameStatusDictionary[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.CONFIRMED
-            usernameStatusDictionary[BLOCKCHAIN_USERNAME_UNIQUE] = Names.isUniqueIdentity(nameDocument)
-            usernameStatuses[username] = usernameStatusDictionary
+            usernameStatuses[username] = UsernameInfo(null, UsernameStatus.CONFIRMED, username)
             usernames.add(username)
         }
         currentUsername = usernames.firstOrNull()
@@ -802,7 +799,7 @@ class BlockchainIdentity {
 
     fun saltForUsername(username: String, saveSalt: Boolean): ByteArray {
         val salt: ByteArray
-        if (statusOfUsername(username) == UsernameStatus.INITIAL || !(usernameSalts.containsKey(username))) {
+        if (!(usernameSalts.containsKey(username))) {
             salt = ECKey().privKeyBytes
             usernameSalts[username] = salt
             if (saveSalt) {
@@ -880,15 +877,13 @@ class BlockchainIdentity {
     // MARK: Usernames
 
     fun addUsername(username: String, status: UsernameStatus, save: Boolean) {
-        val map = HashMap<String, UsernameStatus>()
-        map[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.INITIAL
-        usernameStatuses[username] = map
+        usernameStatuses[username] = UsernameInfo(null, status, username)
         currentUsername = username
 
         if (save) {
             saveNewUsername(username, UsernameStatus.INITIAL)
         }
-        if (registrationStatus == RegistrationStatus.REGISTERED && status != UsernameStatus.CONFIRMED) {
+        if (registrationStatus == IdentityStatus.REGISTERED && status != UsernameStatus.CONFIRMED) {
             // do we trigger a listener here?
         }
     }
@@ -899,8 +894,10 @@ class BlockchainIdentity {
 
     fun statusOfUsername(username: String): UsernameStatus {
         return if (usernameStatuses.containsKey(username)) {
-            (usernameStatuses[username] as MutableMap<String, Any>)[BLOCKCHAIN_USERNAME_STATUS] as? UsernameStatus ?: UsernameStatus.INITIAL
-        } else UsernameStatus.NOT_PRESENT
+            usernameStatuses[username]?.usernameStatus ?: UsernameStatus.INITIAL
+        } else {
+            UsernameStatus.NOT_PRESENT
+        }
     }
 
     fun getUsernames(): List<String> {
@@ -910,8 +907,8 @@ class BlockchainIdentity {
     fun getUsernamesWithStatus(usernameStatus: UsernameStatus): MutableList<String> {
         val usernames = ArrayList<String>()
         for (username in usernameStatuses.keys) {
-            val usernameInfo = usernameStatuses[username] as MutableMap<String, Any?>
-            val status = usernameInfo[BLOCKCHAIN_USERNAME_STATUS] as? UsernameStatus ?: UsernameStatus.INITIAL
+            val usernameInfo = usernameStatuses[username]
+            val status = usernameInfo?.usernameStatus ?: UsernameStatus.INITIAL
             if (status == usernameStatus) {
                 usernames.add(username)
             }
@@ -920,34 +917,22 @@ class BlockchainIdentity {
     }
 
     fun getUniqueUsername(): String {
-        for (username in usernameStatuses.keys) {
-            val usernameInfo = usernameStatuses[username] as MutableMap<String, Any?>
-            val isUnique = usernameInfo[BLOCKCHAIN_USERNAME_UNIQUE] as Boolean
-            if (isUnique) {
-                return username
-            }
-        }
-        throw IllegalStateException("There is no unique username")
+        return usernameStatuses.keys.first()
     }
 
     fun getAliasList(): List<String> {
-        val usernames = arrayListOf<String>()
-        for (username in usernameStatuses.keys) {
-            val usernameInfo = usernameStatuses[username] as MutableMap<String, Any?>
-            val isUnique = usernameInfo[BLOCKCHAIN_USERNAME_UNIQUE] as Boolean
-
-            if (!isUnique) {
-                usernames.add(username)
-            }
+        return if (usernameStatuses.size == 1) {
+            listOf()
+        } else {
+            usernameStatuses.entries.drop(1).map { it.key }
         }
-        return usernames
     }
 
-    fun getUnregisteredUsernames(): MutableList<String> {
-        return getUsernamesWithStatus(UsernameStatus.INITIAL)
+    fun getUnregisteredUsernames(): List<String> {
+        return usernameStatuses.filter { it.value?.let { info -> info.usernameStatus.value <= UsernameStatus.CONFIRMED.value } ?: false }.map { it.key }
     }
 
-    fun preorderedUsernames(): MutableList<String> {
+    fun preorderedUsernames(): List<String> {
         return getUsernamesWithStatus(UsernameStatus.PREORDERED)
     }
 
@@ -1252,12 +1237,8 @@ class BlockchainIdentity {
                 val saltedDomainHashData = saltedDomainHashes[username] as ByteArray
                 for (preorderDocument in preorderDocuments) {
                     if ((preorderDocument.data["saltedDomainHash"] as ByteArray).contentEquals(saltedDomainHashData)) {
-                        var usernameStatus = if (usernameStatuses.containsKey(username)) {
-                            usernameStatuses[username] as MutableMap<String, Any>
-                        } else {
-                            HashMap()
-                        }
-                        usernameStatus[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.PREORDERED
+                        val usernameStatus = usernameStatuses[username]!!
+                        usernameStatus.usernameStatus = UsernameStatus.PREORDERED
                         usernameStatuses[username] = usernameStatus
                         saveUsername(username, UsernameStatus.PREORDERED, null, true)
                         usernamesLeft.remove(username)
@@ -1332,18 +1313,14 @@ class BlockchainIdentity {
 
         val preorderDocuments = platform.documents.get(Names.DPNS_PREORDER_DOCUMENT, query)
 
-        if (preorderDocuments != null && preorderDocuments.isNotEmpty()) {
+        if (preorderDocuments.isNotEmpty()) {
             val usernamesLeft = HashMap(saltedDomainHashes)
             for (username in saltedDomainHashes.keys) {
                 val saltedDomainHashData = saltedDomainHashes[username] as ByteArray
                 for (preorderDocument in preorderDocuments) {
                     if ((preorderDocument.data["saltedDomainHash"] as ByteArray).contentEquals(saltedDomainHashData)) {
-                        var usernameStatus = if (usernameStatuses.containsKey(username)) {
-                            usernameStatuses[username] as MutableMap<String, Any>
-                        } else {
-                            HashMap()
-                        }
-                        usernameStatus[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.PREORDERED
+                        var usernameStatus = usernameStatuses[username]!!
+                        usernameStatus.usernameStatus = UsernameStatus.PREORDERED
                         usernameStatuses[username] = usernameStatus
                         saveUsername(username, UsernameStatus.PREORDERED, null, true)
                         usernamesLeft.remove(username)
@@ -1426,13 +1403,8 @@ class BlockchainIdentity {
                 val normalizedName = username.toLowerCase()
                 for (nameDocument in nameDocuments) {
                     if (nameDocument.data["normalizedLabel"] == normalizedName) {
-                        var usernameStatus = if (usernameStatuses.containsKey(username)) {
-                            usernameStatuses[username] as MutableMap<String, Any>
-                        } else {
-                            HashMap()
-                        }
-                        usernameStatus[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.CONFIRMED
-                        usernameStatus[BLOCKCHAIN_USERNAME_UNIQUE] = Names.isUniqueIdentity(nameDocument)
+                        val usernameStatus = usernameStatuses[username]!!
+                        usernameStatus.usernameStatus = UsernameStatus.CONFIRMED
                         usernameStatuses[username] = usernameStatus
                         saveUsername(username, UsernameStatus.CONFIRMED, null, true)
                         usernamesLeft.remove(username)
@@ -1493,13 +1465,8 @@ class BlockchainIdentity {
                 val normalizedName = username.toLowerCase()
                 for (nameDocument in nameDocuments) {
                     if (nameDocument.data["normalizedLabel"] == normalizedName) {
-                        val usernameStatus = if (usernameStatuses.containsKey(username)) {
-                            usernameStatuses[username] as MutableMap<String, Any>
-                        } else {
-                            HashMap()
-                        }
-                        usernameStatus[BLOCKCHAIN_USERNAME_STATUS] = UsernameStatus.CONFIRMED
-                        usernameStatus[BLOCKCHAIN_USERNAME_UNIQUE] = Names.isUniqueIdentity(nameDocument)
+                        val usernameStatus = usernameStatuses[username]!!
+                        usernameStatus.usernameStatus = UsernameStatus.CONFIRMED
                         usernameStatuses[username] = usernameStatus
                         saveUsername(username, UsernameStatus.CONFIRMED, null, true)
                         usernamesLeft.remove(username)

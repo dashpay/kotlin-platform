@@ -16,7 +16,7 @@ fn main() {
              "dpp",
              "drive",
              "dapi-grpc",
-             // "platform-version",
+             "drive-proof-verifier",
              "dash-sdk",
              "rs-dapi-client",
               "platform-mobile"

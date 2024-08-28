@@ -43,7 +43,7 @@ class TxMetadata(
     ): Document {
         val profileDocument = createDocument(keyIndex, encryptionKeyIndex, encryptedMetadata, identity)
         profileDocument.createdAt = Date().time
-        val highIdentityPublicKey = identity!!.getFirstPublicKey(SecurityLevel.HIGH)
+        val highIdentityPublicKey = identity.getFirstPublicKey(SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
 
         val documentResult = dashsdk.platformMobilePutPutDocument(

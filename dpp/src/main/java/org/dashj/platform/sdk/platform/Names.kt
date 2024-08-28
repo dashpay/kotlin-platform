@@ -15,6 +15,7 @@ import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.util.Entropy
+import org.dashj.platform.dpp.voting.Contenders
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -24,17 +25,20 @@ class Names(val platform: Platform) {
         private val log: Logger = LoggerFactory.getLogger(Names::class.java)
 
         const val DEFAULT_PARENT_DOMAIN = "dash"
+        const val DPNS_DATA_CONTRACT = "dpns"
+        const val DOMAIN_DOCUMENT = "domain"
+        const val PREORDER_DOCUMENT = "preorder"
         const val DPNS_DOMAIN_DOCUMENT = "dpns.domain"
         const val DPNS_PREORDER_DOCUMENT = "dpns.preorder"
 
         fun isUniqueIdentity(domainDocument: Document): Boolean {
-            val records = domainDocument.data["records"] as Map<String, Any>
-            return records.containsKey("dashUniqueIdentityId")
+            val records = domainDocument.data["records"] as Map<*, *>
+            return records.containsKey("identity")
         }
 
         fun isUniqueIdentity(dataDocumentTransition: DataDocumentTransition): Boolean {
-            val records = dataDocumentTransition.data["records"] as Map<String, Any>
-            return records.containsKey("dashUniqueIdentityId")
+            val records = dataDocumentTransition.data["records"] as Map<*, *>
+            return records.containsKey("identity")
         }
 
         fun normalizedNames(name: String): Pair<String, String> {
@@ -73,6 +77,11 @@ class Names(val platform: Platform) {
             baos.write(preOrderSaltRaw)
             baos.write(normalizeString(fullName).toByteArray())
             return Sha256Hash.twiceOf(baos.toByteArray())
+        }
+
+        fun isUsernameContestable(username: String): Boolean {
+            val regex = Regex("^[a-zA-Z01-]{3,19}$")
+            return regex.matches(username)
         }
     }
 
@@ -338,5 +347,40 @@ class Names(val platform: Platform) {
         val documents = platform.documents.get(DPNS_DOMAIN_DOCUMENT, documentQuery.build())
 
         return documents
+    }
+
+    fun getVoteContenders(name: String): Contenders {
+        return platform.client.getVoteContenders(
+            platform.apps[DPNS_DATA_CONTRACT]!!.contractId,
+            DOMAIN_DOCUMENT,
+            "parentNameAndLabel",
+            listOf(DEFAULT_PARENT_DOMAIN, name)
+        )
+    }
+
+    fun getContestedNames(): List<String> {
+        val resources = platform.client.getContestedResources(
+            platform.apps[DPNS_DATA_CONTRACT]!!.contractId,
+            DOMAIN_DOCUMENT
+        )
+        return if (resources.list.isNotEmpty()) {
+            resources.list.map {
+                if (it.value is String) {
+                    it.value
+                } else {
+                    error("${it.value} is not a String")
+                }
+            }
+        } else {
+            listOf()
+        }
+    }
+
+    fun deserialize(bytes: ByteArray): Document {
+        return platform.documents.deserialize(
+            bytes,
+            platform.apps[DPNS_DATA_CONTRACT]!!.contractId,
+            DOMAIN_DOCUMENT
+        )
     }
 }

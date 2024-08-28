@@ -14,3 +14,6 @@ extra_bindings = []
 
 [enum]
 prefix_with_name = false
+
+[export]
+exclude = ["__android_log_write"]

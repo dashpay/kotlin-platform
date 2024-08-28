@@ -2,7 +2,7 @@ extern crate cbindgen;
 extern crate ferment;
 
 use std::process::Command;
-use ferment::builder::{Builder, Crate};
+use ferment::{Builder, Crate};
 
 pub const SELF_NAME: &str = "rs_sdk_bindings";
 fn main() {
@@ -15,6 +15,7 @@ fn main() {
              "platform-value",
              "dpp",
              "drive",
+             "drive-proof-verifier",
              "dash-sdk",
              "rs-dapi-client",
               "platform-mobile"
