@@ -63,13 +63,12 @@ class Identities(val platform: Platform) {
                 Revision(1)
             )
             val identity = RustIdentity(identityV0)
-            val identityResult = dashsdk.platformMobilePutPutIdentity(
+            val identityResult = dashsdk.platformMobilePutPutIdentitySdk(
+                platform.rustSdk,
                 identity,
                 AssetLockProof(assetLock.toNative()),
                 assetLockPrivateKey.privKeyBytes,
                 BigInteger.valueOf(signer.signerCallback),
-                BigInteger.valueOf(platform.client.contextProviderFunction),
-                BigInteger.ZERO,
                 platform.isTestNet()
             )
 
@@ -100,13 +99,12 @@ class Identities(val platform: Platform) {
                 Revision(1)
             )
             val identity = RustIdentity(identityV0)
-            val identityResult = dashsdk.platformMobilePutPutIdentity(
+            val identityResult = dashsdk.platformMobilePutPutIdentitySdk(
+                platform.rustSdk,
                 identity,
                 AssetLockProof(assetLock.toNative()),
                 assetLockPrivateKey.privKeyBytes,
                 BigInteger.valueOf(signer.signerCallback),
-                BigInteger.valueOf(platform.client.contextProviderFunction),
-                BigInteger.ZERO,
                 platform.isTestNet()
             )
             return Identity(identityResult.unwrap())
