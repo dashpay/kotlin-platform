@@ -125,4 +125,9 @@ class IdentityVerify(
             null
         }
     }
+
+    fun get(query: DocumentQuery): List<IdentityVerifyDocument> {
+        val result = platform.documents.get(DOCUMENT, query)
+        return result.map { IdentityVerifyDocument(it) }
+    }
 }
