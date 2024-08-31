@@ -10,7 +10,7 @@ plugins {
 }
 
 group 'org.dashj.platform'
-version dashpay_version
+version version
 
 repositories {
     mavenLocal()
