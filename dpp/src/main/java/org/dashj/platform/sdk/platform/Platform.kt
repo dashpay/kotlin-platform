@@ -79,7 +79,7 @@ class Platform(val params: NetworkParameters) {
         when {
             params.id.contains("test") -> {
                 useWhiteList = true
-                apps["dashwallet"] = ClientAppDefinition("FRsKDsmpZkzRuHN9d8nHrvhTeQjRou5h5A5Qw6RXbsrx")
+                apps["dashwallet"] = ClientAppDefinition("Bhptm3yBDhLkRNt7ofjpwaBHhMUKjDrQoPufKzQaxmpK")
             }
             params.id.contains("bintang") -> {
                 apps["dashwallet"] = ClientAppDefinition("Fds5DDfXoLwpUZ71AAVYZP1uod8S7Ze2bR28JExBvZKR")
