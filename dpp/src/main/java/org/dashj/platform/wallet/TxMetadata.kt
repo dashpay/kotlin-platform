@@ -46,7 +46,8 @@ class TxMetadata(
         val highIdentityPublicKey = identity.getFirstPublicKey(SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
 
-        val documentResult = dashsdk.platformMobilePutPutDocument(
+        val documentResult = dashsdk.platformMobilePutPutDocumentSdk(
+            platform.rustSdk,
             profileDocument.toNative(),
             profileDocument.dataContractId!!.toNative(),
             profileDocument.type,
@@ -54,8 +55,6 @@ class TxMetadata(
             BlockHeight(10000),
             CoreBlockHeight(platform.coreBlockHeight),
             BigInteger.valueOf(signer.signerCallback),
-            BigInteger.valueOf(platform.client.contextProviderFunction),
-            BigInteger.ZERO
         )
         val domain = documentResult.unwrap()
 
