@@ -26,12 +26,7 @@ struct STRUCT_TYPE;
     uint8_t * _buffer_$1 = (uint8_t*)(jenv)->GetByteArrayElements($input, 0);
     uint8_t * byteArray_$1 = (uint8_t *)memoryFactory.alloc(size_$1);
     memcpy(byteArray_$1, _buffer_$1, size_$1);
-    printf("typemap(in) Vec_u8 *: %ld, [%lx]%d\n", size_$1, (long)_buffer_$1, _buffer_$1[0]);
     $1 = STRUCT_TYPE##_ctor(size_$1, byteArray_$1);
-    printf("typemap(in) Vec_u8 *: %lx\n", $1);
-    printf("typemap(in) Vec_u8 *: count: %ld\n", $1->count);
-    printf("typemap(in) Vec_u8 *: count: %ld, values: [%lx]\n", $1->count, (long)$1->values);
-    printf("typemap(in) Vec_u8 *: count: %ld, values: [%lx]%d\n", $1->count, (long)$1->values, $1->values[0]);
 %}
 
 %typemap(freearg) STRUCT_TYPE *
@@ -41,13 +36,10 @@ struct STRUCT_TYPE;
 
 %typemap(argout) STRUCT_TYPE *
 %{
-     printf("typemap(argout) Vec_u8 *: %ld, [%lx]%d\n", $1->count, (long)$1->values, $1->values[0]);
      jenv->ReleaseByteArrayElements($input, (jbyte *) _buffer_$1, 0);
-     printf("typemap(argout) Vec_u8 *: %ld, [%lx]%d\n", $1->count, (long)$1->values, $1->values[0]);
 %}
 
 %typemap(out) STRUCT_TYPE * {
-    printf("typemap(out) Vec_u8* %lx\n", (long)$1);
     if (!$1) {
       SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Vec_u8* null array ");
       return $null;
@@ -56,7 +48,6 @@ struct STRUCT_TYPE;
       SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Vec_u8.values null array");
       return $null;
     }
-    printf("  (count: %ld, values: [%lx], %d)\n", $1->count, (long)$1->values, $1->values[0]);
     $result = JCALL1(NewByteArray, jenv, $1->count);
     JCALL4(SetByteArrayRegion, jenv, $result, 0, $1->count, (jbyte *) $1->values);
 }

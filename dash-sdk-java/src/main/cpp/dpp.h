@@ -79,7 +79,6 @@ public:
 
     void * alloc(size_t size) {
         uint8_t * memory = new uint8_t[size];
-        printf("  adding %lx with size %ld\n", (unsigned long)memory, size);
         memoryList.push_back(memory);
         return reinterpret_cast<void*>(memory);
     }
@@ -134,13 +133,13 @@ public:
     }
 
     void destroyItem(void * item) {
-    list<uint8_t*>::iterator it = find(memoryList.begin(), memoryList.end(), item);
+        list<uint8_t*>::iterator it = find(memoryList.begin(), memoryList.end(), item);
         if (it != memoryList.end()) {
-            printf("destroying item [%lx]\n", (unsigned long)item);
             delete [] (uint8_t*)item;
             memoryList.erase(it);
-            printf("item destroyed [%lx]\n", (unsigned long)item);
-        } else printf("not destroying item %lx\n", (unsigned long)item);
+        } else {
+            printf("not destroying item %lx\n", (unsigned long)item);
+        }
     }
 };
 
