@@ -811,7 +811,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "dapi-grpc-macros",
  "futures-core",
@@ -827,7 +827,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc-macros"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "heck 0.5.0",
  "quote",
@@ -871,7 +871,7 @@ dependencies = [
 
 [[package]]
 name = "dash-sdk"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "arc-swap",
  "async-trait",
@@ -982,7 +982,7 @@ dependencies = [
 
 [[package]]
 name = "dashpay-contract"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -992,7 +992,7 @@ dependencies = [
 
 [[package]]
 name = "data-contracts"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "dashpay-contract",
  "dpns-contract",
@@ -1078,7 +1078,7 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "dpns-contract"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1088,7 +1088,7 @@ dependencies = [
 
 [[package]]
 name = "dpp"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1137,7 +1137,7 @@ dependencies = [
 
 [[package]]
 name = "drive"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "bincode",
  "byteorder",
@@ -1165,7 +1165,7 @@ dependencies = [
 
 [[package]]
 name = "drive-proof-verifier"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "bincode",
  "dapi-grpc",
@@ -1359,7 +1359,7 @@ checksum = "9fc0510504f03c51ada170672ac806f1f105a88aa97a5281117e1ddc3368e51a"
 
 [[package]]
 name = "feature-flags-contract"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1605,9 +1605,9 @@ checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
 
 [[package]]
 name = "grovedb"
-version = "2.0.0"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b002bb44616b8bd62d3eea81b98f06021ea97420b3bc69b0c512e88d3191f259"
+checksum = "77097f0a4cc70c4a69fa400f633c5f18739e446eaed05269a3d76e17fa4d33d2"
 dependencies = [
  "bincode",
  "bitvec",
@@ -1628,9 +1628,9 @@ dependencies = [
 
 [[package]]
 name = "grovedb-costs"
-version = "2.0.0"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f01fac5c7ed1dd595bf87d0676d4973919226b48c6222dc2ca97bbda68bcab60"
+checksum = "e0487d63a68621b910567a911b3708a8246501ae1912fa2f1920474dcb28a207"
 dependencies = [
  "integer-encoding",
  "intmap",
@@ -1639,9 +1639,9 @@ dependencies = [
 
 [[package]]
 name = "grovedb-epoch-based-storage-flags"
-version = "2.0.0"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa895084eb5dcea2089154409d38aaaf9bbd05386ab1cefbe4f7a3027be07bbe"
+checksum = "53eb4b99b056e34bcceef2d604c883aee40daa688ceb7ec558456e10bef27c64"
 dependencies = [
  "grovedb-costs",
  "hex",
@@ -1652,9 +1652,9 @@ dependencies = [
 
 [[package]]
 name = "grovedb-merk"
-version = "2.0.0"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae8b499ea84654e2d57cfb24399425beeb1033d7c531ceb1aadd492485df7ba9"
+checksum = "daedc296cac3093d244cbda0a11a5ef378bd4f747fcbe45b6cbed040c78cfb36"
 dependencies = [
  "bincode",
  "blake3",
@@ -1672,15 +1672,15 @@ dependencies = [
 
 [[package]]
 name = "grovedb-path"
-version = "2.0.0"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "250531333771d13b20e70adaf01891944e3bd568b2e8da702d27be3dfb0e870c"
+checksum = "d3552accddbfe6e586853f50a102d665efc0449a63504e5e2113389be924f98c"
 
 [[package]]
 name = "grovedb-version"
-version = "2.0.0"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7966cf4a52f52d095024873a6801b2f64cc36d7aa1aa7703f0c717007592bed"
+checksum = "6d62bd20c621681dfd8aa6ca128702de775c67560c1fe412f380c5278d5c48ba"
 dependencies = [
  "thiserror",
  "versioned-feature-core 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1688,9 +1688,9 @@ dependencies = [
 
 [[package]]
 name = "grovedb-visualize"
-version = "2.0.0"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52bfd25577f009c9ab3c2bb31a6ab73c0b6edfe7b0f7ee881550a731fd782d00"
+checksum = "b6cd92c3a11055b1d841d071f801517b98575f9704f5a757a016fe83d35a37b8"
 dependencies = [
  "hex",
  "itertools 0.12.1",
@@ -2172,7 +2172,7 @@ dependencies = [
 
 [[package]]
 name = "json-schema-compatibility-validator"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "json-patch",
  "once_cell",
@@ -2291,7 +2291,7 @@ dependencies = [
 
 [[package]]
 name = "masternode-reward-shares-contract"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2730,6 +2730,7 @@ checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 name = "platform-mobile"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "base64 0.13.1",
  "dapi-grpc",
  "dash-sdk",
@@ -2769,7 +2770,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "bincode",
  "platform-version",
@@ -2777,7 +2778,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization-derive"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2787,7 +2788,7 @@ dependencies = [
 
 [[package]]
 name = "platform-value"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -2812,7 +2813,7 @@ dependencies = [
 
 [[package]]
 name = "platform-version"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "bincode",
  "ferment-interfaces",
@@ -2825,7 +2826,7 @@ dependencies = [
 
 [[package]]
 name = "platform-versioning"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3258,7 +3259,7 @@ dependencies = [
 
 [[package]]
 name = "rs-dapi-client"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "backon",
  "chrono",
@@ -3653,7 +3654,7 @@ checksum = "f27f6278552951f1f2b8cf9da965d10969b2efdea95a6ec47987ab46edfe263a"
 
 [[package]]
 name = "simple-signer"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -4730,7 +4731,7 @@ dependencies = [
 
 [[package]]
 name = "withdrawals-contract"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "num_enum",
  "platform-value",
