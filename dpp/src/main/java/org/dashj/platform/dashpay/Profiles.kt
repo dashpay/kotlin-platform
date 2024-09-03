@@ -106,17 +106,16 @@ class Profiles(
         log.info("credit balance: {}", credits)
 
         // under the hood this calls new_document_creation_transition_from_document
-        // an not new_document_replacement_transition_from_document
-        val profileResult = dashsdk.platformMobilePutReplaceDocument(
+        // and not new_document_replacement_transition_from_document
+        val profileResult = dashsdk.platformMobilePutReplaceDocumentSdk(
+            platform.rustSdk,
             profileDocument.toNative(),
             profileDocument.dataContractId!!.toNative(),
             profileDocument.type,
             highIdentityPublicKey.toNative(),
             BlockHeight(10000),
             CoreBlockHeight(platform.coreBlockHeight),
-            BigInteger.valueOf(signer.signerCallback),
-            BigInteger.valueOf(platform.client.contextProviderFunction),
-            BigInteger.ZERO
+            BigInteger.valueOf(signer.signerCallback)
         )
         return Document(profileResult.unwrap(), profileDocument.dataContractId!!)
     }
