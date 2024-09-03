@@ -124,6 +124,9 @@ class DapiClient(
     val contextProviderFunction: Long
         get() = if (useContextProvider) contextProvider.quorumPublicKeyCallback else 0L
 
+    val contextProviderContext: Long
+        get() = if (useContextProvider) contextProvider.nativeContext else 0L
+
     var rustSdk: SWIGTYPE_p_DashSdk
 
     init {
@@ -147,7 +150,8 @@ class DapiClient(
             false
         }
 
-        rustSdk = dashsdk.platformMobileSdkCreateDashSdk(
+        rustSdk = dashsdk.platformMobileSdkCreateDashSdkWithContext(
+            contextProviderContext,
             BigInteger.valueOf(contextProviderFunction),
             BigInteger.ZERO
         )

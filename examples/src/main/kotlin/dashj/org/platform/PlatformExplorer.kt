@@ -221,7 +221,11 @@ object PlatformExplorer {
                 return byteArrayOf(0)
             }
         }
-        val sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
+        val sdk = dashsdk.platformMobileSdkCreateDashSdkWithContext(
+            contextProvider.nativeContext,
+            BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+            BigInteger.ZERO
+        )
 
         println("4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF")
         val scanner = Scanner(System.`in`)
@@ -512,7 +516,8 @@ object PlatformExplorer {
                 }
             }
         }
-        // dashsdk.platformMobileConfigRustSdkDestroy(sdk);
+        dashsdk.platformMobileSdkDestroyDashSdk(sdk)
+        contextProvider.close()
         quitFuture.set(true)
     }
 

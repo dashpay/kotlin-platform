@@ -4,29 +4,30 @@
 #include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
 #include <cstring>
 #include "jnihelper.h"
+#include "context_provider.h"
 
-jobject contextProvider = nullptr;
 uint8_t invalid_key[] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
-std::mutex g_mutex;
-uint8_t * get_quorum_public_key(int quorum_type, char * quorum_hash, int core_chain_locked_height, uint8_t * native_array) {
-    LOGI("get_quorum_public_key(%d, %lx, %d, %lx", quorum_type, quorum_hash, core_chain_locked_height, native_array);
+
+uint8_t * get_quorum_public_key_context(void * context, int quorum_type, char * quorum_hash, int core_chain_locked_height, uint8_t * native_array) {
+    auto javaContext = reinterpret_cast<JavaContextProvider*>(context);
+    LOGI("get_quorum_public_key_context(0x%08lx, %d, 0x%08lx, %d, 0x%08lx)", context, quorum_type, quorum_hash, core_chain_locked_height, native_array);
     JniHelper jni;
     JNIEnv * jenv = jni.getEnv();
     if (jenv == nullptr) {
         LOGI("Failed to get JNIEnv");
         return nullptr;
     }
-    jclass clazz = jenv->FindClass("org/dashj/platform/sdk/callbacks/ContextProvider");
+    jclass clazz = javaContext->contextProviderClass;
     if (clazz == nullptr) {
         LOGI("Cannot find class\n");
         return nullptr;
     }
-    jmethodID getQuorumPublicKey = jenv->GetMethodID(clazz, "getQuorumPublicKey", "(I[BI)[B");
+    jmethodID getQuorumPublicKey = javaContext->getQuorumPublicKeyMethod;
     if (getQuorumPublicKey == nullptr) {
         LOGI("Cannot find getQuorumPublicKey(IB[I)[B\n");
         return nullptr;
@@ -42,18 +43,21 @@ uint8_t * get_quorum_public_key(int quorum_type, char * quorum_hash, int core_ch
         jenv->ExceptionDescribe();
         jenv->ExceptionClear();
         jenv->DeleteLocalRef(quorum_hash_bytes);
+        LOGI("get_quorum_public_key_context: SetByteArrayRegion failed");
         return nullptr;
     }
 
-    auto quorum_public_key = (jbyteArray) jenv->CallObjectMethod(contextProvider, getQuorumPublicKey, quorum_type, quorum_hash_bytes, core_chain_locked_height);
+    auto quorum_public_key = (jbyteArray) jenv->CallObjectMethod(javaContext->contextProviderObject, getQuorumPublicKey, quorum_type, quorum_hash_bytes, core_chain_locked_height);
     if (jenv->ExceptionCheck()) {
         jenv->ExceptionDescribe();
         jenv->ExceptionClear();
         jenv->DeleteLocalRef(quorum_hash_bytes);
+        LOGI("get_quorum_public_key_context: failure calling Java Callback");
         return nullptr;
     }
 
     if (quorum_public_key == nullptr) {
+        LOGI("get_quorum_public_key_context: key not found");
         memcpy(native_array, invalid_key, 48);
     } else {
         jbyte* elements = jenv->GetByteArrayElements(quorum_public_key, nullptr);
@@ -78,17 +82,33 @@ uint8_t * get_quorum_public_key(int quorum_type, char * quorum_hash, int core_ch
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_dashj_platform_sdk_callbacks_ContextProvider_getQuorumPublicKeyCallback(JNIEnv * env, jclass provider) {
-    if (contextProvider != nullptr) {
-        env->DeleteGlobalRef(contextProvider);
-        contextProvider = nullptr;
-    }
+    return (long)get_quorum_public_key_context;
+}
 
-    contextProvider = env->NewGlobalRef(provider);
+extern "C" JNIEXPORT jlong JNICALL Java_org_dashj_platform_sdk_callbacks_ContextProvider_getNativeContextProvider(JNIEnv * env, jclass provider) {
+    auto javaContext = new JavaContextProvider;
+    auto contextProvider = env->NewGlobalRef(provider);
     if (contextProvider == nullptr) {
         printf("Failed to create global reference for ContextProvider\n");
     }
+    javaContext->contextProviderObject = contextProvider;
+    javaContext->contextProviderClass = env->FindClass("org/dashj/platform/sdk/callbacks/ContextProvider");
+    if (javaContext->contextProviderClass == nullptr) {
+        LOGI("Cannot find class: org/dashj/platform/sdk/callbacks/ContextProvider\n");
+        return 0;
+    }
+    javaContext->getQuorumPublicKeyMethod = env->GetMethodID(javaContext->contextProviderClass, "getQuorumPublicKey", "(I[BI)[B");
+    if (javaContext->getQuorumPublicKeyMethod == nullptr) {
+        LOGI("Cannot find getQuorumPublicKey(IB[I)[B\n");
+        return 0;
+    }
+    return (jlong) javaContext;
+}
 
-    return (long)get_quorum_public_key;
+extern "C" JNIEXPORT void JNICALL Java_org_dashj_platform_sdk_callbacks_ContextProvider_freeNativeContextProvider(JNIEnv * env, jobject provider, jlong context) {
+    auto javaContext = reinterpret_cast<JavaContextProvider*>(context);
+    env->DeleteGlobalRef(javaContext->contextProviderObject);
+    delete javaContext;
 }
 
 jobject signer = nullptr;
