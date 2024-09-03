@@ -68,6 +68,7 @@ import org.dashj.platform.sdk.platform.Names
 import org.dashj.platform.sdk.platform.Platform
 import org.slf4j.LoggerFactory
 import java.math.BigInteger
+import java.util.concurrent.ExecutionException
 
 class BlockchainIdentity {
 
@@ -381,19 +382,31 @@ class BlockchainIdentity {
         registrationStatus = IdentityStatus.NOT_REGISTERED
     }
 
-    fun registerIdentity(keyParameter: KeyParameter?, useISLock: Boolean = true) {
+
+    /**
+     * Register identity
+     *
+     * @param keyParameter
+     * @param useISLock - false will only use chainlocks
+     * @param waitForChainlock - if a chainlock asset proof results in a failure, wait until the next block is mined
+     */
+    fun registerIdentity(keyParameter: KeyParameter?, useISLock: Boolean = true, waitForChainlock: Boolean) {
         if (useISLock) {
             try {
                 registerIdentityWithISLock(keyParameter)
-            } catch (e: InvalidInstantAssetLockProofException) {
-                registerIdentityWithChainLock(keyParameter)
+            } catch (e: Exception) {
+                if (e.message?.contains("Instant lock proof signature is invalid or wasn't created recently. Pleases try chain asset lock proof instead.") == true) {
+                    registerIdentityWithChainLock(keyParameter, waitForChainlock)
+                } else {
+                    throw e
+                }
             }
         } else {
-            registerIdentityWithChainLock(keyParameter)
+            registerIdentityWithChainLock(keyParameter, waitForChainlock)
         }
     }
 
-    private fun registerIdentityWithChainLock(keyParameter: KeyParameter?) {
+    private fun registerIdentityWithChainLock(keyParameter: KeyParameter?, waitForChainlock: Boolean) {
         checkState(
             registrationStatus != IdentityStatus.REGISTERED,
             "The identity must not be registered"
@@ -404,30 +417,54 @@ class BlockchainIdentity {
         val privateKeys = privateKeyList.map { maybeDecryptKey(it, keyParameter)?.privKeyBytes!! }
 
         val signingKey = maybeDecryptKey(assetLockTransaction!!.assetLockPublicKey, keyParameter)
+        var registeredOrError = false
+        var count = 1
+        while (!registeredOrError) {
+            log.info("register identity attempt: $count")
+            val coreHeight = if (assetLockTransaction!!.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
+                assetLockTransaction!!.confidence.appearedAtChainHeight
+            } else {
+                wallet!!.context.blockChain.bestChainHeight
+                // this is not supported, how can we get the height?
+    //            val txInfo = platform.client.getTransaction(assetLockTransaction!!.txId.toString())
+    //            txInfo?.height ?: -1
+            }.toLong()
 
-        val coreHeight = if (assetLockTransaction!!.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
-            assetLockTransaction!!.confidence.appearedAtChainHeight
-        } else {
-            // this is not supported, how can we get the height?
-            TODO()
-//            val txInfo = platform.client.getTransaction(assetLockTransaction!!.txId.toString())
-//            txInfo?.height ?: -1
-        }.toLong()
 
-        identity = platform.identities.register(
-            0,
-            assetLockTransaction!!,
-            coreHeight,
-            signingKey!!,
-            identityPublicKeys,
-            signer = WalletSignerCallback(wallet!!, keyParameter)
-        )
+            try {
+                identity = platform.identities.register(
+                    0,
+                    assetLockTransaction!!,
+                    coreHeight,
+                    signingKey!!,
+                    identityPublicKeys,
+                    signer = WalletSignerCallback(wallet!!, keyParameter)
+                )
+                registeredOrError = true
+            } catch (e: Exception) {
+                // wait for another block
+                if (!waitForChainlock || !waitForNextBlock()) {
+                    throw e
+                }
+                count++
+            }
+        }
 
         registrationStatus = IdentityStatus.REGISTERED
-
         finalizeIdentityRegistration(assetLockTransaction!!)
+    }
 
-        registrationStatus = IdentityStatus.REGISTERED
+    private fun waitForNextBlock(): Boolean {
+        return try {
+            val blockChain = wallet!!.context.blockChain
+            val nextBlockFuture = blockChain.getHeightFuture(blockChain.bestChainHeight + 1)
+            nextBlockFuture.get()
+            true
+        } catch (e: InterruptedException) {
+            false
+        } catch (e: ExecutionException) {
+            false
+        }
     }
 
     private fun registerIdentityWithISLock(keyParameter: KeyParameter?) {
