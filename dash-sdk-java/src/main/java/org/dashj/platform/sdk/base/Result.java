@@ -32,6 +32,11 @@ public abstract class Result<T, E> {
         public E unwrapError() throws Exception {
             throw new Exception("Attempted to unwrapError on a Success: ");
         }
+
+        @Override
+        public String toString() {
+            return String.format("Success{ %s }", value);
+        }
     }
 
     private static class Failure<T, E> extends Result<T, E> {
@@ -49,6 +54,11 @@ public abstract class Result<T, E> {
         @Override
         public E unwrapError() {
             return error;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Error{ %s }", error.toString());
         }
     }
 }

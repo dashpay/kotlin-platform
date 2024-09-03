@@ -385,10 +385,6 @@ object PlatformExplorer {
                         null
                     )
 
-//                    val docs = dashsdk.platformMobileFetchDocumentGetDomainDocumentStartsWith(
-//                        startsWith,
-//                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-//                        BigInteger.ZERO)
                     docs.unwrap().forEach { doc ->
                         printDomainDocument(doc)
                     }
@@ -400,9 +396,8 @@ object PlatformExplorer {
                     println(" > $idString")
 
                     val value = dashsdk.platformMobileDataContractsFetchDataContract(
+                        sdk,
                         Identifier(Base58.decode(idString)),
-                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-                        BigInteger.ZERO
                     )
                     try {
 

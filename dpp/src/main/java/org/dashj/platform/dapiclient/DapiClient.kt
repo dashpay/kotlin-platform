@@ -519,9 +519,8 @@ class DapiClient(
         val contractId = Identifier.from(contractIdByteArray)
 
         val dataContract = dashsdk.platformMobileDataContractsFetchDataContract(
-            contractId.toNative(),
-            BigInteger.valueOf(contextProviderFunction),
-            BigInteger.ZERO
+            rustSdk,
+            contractId.toNative()
         )
         return try {
             DataContract.from(dataContract.unwrap())
