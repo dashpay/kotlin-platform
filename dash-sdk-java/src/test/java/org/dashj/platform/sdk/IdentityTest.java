@@ -53,7 +53,8 @@ public class IdentityTest extends BaseTest {
     @Test
     public void fetchIdentity3AndDestroy() throws Exception {
         Identifier identifier1 = new Identifier(Base58.decode(testIdentifier));
-        Result<Identity, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityWithCore(identifier1);
+        SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
+        Result<Identity, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(sdk, identifier1);
         Identity identity = result.unwrap();
         assertEquals(Identity.Tag.V0, identity.getTag());
         IdentityV0 identityV0 = identity.getV0().get_0();
@@ -64,18 +65,21 @@ public class IdentityTest extends BaseTest {
         assertNotNull(identityV0.getPublicKey(0));
         identity.delete();
         identifier1.delete();
+        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
     }
 
     @Test
     public void fetchIdentity3FailAndDestroy() throws Exception {
         Identifier identifier1 = new Identifier(identifier);
-        Result<Identity, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityWithCore(identifier1);
+        SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
+        Result<Identity, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(sdk, identifier1);
         assertNotNull(result.unwrapError());
         //String error = result.getError();
         //assertNotNull(error);
         //result.delete();
         //result.unwrap().delete();
         identifier1.delete();
+        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
     }
 
 //    @Test
