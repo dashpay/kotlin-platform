@@ -1,19 +1,30 @@
 package org.dashj.platform.sdk;
 
 import org.dashj.platform.sdk.base.Result;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class DataContractTest extends BaseTest {
+    static SWIGTYPE_p_DashSdk sdk;
+
+    @BeforeAll
+    static void startUp() {
+        sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, true);
+    }
+
+    @AfterAll
+    static void tearDown() {
+        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
+    }
     @Test
     public void fetchDataContractTest() throws Exception {
         Identifier contractId = new Identifier(dpnsContractId);
-        SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         Result<DataContract, String> result = dashsdk.platformMobileDataContractsFetchDataContract(
                 sdk, contractId);
 
@@ -26,7 +37,6 @@ public class DataContractTest extends BaseTest {
     @Test
     public void fetchDataContractFailureTest() throws Exception {
         Identifier contractId = new Identifier(identifier);
-        SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         Result<DataContract, String> result = dashsdk.platformMobileDataContractsFetchDataContract(
                 sdk, contractId);
         System.out.println("missing contract request: " + result.toString());

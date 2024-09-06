@@ -2,7 +2,9 @@ package org.dashj.platform.sdk;
 
 import org.bitcoinj.core.Base58;
 import org.dashj.platform.sdk.base.Result;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 
@@ -18,6 +20,17 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IdentityTest extends BaseTest {
+    static SWIGTYPE_p_DashSdk sdk;
+
+    @BeforeAll
+    static void startUp() {
+        sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, true);
+    }
+
+    @AfterAll
+    static void tearDown() {
+        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
+    }
 
     private static final String testIdentifier = "7Yowk46VwwHqmD5yZyyygggh937aP6h2UW7aQWBdWpM5";
     @Test
@@ -53,7 +66,6 @@ public class IdentityTest extends BaseTest {
     @Test
     public void fetchIdentity3AndDestroy() throws Exception {
         Identifier identifier1 = new Identifier(Base58.decode(testIdentifier));
-        SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         Result<Identity, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(sdk, identifier1);
         Identity identity = result.unwrap();
         assertEquals(Identity.Tag.V0, identity.getTag());
@@ -71,7 +83,6 @@ public class IdentityTest extends BaseTest {
     @Test
     public void fetchIdentity3FailAndDestroy() throws Exception {
         Identifier identifier1 = new Identifier(identifier);
-        SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         Result<Identity, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(sdk, identifier1);
         assertNotNull(result.unwrapError());
         //String error = result.getError();
@@ -258,54 +269,9 @@ public class IdentityTest extends BaseTest {
 
         outPoint.delete();
     }
-//
-//    @Test
-//    public void traitTest() {
-//
-//        ChainType type = dashsdk.ffiGetChainSettings();
-//        IHaveChainSettings_TraitObject trait = dashsdk.chainTypeAsIHaveChainSettingsTraitObject(type);
-//        IHaveChainSettings ihcs = new IHaveChainSettings(trait);
-//        assertEquals(0, ihcs.genesisHeight());
-//        assertEquals(0, ihcs.genesisHash().get_0()[1]);
-//
-//        byte[] hash = new byte[32];
-//        for (int i = 0; i < 32; ++i) {
-//            hash[i] = (byte) i;
-//        }
-//        HashID hashID = new HashID(hash);
-//        assertArrayEquals(hashID.get_0(), hash);
-//
-//        MyIdentityFactory myFactory = dashsdk.ffiGetIdentityFactory();
-//        IdentityFactory_TraitObject traitObject = dashsdk.myIdentityFactoryAsIdentityFactoryTraitObject(myFactory);
-//        IdentityFactory factory = new IdentityFactory(traitObject);
-//        Identity identity = factory.getIdentity(new Identifier(new byte[32]));
-//        assertArrayEquals(new byte[32], identity.getV0().getId().get_0().get_0());
-//
-//        IdentityPublicKeyV0 ipkv0 = identity.getV0().getPublicKey(0);
-//        KeyID keyId = ipkv0.getId();
-//        assertEquals(1, keyId.get_0());
-//        assertFalse(ipkv0.getRead_only());
-//        assertEquals(Purpose.AUTHENTICATION, ipkv0.getPurpose());
-//
-//        IdentityPublicKeyV0 identityPublicKeyV0ById = identity.getV0().getPublicKeyById(1);
-//        assertEquals(ipkv0.getData().get_0().length, identityPublicKeyV0ById.getData().get_0().length);
-//        assertArrayEquals(ipkv0.getData().get_0(), identityPublicKeyV0ById.getData().get_0());
-//    }
-
-
-//    @Test
-//    public void asyncFunctionTest() {
-//        ChainType mainNet = dashsdk.chainTypeMainNetCtor();
-//        assertEquals("ChainType_MainNet", mainNet.getTag().toString());
-//        //ChainType chainType = new ChainType();
-//        //dashsdk.
-//        SWIGTYPE_p_void p_void = new SWIGTYPE_p_void();
-//        //String result = dashsdk.ffiGetChainTypeStringAsync(p_void, mainNet);
-//    }
 
     @Test
     public void identityBalanceTest() throws Exception {
-        SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         Result<Long, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(sdk, new Identifier(identifier));
         result.unwrapError();
 

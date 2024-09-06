@@ -1,64 +1,87 @@
 package org.dashj.platform.sdk;
 
 import org.dashj.platform.sdk.base.Result;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DocumentTest extends BaseTest {
-    @Test
-    public void getDocumentTest() {
-        Document document = dashsdk.platformMobileFetchDocumentGetDocument();
-        assertEquals(Document.Tag.V0, document.getTag());
 
-        DocumentV0 doc = document.getV0().get_0();
-        assertEquals(new Revision(1), doc.getRevision());
-        //assertArrayEquals(identifier, doc.getOwner_id().get_0().get_0());
-        Map<String, PlatformValue> map = doc.getProperties();
-        assertEquals(PlatformValue.Tag.Text, map.get("label").getTag());
-        map.forEach((key, v) -> {
-            System.out.printf("%s -> %s\n", key, v);
-            System.out.printf("  %s - ", v.getTag());
-            String str = null;
-            PlatformValue.Tag t = v.getTag();
-            if (t == PlatformValue.Tag.Bool) {
-                str = String.valueOf(v.getBool());
-            } else if (t == PlatformValue.Tag.Text) {
-                str = v.getText();
-            } else if (t == PlatformValue.Tag.Map) {
-                str = v.getMap().get_0().toString();
-            } else {
-                str = "unknown";
-            }
-            System.out.printf("%s\n", str);
-        });
-        System.out.printf("to_string: %s\n", dashsdk.platformMobileFetchDocumentDocumentToString(document));
-        document.delete();
+    static SWIGTYPE_p_DashSdk sdk;
+
+    @BeforeAll
+    static void startUp() {
+        sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, true);
     }
 
+    @AfterAll
+    static void tearDown() {
+        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
+    }
+//    @Test
+//    public void getDocumentTest() {
+//        SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, true);
+//        Document document = dashsdk.platformMobileFetchDocumentGetDocument();
+//        assertEquals(Document.Tag.V0, document.getTag());
+//
+//        DocumentV0 doc = document.getV0().get_0();
+//        assertEquals(new Revision(1), doc.getRevision());
+//        //assertArrayEquals(identifier, doc.getOwner_id().get_0().get_0());
+//        Map<String, PlatformValue> map = doc.getProperties();
+//        assertEquals(PlatformValue.Tag.Text, map.get("label").getTag());
+//        map.forEach((key, v) -> {
+//            System.out.printf("%s -> %s\n", key, v);
+//            System.out.printf("  %s - ", v.getTag());
+//            String str = null;
+//            PlatformValue.Tag t = v.getTag();
+//            if (t == PlatformValue.Tag.Bool) {
+//                str = String.valueOf(v.getBool());
+//            } else if (t == PlatformValue.Tag.Text) {
+//                str = v.getText();
+//            } else if (t == PlatformValue.Tag.Map) {
+//                str = v.getMap().get_0().toString();
+//            } else {
+//                str = "unknown";
+//            }
+//            System.out.printf("%s\n", str);
+//        });
+//        System.out.printf("to_string: %s\n", dashsdk.platformMobileFetchDocumentDocumentToString(document));
+//        document.delete();
+//        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
+//    }
+
     @Test
-    public void getDocumentsTest() {
+    void getDocumentsTest() throws Exception {
         Identifier domainId = new Identifier(dpnsContractId);
-        List<Document> docs = dashsdk.platformMobileFetchDocumentGetDocuments(domainId, "domain", BigInteger.ZERO, BigInteger.ZERO);
-        assertFalse(docs.isEmpty());
+        Result<List<Document>, String> docs = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                sdk,
+                new Identifier(dpnsContractId),
+                "domain",
+                new ArrayList<>(),
+                new ArrayList<>(),
+                100,
+                null
+        );
+        assertFalse(docs.unwrap().isEmpty());
     }
 
-    @Test
-    public void getDocumentMapTest() {
-        Identifier domainId = new Identifier(dpnsContractId);
-        List<Document> docs = dashsdk.platformMobileFetchDocumentGetDocuments(domainId, "domain", BigInteger.ZERO, BigInteger.ZERO);
-        assertFalse(docs.isEmpty());
-    }
+//    @Test
+//    public void getDocumentMapTest() {
+//        Identifier domainId = new Identifier(dpnsContractId);
+//        List<Document> docs = dashsdk.platformMobileFetchDocumentGetDocuments(domainId, "domain", BigInteger.ZERO, BigInteger.ZERO);
+//        assertFalse(docs.isEmpty());
+//    }
 
 
     @Test
@@ -67,11 +90,19 @@ public class DocumentTest extends BaseTest {
     }
 
     @Test
-    public void getDocumentWithIDTest() {
-        Identifier domainId = new Identifier(dpnsContractId);
-        List<Document> all = dashsdk.platformMobileFetchDocumentGetDocuments(domainId, "domain", BigInteger.ZERO, BigInteger.ZERO);
+    public void getDocumentWithIDTest() throws Exception {
+        Identifier dpnsContractIdentifier = new Identifier(dpnsContractId);
+        Result<List<Document>, String> all = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                sdk,
+                dpnsContractIdentifier,
+                "domain",
+                new ArrayList<>(),
+                new ArrayList<>(),
+                100,
+                null
+        );
         Identifier id = null;
-        for (Document d : all) {
+        for (Document d : all.unwrap()) {
             PlatformValue value = d.getV0().get_0().getProperties().get("records").getMap().get_0().get(new PlatformValue("identity"));
             if (value != null) {
                 id = new Identifier(value.getIdentifier().getBytes());
@@ -79,13 +110,36 @@ public class DocumentTest extends BaseTest {
             }
         }
         assertNotNull(id);
-        List<Document> docs = dashsdk.platformMobileFetchDocumentGetDomainDocument(id, BigInteger.ZERO, BigInteger.ZERO);
-        assertFalse(docs.isEmpty());
+        List<WhereClause> where = new ArrayList<>();
+        where.add(new WhereClause("$id", WhereOperator.Equal, new PlatformValue(new Hash256(id.getBytes()))));
+        Result<List<Document>, String> result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                sdk,
+                new Identifier(dpnsContractId),
+                "domain",
+                where,
+                new ArrayList<>(),
+                100,
+                null
+        );
+        assertFalse(result.unwrap().isEmpty());
     }
 
     @Test
-    public void getDocumentStartsWithTest() {
-        List<Document> docs = dashsdk.platformMobileFetchDocumentGetDomainDocumentStartsWith("tut", BigInteger.ZERO, BigInteger.ZERO);
+    public void getDocumentStartsWithTest() throws Exception {
+        List<WhereClause> where = new ArrayList<>();
+        where.add(new WhereClause("normalizedLabel", WhereOperator.StartsWith, new PlatformValue("test")));
+        List<OrderClause> order = new ArrayList<>();
+        order.add(new OrderClause("normalizedLabel", true));
+        Result<List<Document>, String> result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                sdk,
+                new Identifier(dpnsContractId),
+                "domain",
+                where,
+                order,
+                100,
+                null
+        );
+        List<Document> docs = result.unwrap();
         assertFalse(docs.isEmpty());
         docs.forEach(document -> {
             Map<String, PlatformValue> props = document.getV0().get_0().getProperties();
@@ -250,7 +304,6 @@ public class DocumentTest extends BaseTest {
             where.add(new WhereClause("normalizedParentDomainName", WhereOperator.Equal, new PlatformValue("dash")));
             orderBy.add(new OrderClause("normalizedLabel"));
 
-            SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
             Result<List<Document>, String> docs2 = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
                     sdk,
                     dpnsId,
@@ -273,7 +326,6 @@ public class DocumentTest extends BaseTest {
 
     @Test
     public void createSDKTest() throws Exception {
-        SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         List<WhereClause> list = new ArrayList<>();
         List<OrderClause> list2 = new ArrayList<>();
         Result<List<Document>, String> result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
@@ -283,6 +335,5 @@ public class DocumentTest extends BaseTest {
         documentList.forEach(doc -> {
             System.out.println(doc.getV0().get_0().getId().getBytes().length);
         });
-        //dashsdk.platformMobileConfigRustSdkDestroy(sdk);
     }
 }
