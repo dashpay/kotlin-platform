@@ -1,5 +1,5 @@
 #ifndef __int128_h
-#define _uint128_h
+#define __int128_h
 
 #if UINTPTR_MAX == 0xFFFFFFFF
 #define SYNTHETIC_INT128
