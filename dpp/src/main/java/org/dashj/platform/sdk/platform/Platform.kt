@@ -14,6 +14,7 @@ import org.bitcoinj.core.ECKey
 import org.bitcoinj.core.NetworkParameters
 import org.bitcoinj.core.listeners.NewBestBlockListener
 import org.bitcoinj.evolution.SimplifiedMasternodeListManager
+import org.bitcoinj.params.MainNetParams
 import org.dashj.platform.dapiclient.DapiClient
 import org.dashj.platform.dapiclient.MaxRetriesReachedException
 import org.dashj.platform.dapiclient.NoAvailableAddressesForRetryException
@@ -86,7 +87,7 @@ class Platform(val params: NetworkParameters) {
             }
         }
         System.loadLibrary("sdklib")
-        client = DapiClient(params.defaultHPMasternodeList.toList(), dpp, true)
+        client = DapiClient(params.defaultHPMasternodeList.toList(), dpp, true, isTestNet())
     }
 
     fun getAppList(): List<Identifier> {
@@ -163,7 +164,7 @@ class Platform(val params: NetworkParameters) {
         //    it["isValid"] == true
         //}
         //client = DapiClient(validList.map { (it["service"] as String).split(":")[0] }, dpp)
-        client = DapiClient(listOf(), dpp, false)
+        client = DapiClient(listOf(), dpp, false, params.id != MainNetParams.ID_MAINNET)
     }
 
     private fun getMnList(): List<Map<String, Any>> {
@@ -234,7 +235,7 @@ class Platform(val params: NetworkParameters) {
         }
     }
 
-    fun isTestNet(): Boolean = params.id == NetworkParameters.ID_MAINNET
+    fun isTestNet(): Boolean = params.id != NetworkParameters.ID_MAINNET
 
     private val newBestBlockListener = NewBestBlockListener { block ->
         if (block != null) {

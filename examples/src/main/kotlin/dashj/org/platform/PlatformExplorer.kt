@@ -224,7 +224,11 @@ object PlatformExplorer {
         val sdk = dashsdk.platformMobileSdkCreateDashSdkWithContext(
             contextProvider.nativeContext,
             BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-            BigInteger.ZERO
+            BigInteger.ZERO,
+            kit.params().id != NetworkParameters.ID_MAINNET,
+            5,
+            5,
+            5
         )
 
         println("4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF")

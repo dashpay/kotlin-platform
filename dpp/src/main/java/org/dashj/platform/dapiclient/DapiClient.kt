@@ -50,6 +50,7 @@ class DapiClient(
     var dapiAddressListProvider: DAPIAddressListProvider,
     val dpp: DashPlatformProtocol,
     val useContextProvider: Boolean,
+    val isTestnet: Boolean,
     private var timeOut: Long = DEFAULT_TIMEOUT,
     private var retries: Int = DEFAULT_RETRY_COUNT,
     private var banBaseTime: Int = DEFAULT_BASE_BAN_TIME,
@@ -153,7 +154,11 @@ class DapiClient(
         rustSdk = dashsdk.platformMobileSdkCreateDashSdkWithContext(
             contextProviderContext,
             BigInteger.valueOf(contextProviderFunction),
-            BigInteger.ZERO
+            BigInteger.ZERO,
+            isTestnet,
+            timeOut * 2,
+            timeOut,
+            retries.toLong()
         )
     }
 
@@ -161,23 +166,25 @@ class DapiClient(
         masternodeAddress: String,
         dpp: DashPlatformProtocol,
         useContextProvider: Boolean,
+        isTestnet: Boolean,
         timeOut: Long = DEFAULT_TIMEOUT,
         retries: Int = DEFAULT_RETRY_COUNT,
         banBaseTime: Int = DEFAULT_BASE_BAN_TIME,
         waitForNodes: Int = DEFAULT_WAIT_FOR_NODES
     ) :
-        this(listOf(masternodeAddress), dpp, useContextProvider, timeOut, retries, banBaseTime, waitForNodes)
+        this(listOf(masternodeAddress), dpp, useContextProvider, isTestnet, timeOut, retries, banBaseTime, waitForNodes)
 
     constructor(
         addresses: List<String>,
         dpp: DashPlatformProtocol,
         useContextProvider: Boolean,
+        isTestnet: Boolean,
         timeOut: Long = DEFAULT_TIMEOUT,
         retries: Int = DEFAULT_RETRY_COUNT,
         banBaseTime: Int = DEFAULT_BASE_BAN_TIME,
         waitForNodes: Int = DEFAULT_WAIT_FOR_NODES
     ) :
-        this(ListDAPIAddressProvider.fromList(addresses, banBaseTime), dpp, useContextProvider, timeOut, retries, banBaseTime, waitForNodes)
+        this(ListDAPIAddressProvider.fromList(addresses, banBaseTime), dpp, useContextProvider, isTestnet, timeOut, retries, banBaseTime, waitForNodes)
 
     /* Platform gRPC methods */
 
