@@ -93,7 +93,17 @@ public:
         return nullptr;
     }
 
-    uint8_t * clone(uint8_t * str, uint32_t len) {
+    uint8_t * cloneString(const char * str, uint32_t len) {
+        if (str != nullptr) {
+            uint8_t * strClone = reinterpret_cast<uint8_t*>(alloc(len));
+            memcpy(strClone, str, len);
+            strClone[len - 1] = 0;
+            return strClone;
+        }
+        return nullptr;
+    }
+
+    uint8_t * clone(const uint8_t * str, uint32_t len) {
         if (str != nullptr) {
             uint8_t * strClone = reinterpret_cast<uint8_t*>(alloc(len));
             memcpy(strClone, str, len);
