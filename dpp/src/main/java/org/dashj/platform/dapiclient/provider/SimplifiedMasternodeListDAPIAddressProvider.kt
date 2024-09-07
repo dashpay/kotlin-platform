@@ -7,6 +7,7 @@
 package org.dashj.platform.dapiclient.provider
 
 import org.bitcoinj.core.Sha256Hash
+import org.bitcoinj.evolution.Masternode
 import org.bitcoinj.evolution.SimplifiedMasternodeList
 import org.bitcoinj.evolution.SimplifiedMasternodeListManager
 
@@ -89,5 +90,15 @@ class SimplifiedMasternodeListDAPIAddressProvider(
 
     override fun getErrorStatistics(): String {
         return listProvider.getErrorStatistics()
+    }
+
+    override fun toList(): List<DAPIAddress> {
+        val evoNodeList = arrayListOf<Masternode>()
+        smlProvider.masternodeList.forEachMN(true) {
+            if (it.isHPMN) {
+                evoNodeList.add(it)
+            }
+        }
+        return evoNodeList.map { DAPIAddress(it.service.socketAddress.hostString, it.proRegTxHash) }
     }
 }
