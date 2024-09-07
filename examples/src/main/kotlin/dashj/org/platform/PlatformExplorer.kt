@@ -23,6 +23,7 @@ import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.DataContract
 import org.dashj.platform.sdk.Document
+import org.dashj.platform.sdk.Hash256
 import org.dashj.platform.sdk.Identifier
 import org.dashj.platform.sdk.Identity
 import org.dashj.platform.sdk.OrderClause
@@ -312,8 +313,7 @@ object PlatformExplorer {
                     }
                 }
                 "4" -> {
-                    val doc = dashsdk.platformMobileFetchDocumentGetDocument()
-                    printDocument(doc)
+                    println("This function does not exist, replace it.")
                 }
                 "5" -> {
                     try {
@@ -360,18 +360,27 @@ object PlatformExplorer {
                     val id = scanner.nextLine()
                     val identifier = Identifier(Base58.decode(id))
                     println(" > $id")
-                    val docs = dashsdk.platformMobileFetchDocumentGetDomainDocument(
-                        identifier,
-                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-                        BigInteger.ZERO
+                    val docs_result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                        sdk,
+                        Identifier(dpnsContractId),
+                        "domain",
+                        listOf(WhereClause("\$id", WhereOperator.Equal, PlatformValue(Hash256(identifier.bytes)))),
+                        listOf(OrderClause("\$id", true)),
+                        100,
+                        null
                     )
-                    if (docs.isNotEmpty()) {
-                        docs.forEach { doc ->
-                            printDomainDocument(doc)
-                            printDocument(doc)
+                    try {
+                        val docs = docs_result.unwrap()
+                        if (docs.isNotEmpty()) {
+                            docs.forEach { doc ->
+                                printDomainDocument(doc)
+                                printDocument(doc)
+                            }
+                        } else {
+                            println("no document found for $id")
                         }
-                    } else {
-                        println("no document found for $id")
+                    } catch (e: Exception) {
+                        println("error retrieving document for $id")
                     }
                 }
                 "7" -> {
