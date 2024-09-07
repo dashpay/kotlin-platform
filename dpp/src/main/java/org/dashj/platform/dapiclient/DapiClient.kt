@@ -1098,6 +1098,29 @@ class DapiClient(
                 DEFAULT_BASE_BAN_TIME
             )
         )
+
+        // TODO: there is not a good way of handling EvoNodes without Evo
+        // This code will get the most recent evonode list, but not all
+        // can be used for platform
+//        val evoNodeList = arrayListOf<String>()
+//        masternodeListManager.masternodeList.forEachMN(true) {
+//            if (it.isHPMN) {
+//                evoNodeList.add(it.service.socketAddress.address.hostAddress)
+//            }
+//        }
+        // This function does not yet exist in the DashSdk
+//        if (evoNodeList.isNotEmpty()) {
+//            rustSdk = dashsdk.platformMobileSdkCreateDashSdkWithContext(
+//                contextProviderContext,
+//                BigInteger.valueOf(contextProviderFunction),
+//                BigInteger.ZERO,
+//                evoNodeList,
+//                isTestnet,
+//                timeOut,
+//                timeOut,
+//                retries.toLong()
+//            )
+//        }
     }
 
     fun reportNetworkStatus(): String {
