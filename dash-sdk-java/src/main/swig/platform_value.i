@@ -25,8 +25,8 @@ CTYPE get##RTYPE() { \
 %rename (PlatformValue) platform_value_Value;
 %extend platform_value_Value {
     CTOR_CLONE(Text, char *, memoryFactory.clone)
-    CTOR(U128, u128)
-    CTOR(I128, __int128)
+    CTOR(U128, uint128_t)
+    CTOR(I128, int128_t)
     //CTOR(U64, uint64_t)
     CTOR(I64, int64_t)
     //CTOR(U32, uint32_t) // ignored by SWIG
@@ -113,7 +113,7 @@ CTYPE get##RTYPE() { \
     VALUE_GET(I16, int16_t, i16)
     VALUE_GET(I32, int32_t, i32)
     VALUE_GET(I64, int64_t, i64)
-    VALUE_GET(I128, __int128, i128)
+    VALUE_GET(I128, int128_t, i128)
 
     VALUE_GET(U8, uint8_t, u8)
     VALUE_GET(U16, uint16_t, u16)

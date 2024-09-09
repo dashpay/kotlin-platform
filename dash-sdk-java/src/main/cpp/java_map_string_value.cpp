@@ -69,7 +69,7 @@ jobject fermented_tree_to_java_map_String_Value(JNIEnv * jenv, FermentMapStringP
 
     for (uintptr_t i = 0; i < input->count; ++i) {
         int keyLength = strlen(input->keys[i]);
-        printf("item %d: \'%s\'[%d]\n", i, input->keys[i], keyLength);
+        // printf("item %d: \'%s\'[%d]\n", i, input->keys[i], keyLength);
         jobject key = jenv->NewStringUTF(input->keys[i]);
         jobject value = jenv->NewObject(valueClass, valueConstructor, (jlong) input->values[i], false);
         jenv->CallObjectMethod(hashMapInstance, putMethod, key, value);

@@ -50,6 +50,7 @@ class DapiClient(
     var dapiAddressListProvider: DAPIAddressListProvider,
     val dpp: DashPlatformProtocol,
     val useContextProvider: Boolean,
+    val isTestnet: Boolean,
     private var timeOut: Long = DEFAULT_TIMEOUT,
     private var retries: Int = DEFAULT_RETRY_COUNT,
     private var banBaseTime: Int = DEFAULT_BASE_BAN_TIME,
@@ -124,6 +125,9 @@ class DapiClient(
     val contextProviderFunction: Long
         get() = if (useContextProvider) contextProvider.quorumPublicKeyCallback else 0L
 
+    val contextProviderContext: Long
+        get() = if (useContextProvider) contextProvider.nativeContext else 0L
+
     var rustSdk: SWIGTYPE_p_DashSdk
 
     init {
@@ -147,9 +151,14 @@ class DapiClient(
             false
         }
 
-        rustSdk = dashsdk.platformMobileSdkCreateDashSdk(
+        rustSdk = dashsdk.platformMobileSdkCreateDashSdkWithContext(
+            contextProviderContext,
             BigInteger.valueOf(contextProviderFunction),
-            BigInteger.ZERO
+            BigInteger.ZERO,
+            isTestnet,
+            timeOut * 2,
+            timeOut,
+            retries.toLong()
         )
     }
 
@@ -157,23 +166,25 @@ class DapiClient(
         masternodeAddress: String,
         dpp: DashPlatformProtocol,
         useContextProvider: Boolean,
+        isTestnet: Boolean,
         timeOut: Long = DEFAULT_TIMEOUT,
         retries: Int = DEFAULT_RETRY_COUNT,
         banBaseTime: Int = DEFAULT_BASE_BAN_TIME,
         waitForNodes: Int = DEFAULT_WAIT_FOR_NODES
     ) :
-        this(listOf(masternodeAddress), dpp, useContextProvider, timeOut, retries, banBaseTime, waitForNodes)
+        this(listOf(masternodeAddress), dpp, useContextProvider, isTestnet, timeOut, retries, banBaseTime, waitForNodes)
 
     constructor(
         addresses: List<String>,
         dpp: DashPlatformProtocol,
         useContextProvider: Boolean,
+        isTestnet: Boolean,
         timeOut: Long = DEFAULT_TIMEOUT,
         retries: Int = DEFAULT_RETRY_COUNT,
         banBaseTime: Int = DEFAULT_BASE_BAN_TIME,
         waitForNodes: Int = DEFAULT_WAIT_FOR_NODES
     ) :
-        this(ListDAPIAddressProvider.fromList(addresses, banBaseTime), dpp, useContextProvider, timeOut, retries, banBaseTime, waitForNodes)
+        this(ListDAPIAddressProvider.fromList(addresses, banBaseTime), dpp, useContextProvider, isTestnet, timeOut, retries, banBaseTime, waitForNodes)
 
     /* Platform gRPC methods */
 
@@ -519,9 +530,8 @@ class DapiClient(
         val contractId = Identifier.from(contractIdByteArray)
 
         val dataContract = dashsdk.platformMobileDataContractsFetchDataContract(
-            contractId.toNative(),
-            BigInteger.valueOf(contextProviderFunction),
-            BigInteger.ZERO
+            rustSdk,
+            contractId.toNative()
         )
         return try {
             DataContract.from(dataContract.unwrap())
@@ -1088,6 +1098,29 @@ class DapiClient(
                 DEFAULT_BASE_BAN_TIME
             )
         )
+
+        // TODO: there is not a good way of handling EvoNodes without Evo
+        // This code will get the most recent evonode list, but not all
+        // can be used for platform
+//        val evoNodeList = arrayListOf<String>()
+//        masternodeListManager.masternodeList.forEachMN(true) {
+//            if (it.isHPMN) {
+//                evoNodeList.add(it.service.socketAddress.address.hostAddress)
+//            }
+//        }
+        // This function does not yet exist in the DashSdk
+//        if (evoNodeList.isNotEmpty()) {
+//            rustSdk = dashsdk.platformMobileSdkCreateDashSdkWithContext(
+//                contextProviderContext,
+//                BigInteger.valueOf(contextProviderFunction),
+//                BigInteger.ZERO,
+//                evoNodeList,
+//                isTestnet,
+//                timeOut,
+//                timeOut,
+//                retries.toLong()
+//            )
+//        }
     }
 
     fun reportNetworkStatus(): String {

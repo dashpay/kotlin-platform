@@ -17,36 +17,37 @@
    return $null; %}
 
 %typemap(in) STRUCT_TYPE* {
-    //if (!$input) {
-        SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "List is null");
+    if (!$input) {
+        SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "List of primitives is null");
         return $null;
-    //}
+    }
 
-//     jclass listClass = jenv->GetObjectClass($input);
-//     jmethodID sizeMethod = jenv->GetMethodID(listClass, "size", "()I");
-//     jint size = jenv->CallIntMethod($input, sizeMethod);
-//
-//     ITEM_TYPE ** values = new ITEM_TYPE*[size];
-//     $1 = STRUCT_TYPE##_ctor(size, values);
-//
-//     jmethodID getMethod = jenv->GetMethodID(listClass, "get", "(I)Ljava/lang/Object;");
-//     for (jint i = 0; i < size; ++i) {
-//         jobject elementObj = jenv->CallObjectMethod($input, getMethod, i);
-//         jclass valueClass = jenv->FindClass("java/lang/" #SHORT_TYPE);
-//         if (valueClass == nullptr) {
-//             SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "class not found: org/dashj/platform/sdk/" #SHORT_TYPE);
-//             return $null;
-//         }
-//         jmethodID getNativePtrMethod = jenv->GetMethodID(valueClass, "getCPointer", "()J");
-//         if (getNativePtrMethod == nullptr) {
-//             SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "getCPointer not found: java/lang/" #SHORT_TYPE);
-//             return $null;
-//         }
-//         jlong nativePtr = jenv->CallLongMethod(elementObj, getNativePtrMethod);
-//
-//         auto *ipk = reinterpret_cast<ITEM_TYPE *>(nativePtr);
-//         $1->values[i] = CLONE_FN(ipk);
-//     }
+    jclass listClass = jenv->GetObjectClass($input);
+    jmethodID sizeMethod = jenv->GetMethodID(listClass, "size", "()I");
+    jint size = jenv->CallIntMethod($input, sizeMethod);
+
+    ITEM_TYPE * values = new ITEM_TYPE[size];
+    $1 = STRUCT_TYPE##_ctor((uintptr_t)size, values);
+
+    jmethodID getMethod = jenv->GetMethodID(listClass, "get", "(I)Ljava/lang/Object;");
+    for (jint i = 0; i < size; ++i) {
+        jobject elementObj = jenv->CallObjectMethod($input, getMethod, i);
+        jclass valueClass = jenv->FindClass("java/lang/" #SHORT_TYPE);
+        if (valueClass == nullptr) {
+            SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "class not found: java/lang/" #SHORT_TYPE);
+            return $null;
+        }
+
+        if (strcmp(#SHORT_TYPE, "String") == 0) {
+            jint length = jenv->GetStringUTFLength((jstring)elementObj);
+            const char * bytes = jenv->GetStringUTFChars((jstring)elementObj, nullptr);
+            LOGI("converting String \"%s\" %d", bytes, length);
+            $1->values[i] = reinterpret_cast<char*>(memoryFactory.cloneString(bytes, length));
+            jenv->ReleaseStringUTFChars((jstring)elementObj, bytes);
+        } else {
+            $1->values[i] = 0;
+        }
+    }
 }
 
 %typemap(out) STRUCT_TYPE* {
@@ -61,9 +62,9 @@
     }
 
     for (uintptr_t i = 0; i < $1->count; ++i) {
-        jobject elementObj = nullptr; //jenv->NewObject(valueClass, valueConstructor, $1->values[i], false);
+        jobject elementObj = nullptr;
         if (strcmp(#SHORT_TYPE, "String") == 0) {
-            printf("list item: %s\n", $1->values[i]);
+            // printf("list item: %s\n", $1->values[i]);
             elementObj = jenv->NewStringUTF((const char *)$1->values[i]);
         } else if (strcmp(#SHORT_TYPE, "Integer") == 0) {
             jclass integerClass = (jenv)->FindClass("java/lang/Integer");
@@ -85,5 +86,5 @@
 
 %enddef
 
-LIST_PRIMITIVE_TYPEMAP(Vec_String, char *, String, clone);
+LIST_PRIMITIVE_TYPEMAP(Vec_String, char *, String, memoryFactory.clone);
 

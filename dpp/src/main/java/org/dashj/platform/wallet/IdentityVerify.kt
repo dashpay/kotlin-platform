@@ -19,6 +19,7 @@ import org.dashj.platform.sdk.callbacks.Signer
 import org.dashj.platform.sdk.dashsdk
 import org.dashj.platform.sdk.platform.Names
 import org.dashj.platform.sdk.platform.Platform
+import org.slf4j.LoggerFactory
 import java.math.BigInteger
 
 class IdentityVerify(
@@ -27,6 +28,7 @@ class IdentityVerify(
 
     companion object {
         const val DOCUMENT: String = "dashwallet.identityVerify"
+        private val log = LoggerFactory.getLogger(IdentityVerify::class.java)
     }
 
     fun createForDashDomain(username: String,
@@ -42,6 +44,9 @@ class IdentityVerify(
         )
     }
 
+    /**
+     * this will publish an identity verify document unless it already exists
+     */
     fun create(
         normalizedLabel: String,
         normalizedParentDomainName: String,
@@ -49,11 +54,17 @@ class IdentityVerify(
         identity: Identity,
         signer: Signer
     ): IdentityVerifyDocument {
+        val existingIdentityVerifyDocument = get(identity.id, normalizedLabel, normalizedParentDomainName)
+        if (existingIdentityVerifyDocument != null) {
+            log.info("identity verify document already exists")
+            return existingIdentityVerifyDocument
+        }
         val identityVerifyDocument = createDocument(normalizedLabel, normalizedParentDomainName, url, identity)
         val highIdentityPublicKey = identity.getFirstPublicKey(SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
 
-        val documentResult = dashsdk.platformMobilePutPutDocument(
+        val documentResult = dashsdk.platformMobilePutPutDocumentSdk(
+            platform.rustSdk,
             identityVerifyDocument.toNative(),
             identityVerifyDocument.dataContractId!!.toNative(),
             identityVerifyDocument.type,
@@ -61,8 +72,6 @@ class IdentityVerify(
             BlockHeight(10000),
             CoreBlockHeight(platform.coreBlockHeight),
             BigInteger.valueOf(signer.signerCallback),
-            BigInteger.valueOf(platform.client.contextProviderFunction),
-            BigInteger.ZERO
         )
         val domain = documentResult.unwrap()
 
@@ -124,5 +133,10 @@ class IdentityVerify(
         } else {
             null
         }
+    }
+
+    fun get(query: DocumentQuery): List<IdentityVerifyDocument> {
+        val result = platform.documents.get(DOCUMENT, query)
+        return result.map { IdentityVerifyDocument(it) }
     }
 }

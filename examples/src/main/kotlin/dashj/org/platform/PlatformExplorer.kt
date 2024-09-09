@@ -23,6 +23,7 @@ import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.DataContract
 import org.dashj.platform.sdk.Document
+import org.dashj.platform.sdk.Hash256
 import org.dashj.platform.sdk.Identifier
 import org.dashj.platform.sdk.Identity
 import org.dashj.platform.sdk.OrderClause
@@ -204,7 +205,7 @@ object PlatformExplorer {
                 val quorumHash = Sha256Hash.wrap(quorumHashBytes)
                 var quorumPublicKey: ByteArray? = null
                 println("searching for quorum: $quorumType, $quorumHash, $coreChainLockedHeight")
-                Context.get().masternodeListManager.getQuorumListAtTip(
+                kit.wallet().context.masternodeListManager.getQuorumListAtTip(
                     LLMQParameters.LLMQType.fromValue(
                         quorumType
                     )
@@ -221,7 +222,15 @@ object PlatformExplorer {
                 return byteArrayOf(0)
             }
         }
-        val sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.valueOf(contextProvider.quorumPublicKeyCallback), BigInteger.ZERO)
+        val sdk = dashsdk.platformMobileSdkCreateDashSdkWithContext(
+            contextProvider.nativeContext,
+            BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
+            BigInteger.ZERO,
+            kit.params().id != NetworkParameters.ID_MAINNET,
+            5,
+            5,
+            5
+        )
 
         println("4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF")
         val scanner = Scanner(System.`in`)
@@ -254,10 +263,9 @@ object PlatformExplorer {
 
                     println(" > $idString")
 
-                    val value = dashsdk.fetchIdentity(
-                        Identifier(Base58.decode(idString)),
-                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-                        BigInteger.ZERO
+                    val value = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(
+                        sdk,
+                        Identifier(Base58.decode(idString))
                     )
                     try {
 
@@ -274,10 +282,9 @@ object PlatformExplorer {
 
                     println(" > $publicKeyHashString")
 
-                    val value = dashsdk.getIdentityByPublicKeyHash(
-                        Converters.fromHex(publicKeyHashString),
-                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-                        BigInteger.ZERO
+                    val value = dashsdk.platformMobileFetchIdentityFetchIdentityWithKeyhashSdk(
+                        sdk,
+                        Converters.fromHex(publicKeyHashString)
                     )
                     try {
                         val identity = value.unwrap();
@@ -293,10 +300,9 @@ object PlatformExplorer {
                     println(" > $publicKeyString")
                     println(" > ${publicKey.pubKeyHash.toHex()}")
 
-                    val value = dashsdk.getIdentityByPublicKeyHash(
-                        publicKey.pubKeyHash,
-                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-                        BigInteger.ZERO
+                    val value = dashsdk.platformMobileFetchIdentityFetchIdentityWithKeyhashSdk(
+                        sdk,
+                        publicKey.pubKeyHash
                     )
                     try {
 
@@ -307,17 +313,20 @@ object PlatformExplorer {
                     }
                 }
                 "4" -> {
-                    val doc = dashsdk.platformMobileFetchDocumentGetDocument()
-                    printDocument(doc)
+                    println("This function does not exist, replace it.")
                 }
                 "5" -> {
-                    val result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
-                        sdk, Identifier(dpnsContractId),
-                        "domain", listOf(), listOf(), 100, null
-                    )
-                    val docs = result.unwrap()
-                    docs.forEach { doc ->
-                        printDomainDocument(doc)
+                    try {
+                        val result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                            sdk, Identifier(dpnsContractId),
+                            "domain", listOf(), listOf(), 100, null
+                        )
+                        val docs = result.unwrap()
+                        docs.forEach { doc ->
+                            printDomainDocument(doc)
+                        }
+                    } catch (e: Exception) {
+                        println("error!")
                     }
 //                    docs.forEach { doc ->
 //                        printDocument(doc)
@@ -351,18 +360,27 @@ object PlatformExplorer {
                     val id = scanner.nextLine()
                     val identifier = Identifier(Base58.decode(id))
                     println(" > $id")
-                    val docs = dashsdk.platformMobileFetchDocumentGetDomainDocument(
-                        identifier,
-                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-                        BigInteger.ZERO
+                    val docs_result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                        sdk,
+                        Identifier(dpnsContractId),
+                        "domain",
+                        listOf(WhereClause("\$id", WhereOperator.Equal, PlatformValue(Hash256(identifier.bytes)))),
+                        listOf(OrderClause("\$id", true)),
+                        100,
+                        null
                     )
-                    if (docs.isNotEmpty()) {
-                        docs.forEach { doc ->
-                            printDomainDocument(doc)
-                            printDocument(doc)
+                    try {
+                        val docs = docs_result.unwrap()
+                        if (docs.isNotEmpty()) {
+                            docs.forEach { doc ->
+                                printDomainDocument(doc)
+                                printDocument(doc)
+                            }
+                        } else {
+                            println("no document found for $id")
                         }
-                    } else {
-                        println("no document found for $id")
+                    } catch (e: Exception) {
+                        println("error retrieving document for $id")
                     }
                 }
                 "7" -> {
@@ -384,10 +402,6 @@ object PlatformExplorer {
                         null
                     )
 
-//                    val docs = dashsdk.platformMobileFetchDocumentGetDomainDocumentStartsWith(
-//                        startsWith,
-//                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-//                        BigInteger.ZERO)
                     docs.unwrap().forEach { doc ->
                         printDomainDocument(doc)
                     }
@@ -399,9 +413,8 @@ object PlatformExplorer {
                     println(" > $idString")
 
                     val value = dashsdk.platformMobileDataContractsFetchDataContract(
+                        sdk,
                         Identifier(Base58.decode(idString)),
-                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-                        BigInteger.ZERO
                     )
                     try {
 
@@ -413,10 +426,9 @@ object PlatformExplorer {
                 }
                 "9" -> {
                     var currentKey = authenticationGroupExtension.currentKey(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY)
-                    val identityResult = dashsdk.getIdentityByPublicKeyHash(
-                        currentKey.pubKeyHash,
-                        BigInteger.valueOf(contextProvider.quorumPublicKeyCallback),
-                        BigInteger.ZERO
+                    val identityResult = dashsdk.platformMobileFetchIdentityFetchIdentityWithKeyhashSdk(
+                        sdk,
+                        currentKey.pubKeyHash
                     )
 
                     try {
@@ -427,8 +439,8 @@ object PlatformExplorer {
                     }
 
                     val identity = dashsdk.getIdentity2(Identifier(ByteArray(32)))
-                    val result = dashsdk.platformMobilePutPutIdentityCreate(identity, BigInteger.valueOf(signer.signerCallback))
-                    print(result)
+                    //val result = dashsdk.platformMobilePutPutIdentityCreate(identity, BigInteger.valueOf(signer.signerCallback))
+                    //print(result)
                 }
                 "9" -> {
                     val dpnsContractId = byteArrayOf(
@@ -517,7 +529,8 @@ object PlatformExplorer {
                 }
             }
         }
-        // dashsdk.platformMobileConfigRustSdkDestroy(sdk);
+        dashsdk.platformMobileSdkDestroyDashSdk(sdk)
+        contextProvider.close()
         quitFuture.set(true)
     }
 

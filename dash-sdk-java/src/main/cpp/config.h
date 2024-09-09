@@ -3,12 +3,7 @@
 
 #include <stdlib.h>
 
-typedef __int128 i128;
-typedef unsigned __int128 u128;
 
-// are these defined?
-typedef __int128 int128_t;
-typedef unsigned __int128 uint128_t;
 
 struct platform_mobile_MyValue;
 struct platform_mobile_MyValueMap;
@@ -34,19 +29,13 @@ inline void logInfo(const char *message) {
     LOGI("%s", message);
 }
 
-// missing items from dash_sdk_bindings.h
-struct RustSdk {};
-struct RustSdk5 {};
-struct Processor;
-struct DashSharedCore;
-struct dash_sdk_sdk_Sdk;
-
-//uint8_t * (QuorumPublicKeyCallbackExport)();
 struct Arr_u8_32;
 
 struct InstantLock {
     void * ptr;
 };
+
+#include "int128.h"
 
 struct platform_mobile_config_EntryPoint;
 

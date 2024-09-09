@@ -88,4 +88,8 @@ class ListDAPIAddressProvider(var addresses: List<DAPIAddress>, var baseBanTime:
     override fun getErrorStatistics(): String {
         return addresses.filter { it.isBanned }.map { it.exception }.toString()
     }
+
+    override fun toList(): List<DAPIAddress> {
+        return addresses
+    }
 }

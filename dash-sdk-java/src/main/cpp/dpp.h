@@ -79,7 +79,6 @@ public:
 
     void * alloc(size_t size) {
         uint8_t * memory = new uint8_t[size];
-        printf("  adding %lx with size %ld\n", (unsigned long)memory, size);
         memoryList.push_back(memory);
         return reinterpret_cast<void*>(memory);
     }
@@ -94,7 +93,17 @@ public:
         return nullptr;
     }
 
-    uint8_t * clone(uint8_t * str, uint32_t len) {
+    uint8_t * cloneString(const char * str, uint32_t len) {
+        if (str != nullptr) {
+            uint8_t * strClone = reinterpret_cast<uint8_t*>(alloc(len));
+            memcpy(strClone, str, len);
+            strClone[len - 1] = 0;
+            return strClone;
+        }
+        return nullptr;
+    }
+
+    uint8_t * clone(const uint8_t * str, uint32_t len) {
         if (str != nullptr) {
             uint8_t * strClone = reinterpret_cast<uint8_t*>(alloc(len));
             memcpy(strClone, str, len);
@@ -134,13 +143,13 @@ public:
     }
 
     void destroyItem(void * item) {
-    list<uint8_t*>::iterator it = find(memoryList.begin(), memoryList.end(), item);
+        list<uint8_t*>::iterator it = find(memoryList.begin(), memoryList.end(), item);
         if (it != memoryList.end()) {
-            printf("destroying item [%lx]\n", (unsigned long)item);
             delete [] (uint8_t*)item;
             memoryList.erase(it);
-            printf("item destroyed [%lx]\n", (unsigned long)item);
-        } else printf("not destroying item %lx\n", (unsigned long)item);
+        } else {
+            printf("not destroying item %lx\n", (unsigned long)item);
+        }
     }
 };
 

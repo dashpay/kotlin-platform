@@ -15,4 +15,5 @@ interface DAPIAddressListProvider {
 
     fun getStatistics(): String
     fun getErrorStatistics(): String
+    fun toList(): List<DAPIAddress>
 }

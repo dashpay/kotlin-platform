@@ -8,6 +8,7 @@ package org.dashj.platform.sdk
 
 import java.util.EnumSet
 import org.bitcoinj.params.BinTangDevNetParams
+import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.params.TestNet3Params
 import org.bitcoinj.wallet.AuthenticationKeyChain
 import org.bitcoinj.wallet.DerivationPathFactory
@@ -25,6 +26,7 @@ class Client(private val clientOptions: ClientOptions) {
     val params = when (clientOptions.network) {
         "testnet" -> TestNet3Params.get()
         "bintang" -> BinTangDevNetParams.get()
+        "mainnet" -> MainNetParams.get()
         else -> throw IllegalArgumentException("network ${clientOptions.network} is not valid")
     }
     val platform = Platform(params)
@@ -77,15 +79,16 @@ class Client(private val clientOptions: ClientOptions) {
         }
 
         // Create the DapiClient with parameters
+        val isTestnet = params.id != MainNetParams.ID_MAINNET
         platform.client = when {
             clientOptions.dapiAddressListProvider != null -> {
-                DapiClient(clientOptions.dapiAddressListProvider, platform.dpp, true, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
+                DapiClient(clientOptions.dapiAddressListProvider, platform.dpp, true, isTestnet, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
             }
             clientOptions.dapiAddresses.isNotEmpty() -> {
-                DapiClient(clientOptions.dapiAddresses, platform.dpp, true, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
+                DapiClient(clientOptions.dapiAddresses, platform.dpp, true, isTestnet, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
             }
             else -> {
-                DapiClient(params.defaultHPMasternodeList.toList(), platform.dpp, true, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
+                DapiClient(params.defaultHPMasternodeList.toList(), platform.dpp, true, isTestnet, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
             }
         }
 

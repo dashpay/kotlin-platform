@@ -1,8 +1,6 @@
-
-// struct Vec_dpp_document_Document {
-//     uintptr_t count;
-//     dpp_document_Document **values;
-// };
+//
+// Document Objects
+//
 
 LIST_STRUCT_TYPEMAP(Vec_dpp_document_Document, dpp_document_Document, Document, platform_mobile_clone_Document_clone);
 %ignore Vec_dpp_document_Document;
@@ -57,10 +55,12 @@ START_CLASS(DocumentV0, dpp_document_v0_DocumentV0);
         clone(transferred_at_core_block_height)
     );
   }
-    dpp_document_v0_DocumentV0(platform_value_types_identifier_Identifier *id,
-                                                                platform_value_types_identifier_Identifier *owner_id,
-                                                                std_collections_Map_keys_String_values_platform_value_Value *properties,
-                                                                dpp_prelude_Revision *revision) {
+    dpp_document_v0_DocumentV0(
+        platform_value_types_identifier_Identifier *id,
+        platform_value_types_identifier_Identifier *owner_id,
+        std_collections_Map_keys_String_values_platform_value_Value *properties,
+        dpp_prelude_Revision *revision
+    ) {
         return dpp_document_v0_DocumentV0_ctor(
             clone(id),
             clone(owner_id),
@@ -85,4 +85,30 @@ MAP_STRUCT_TYPEMAP(
     Identifier,
     dpp_document_Document,
     Document
+);
+
+//
+// New Objects
+//
+// TODO: add document query method(s)
+
+%newobject platform_mobile_put_replace_document_sdk(
+    DashSdk *rust_sdk,
+    dpp_document_Document *document,
+    platform_value_types_identifier_Identifier *data_contract_id,
+    char *document_type_str,
+    dpp_identity_identity_public_key_IdentityPublicKey *identity_public_key,
+    dpp_prelude_BlockHeight *block_height,
+    dpp_prelude_CoreBlockHeight *core_block_height,
+    uint64_t signer_callback);
+
+%newobject platform_mobile_put_replace_document_sdk(
+    DashSdk *rust_sdk,
+    dpp_document_Document *document,
+    platform_value_types_identifier_Identifier *data_contract_id,
+    char *document_type_str,
+    dpp_identity_identity_public_key_IdentityPublicKey *identity_public_key,
+    dpp_prelude_BlockHeight *block_height,
+    dpp_prelude_CoreBlockHeight *core_block_height,
+    uint64_t signer_callback
 );

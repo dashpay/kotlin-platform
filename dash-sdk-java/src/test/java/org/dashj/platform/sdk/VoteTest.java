@@ -1,10 +1,11 @@
 package org.dashj.platform.sdk;
 
 import org.bitcoinj.core.Base58;
-import org.bitcoinj.core.Utils;
 import org.dashj.platform.sdk.base.Result;
 import org.dashj.platform.sdk.callbacks.Signer;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -17,14 +18,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class VoteTest extends BaseTest {
+
+    static SWIGTYPE_p_DashSdk sdk;
+
+    @BeforeAll
+    static void startUp() {
+        sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, true);
+    }
+
+    @AfterAll
+    static void tearDown() {
+        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
+    }
+
     @Test
     void getVoteContendorsTest() throws Exception {
-        SWIGTYPE_p_DashSdk rustSdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         ArrayList<PlatformValue> indexes = new ArrayList<>();
         indexes.add(new PlatformValue("dash"));
-        indexes.add(new PlatformValue("test11"));
+        indexes.add(new PlatformValue("test111"));
         Result<Contenders, String> result = dashsdk.platformMobileVotingGetVoteContenders(
-                rustSdk,
+                sdk,
                 "parentNameAndLabel",
                 indexes,
                 "domain",
@@ -45,12 +58,11 @@ public class VoteTest extends BaseTest {
 
     @Test
     void getVoteContendorsForNonExistantTest() throws Exception {
-        SWIGTYPE_p_DashSdk rustSdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         ArrayList<PlatformValue> indexes = new ArrayList<>();
         indexes.add(new PlatformValue("dash"));
         indexes.add(new PlatformValue("test11101010010110101010"));
         Result<Contenders, String> result = dashsdk.platformMobileVotingGetVoteContenders(
-                rustSdk,
+                sdk,
                 "parentNameAndLabel",
                 indexes,
                 "domain",
@@ -70,9 +82,8 @@ public class VoteTest extends BaseTest {
 
     @Test
     void getContestedResources() throws Exception {
-        SWIGTYPE_p_DashSdk rustSdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         Result<ContestedResources, String> result = dashsdk.platformMobileVotingGetContestedResources(
-                rustSdk,
+                sdk,
                 "domain",
                 new Identifier(dpnsContractId)
         );
@@ -86,7 +97,6 @@ public class VoteTest extends BaseTest {
 
     @Test
     void putToPlatformTest() throws Exception {
-        SWIGTYPE_p_DashSdk rustSdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO);
         ArrayList<PlatformValue> indexes = new ArrayList<>();
         indexes.add(new PlatformValue("dash"));
         indexes.add(new PlatformValue("b0b1ee"));
@@ -122,7 +132,7 @@ public class VoteTest extends BaseTest {
         );
 
         Result<Vote, String> result = dashsdk.platformMobileVotingPutVoteToPlatform(
-                rustSdk,
+                sdk,
                 myVote,
                 new Identifier(new byte[32]),
                 new IdentityPublicKey(ipkv0),

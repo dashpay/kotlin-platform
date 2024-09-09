@@ -1,5 +1,7 @@
 package org.dashj.platform.sdk;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -8,6 +10,18 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class CoreTest extends BaseTest {
+
+    static SWIGTYPE_p_DashSdk sdk;
+
+    @BeforeAll
+    static void startUp() {
+        sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, true);
+    }
+
+    @AfterAll
+    static void tearDown() {
+        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
+    }
 
     public static byte[] hexStringToByteArray(String hex) {
         int len = hex.length();
@@ -22,7 +36,7 @@ public class CoreTest extends BaseTest {
     @Test
     void getTransactionTest() {
         byte[] txid = hexStringToByteArray("13155120729d7ee473e4eb8c71abd5a70370cade586b0c34120c5e0e2c3f0e48");
-        Result_ok_Vec_u8_err_String result = dashsdk.platformMobileCoreGetTransaction(txid, BigInteger.ZERO, BigInteger.ZERO);
+        Result_ok_Vec_u8_err_String result = dashsdk.platformMobileCoreGetTransactionSdk(sdk, txid);
         assertNotNull(result);
         assertNotNull(result.getOk());
 
