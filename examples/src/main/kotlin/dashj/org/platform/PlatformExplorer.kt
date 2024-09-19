@@ -21,6 +21,7 @@ import org.bitcoinj.wallet.WalletExtension
 import org.bitcoinj.wallet.authentication.AuthenticationGroupExtension
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.sdk.ContestedDocumentVotePollWinnerInfo
 import org.dashj.platform.sdk.DataContract
 import org.dashj.platform.sdk.Document
 import org.dashj.platform.sdk.Hash256
@@ -492,7 +493,7 @@ object PlatformExplorer {
                     }
                 }
                 "11" -> {
-                    println("Enter an data contract id:")
+                    println("Enter an name:")
                     val name = scanner.nextLine()
 
                     println(" > $name")
@@ -510,11 +511,23 @@ object PlatformExplorer {
                     val contenders = result.unwrap()
 
                     println("Contenders: " + contenders.contenders.size)
+                    if (contenders.winner != null) {
+                        print("  Winner: " + contenders.winner.o_0.tag + " ")
+                        if (contenders.winner.o_0.tag == ContestedDocumentVotePollWinnerInfo.Tag.WonByIdentity) {
+                            print(Base58.encode(contenders.winner.o_0.won_by_identity._0.bytes))
+                        }
+                        println()
+                    }
                     println("  Abstain: " + contenders.abstainVoteTally)
                     println("  Lock: " + contenders.lockVoteTally)
                     for ((key, value) in contenders.contenders) {
                         println("  Identifier: " + Base58.encode(key._0._0))
-                        println("  Serialized:" + Base64.getEncoder().encodeToString(value.v0._0.serialized_document))
+                        val serializedDocument = value.v0._0.serialized_document
+                        println("  Serialized:" + if (serializedDocument != null) {
+                            Base64.getEncoder().encodeToString(serializedDocument)
+                        } else {
+                            "null"
+                        })
                         println("  Votes: " + value.v0._0.voteTally)
                     }
                 }
