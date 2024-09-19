@@ -95,3 +95,26 @@ START_CLASS(
         );
     }
 END_CLASS();
+
+START_CLASS(
+    Epoch,
+    dpp_block_epoch_Epoch
+);
+
+END_CLASS();
+
+START_CLASS(
+    BlockInfo,
+    dpp_block_block_info_BlockInfo
+);
+END_CLASS();
+
+DEFINE_ALIAS(
+    EpochIndex,
+    dpp_block_epoch_EpochIndex,
+    uint32_t,
+    toLong,
+    0
+);
+
+DEFINE_BYTE_ARRAY(Arr_u8_2, 2);
