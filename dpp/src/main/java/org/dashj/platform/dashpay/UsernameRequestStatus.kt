@@ -6,5 +6,6 @@ enum class UsernameRequestStatus {
     SUBMITTED,
     VOTING,
     APPROVED,
-    LOCKED
+    LOST_VOTE,
+    LOCKED,
 }
