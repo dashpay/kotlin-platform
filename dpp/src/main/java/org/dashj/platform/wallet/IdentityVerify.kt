@@ -71,6 +71,7 @@ class IdentityVerify(
             highIdentityPublicKey.toNative(),
             BlockHeight(10000),
             CoreBlockHeight(platform.coreBlockHeight),
+            signer.nativeContext,
             BigInteger.valueOf(signer.signerCallback),
         )
         val domain = documentResult.unwrap()

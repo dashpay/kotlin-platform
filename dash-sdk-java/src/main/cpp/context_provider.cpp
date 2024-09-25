@@ -89,7 +89,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_dashj_platform_sdk_callbacks_Context
     auto javaContext = new JavaContextProvider;
     auto contextProvider = env->NewGlobalRef(provider);
     if (contextProvider == nullptr) {
-        printf("Failed to create global reference for ContextProvider\n");
+        LOGI("Failed to create global reference for ContextProvider\n");
     }
     javaContext->contextProviderObject = contextProvider;
     javaContext->contextProviderClass = env->FindClass("org/dashj/platform/sdk/callbacks/ContextProvider");
@@ -111,19 +111,17 @@ extern "C" JNIEXPORT void JNICALL Java_org_dashj_platform_sdk_callbacks_ContextP
     delete javaContext;
 }
 
-jobject signer = nullptr;
-
-int sign_data(u_int8_t * key_data, int key_len, uint8_t * data, int size, uint8_t * result) {
+int sign_data_with_context(JavaSigner * context, uint8_t * key_data, int key_len, uint8_t * data, int size, uint8_t * result) {
     LOGI("sign_data(0x%lx, %d, 0x%lx, %d, result=0x%lx)\n", key_data, key_len, data, size, result);
     JniHelper jni;
     JNIEnv * jenv = jni.getEnv();
 
-    jclass clazz = jenv->FindClass("org/dashj/platform/sdk/callbacks/Signer");
+    jclass clazz = context->signerClass;
     if (clazz == nullptr) {
         LOGI("Cannot find class\n");
         return 0;
     }
-    jmethodID signMethod = jenv->GetMethodID(clazz, "sign", "([B[B)[B");
+    jmethodID signMethod = context->signMethod;
     if (signMethod == nullptr) {
         LOGI("Cannot find sign([B[B)[B\n");
         return 0;
@@ -135,7 +133,7 @@ int sign_data(u_int8_t * key_data, int key_len, uint8_t * data, int size, uint8_
     jbyteArray dataByteArray = jenv->NewByteArray(size);
     jenv->SetByteArrayRegion(dataByteArray, 0, size, reinterpret_cast<jbyte *>(data));
     LOGI("now call the function in the signer class");
-    auto binaryDataObject = (jbyteArray) jenv->CallObjectMethod(signer, signMethod, keyByteArray, dataByteArray);
+    auto binaryDataObject = (jbyteArray) jenv->CallObjectMethod(context->signerObject, signMethod, keyByteArray, dataByteArray);
     LOGI("sign method called = 0x%lx\n", binaryDataObject);
 
     // check for pending exceptions
@@ -151,16 +149,33 @@ int sign_data(u_int8_t * key_data, int key_len, uint8_t * data, int size, uint8_
     return length;
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_org_dashj_platform_sdk_callbacks_Signer_getSignerCallback(JNIEnv * env, jclass signerCallback) {
-    if (signer != nullptr) {
-        env->DeleteGlobalRef(signer);
-        signer = nullptr;
-    }
+extern "C" JNIEXPORT jlong JNICALL Java_org_dashj_platform_sdk_callbacks_Signer_getNativeSigner(JNIEnv * env, jclass signerCallback) {
 
-    signer = env->NewGlobalRef(signerCallback);
+    auto javaContext = new JavaSigner;
+    auto signer = env->NewGlobalRef(signerCallback);
     if (signer == nullptr) {
-        printf("Failed to create global reference for ContextProvider\n");
+        LOGI("Failed to create global reference for Signer\n");
     }
+    javaContext->signerObject = signer;
+    javaContext->signerClass = env->FindClass("org/dashj/platform/sdk/callbacks/Signer");
+    if (javaContext->signerClass == nullptr) {
+        LOGI("Cannot find class: org/dashj/platform/sdk/callbacks/Signer\n");
+        return 0;
+    }
+    javaContext->signMethod = env->GetMethodID(javaContext->signerClass, "sign", "([B[B)[B");
+    if (javaContext->signMethod == nullptr) {
+        LOGI("Cannot find sign(([B[B)[B\n");
+        return 0;
+    }
+    return (jlong) javaContext;
+}
 
-    return (long)sign_data;
+extern "C" JNIEXPORT jlong JNICALL Java_org_dashj_platform_sdk_callbacks_Signer_getSignerCallback(JNIEnv * env, jclass provider) {
+    return (long)sign_data_with_context;
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_dashj_platform_sdk_callbacks_Signer_freeNativeSigner(JNIEnv * env, jobject provider, jlong context) {
+    auto javaContext = reinterpret_cast<JavaSigner*>(context);
+    env->DeleteGlobalRef(javaContext->signerObject);
+    delete javaContext;
 }

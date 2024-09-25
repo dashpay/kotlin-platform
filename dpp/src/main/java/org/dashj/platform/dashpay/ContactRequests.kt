@@ -75,6 +75,7 @@ class ContactRequests(val platform: Platform) {
                 highIdentityPublicKey.toNative(),
                 BlockHeight(10000),
                 CoreBlockHeight(platform.coreBlockHeight),
+                signer.nativeContext,
                 BigInteger.valueOf(signer.signerCallback)
             )
             val publishedContactRequest = documentResult.unwrap()

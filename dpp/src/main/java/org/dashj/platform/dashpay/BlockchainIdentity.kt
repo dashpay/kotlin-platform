@@ -698,6 +698,7 @@ class BlockchainIdentity {
             highIdentityPublicKey.toNative(),
             BlockHeight(10000),
             CoreBlockHeight(platform.coreBlockHeight),
+            signer.nativeContext,
             BigInteger.valueOf(signer.signerCallback)
         )
         val preorderDocument = documentResult.unwrap()
@@ -776,6 +777,7 @@ class BlockchainIdentity {
                 highIdentityPublicKey.toNative(),
                 BlockHeight(10000),
                 CoreBlockHeight(platform.coreBlockHeight),
+                signer.nativeContext,
                 BigInteger.valueOf(signer.signerCallback)
             )
             try {

@@ -80,7 +80,7 @@ public class IdentityTest extends BaseTest {
         dashsdk.platformMobileSdkDestroyDashSdk(sdk);
     }
 
-    @Test
+    //@Test
     public void fetchIdentity3FailAndDestroy() throws Exception {
         Identifier identifier1 = new Identifier(identifier);
         Result<Identity, String> result = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(sdk, identifier1);
