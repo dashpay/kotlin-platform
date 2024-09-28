@@ -29,16 +29,19 @@ import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identifier.RustIdentifier
 import org.dashj.platform.dpp.identity.Identity
+import org.dashj.platform.dpp.identity.IdentityPublicKey
 import org.dashj.platform.dpp.statetransition.StateTransition
 import org.dashj.platform.dpp.toBase58
 import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.dpp.voting.Contenders
 import org.dashj.platform.dpp.voting.ContestedResources
+import org.dashj.platform.dpp.voting.Vote
 import org.dashj.platform.sdk.PlatformValue
 import org.dashj.platform.sdk.SWIGTYPE_p_DashSdk
 import org.dashj.platform.sdk.Start
 import org.dashj.platform.sdk.callbacks.ContextProvider
+import org.dashj.platform.sdk.callbacks.Signer
 import org.dashj.platform.sdk.dashsdk
 import org.slf4j.LoggerFactory
 import retrofit2.Retrofit
@@ -1176,5 +1179,23 @@ class DapiClient(
             ).unwrap(),
             dataContractId
         )
+    }
+
+    fun broadcastVote(
+        vote: Vote,
+        voterProTxHash: Sha256Hash,
+        identityPublicKey: IdentityPublicKey,
+        signerCallback: Signer
+    ): Vote {
+        val result = dashsdk.platformMobileVotingPutVoteToPlatform(
+            rustSdk,
+            vote.toNative(),
+            Identifier.from(voterProTxHash.bytes).toNative(),
+            identityPublicKey.toNative(),
+            signerCallback.nativeContext,
+            BigInteger.valueOf(signerCallback.signerCallback)
+        )
+
+        return Vote(result.unwrap())
     }
 }
