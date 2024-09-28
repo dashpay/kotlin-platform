@@ -8,11 +8,18 @@ package org.dashj.platform.sdk.platform
 
 import io.grpc.StatusRuntimeException
 import org.bitcoinj.core.ECKey
+import org.bitcoinj.core.Sha256Hash
 import org.dashj.platform.dapiclient.model.DocumentQuery
 import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.errors.DriveErrorMetadata
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
+import org.dashj.platform.dpp.identity.IdentityPublicKey
+import org.dashj.platform.dpp.voting.ContestedDocumentResourceVotePoll
+import org.dashj.platform.dpp.voting.ResourceVote
+import org.dashj.platform.dpp.voting.ResourceVoteChoice
+import org.dashj.platform.dpp.voting.Vote
+import org.dashj.platform.sdk.callbacks.Signer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -35,9 +42,7 @@ class Documents(val platform: Platform) {
             transitionMap["delete"] = delete
         }
 
-        //val batch = platform.dpp.document.createStateTransition(transitionMap)
-
-        //platform.broadcastStateTransition(batch, identity, privateKey)
+        TODO() // should we finish this function or remove it
     }
 
     fun create(typeLocator: String, userId: Identifier, opts: MutableMap<String, Any?>): Document {
@@ -178,5 +183,24 @@ class Documents(val platform: Platform) {
             dataContractId,
             documentType
         )
+    }
+
+    fun broadcastVote(
+        resourceVoteChoice: ResourceVoteChoice,
+        dataContractId: Identifier,
+        documentType: String,
+        indexName: String,
+        indexValues: List<Any>,
+        voterProTxHash: Sha256Hash,
+        identityPublicKey: IdentityPublicKey,
+        signerCallback: Signer
+    ): Vote {
+        val vote = Vote(
+            ResourceVote(
+                resourceVoteChoice,
+                ContestedDocumentResourceVotePoll(dataContractId, documentType, indexName, indexValues)
+            )
+        )
+        return platform.client.broadcastVote(vote, voterProTxHash, identityPublicKey, signerCallback)
     }
 }

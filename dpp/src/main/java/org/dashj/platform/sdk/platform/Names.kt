@@ -9,13 +9,18 @@ package org.dashj.platform.sdk.platform
 import java.io.ByteArrayOutputStream
 import org.bitcoinj.core.ECKey
 import org.bitcoinj.core.Sha256Hash
+import org.dashj.platform.dapiclient.SystemIds
 import org.dashj.platform.dapiclient.model.DocumentQuery
 import org.dashj.platform.dpp.document.DataDocumentTransition
 import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
+import org.dashj.platform.dpp.identity.IdentityPublicKey
 import org.dashj.platform.dpp.util.Entropy
 import org.dashj.platform.dpp.voting.Contenders
+import org.dashj.platform.dpp.voting.ResourceVoteChoice
+import org.dashj.platform.dpp.voting.Vote
+import org.dashj.platform.sdk.callbacks.Signer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -30,6 +35,7 @@ class Names(val platform: Platform) {
         const val PREORDER_DOCUMENT = "preorder"
         const val DPNS_DOMAIN_DOCUMENT = "dpns.domain"
         const val DPNS_PREORDER_DOCUMENT = "dpns.preorder"
+        const val CONTESTED_INDEX = "parentNameAndLabel"
 
         fun isUniqueIdentity(domainDocument: Document): Boolean {
             val records = domainDocument.data["records"] as Map<*, *>
@@ -381,6 +387,25 @@ class Names(val platform: Platform) {
             bytes,
             platform.apps[DPNS_DATA_CONTRACT]!!.contractId,
             DOMAIN_DOCUMENT
+        )
+    }
+
+    fun broadcastVote(
+        resourceVoteChoice: ResourceVoteChoice,
+        normalizedLabel: String,
+        voterProTxHash: Sha256Hash,
+        identityPublicKey: IdentityPublicKey,
+        signerCallback: Signer
+    ): Vote {
+        return platform.documents.broadcastVote(
+            resourceVoteChoice,
+            SystemIds.dpnsDataContractId,
+            DOMAIN_DOCUMENT,
+            CONTESTED_INDEX,
+            listOf(DEFAULT_PARENT_DOMAIN, normalizeString(normalizedLabel)),
+            voterProTxHash,
+            identityPublicKey,
+            signerCallback
         )
     }
 }
