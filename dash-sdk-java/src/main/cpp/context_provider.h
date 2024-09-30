@@ -9,4 +9,10 @@ struct JavaContextProvider {
     jobject contextProviderObject;
 };
 
+struct JavaSigner {
+    jclass signerClass;
+    jmethodID signMethod;
+    jobject signerObject;
+};
+
 #endif

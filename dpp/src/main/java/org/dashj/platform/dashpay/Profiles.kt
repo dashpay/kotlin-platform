@@ -59,6 +59,7 @@ class Profiles(
             highIdentityPublicKey.toNative(),
             BlockHeight(10000),
             CoreBlockHeight(platform.coreBlockHeight),
+            signer.nativeContext,
             BigInteger.valueOf(signer.signerCallback)
         )
         return Document(profileResult.unwrap(), profileDocument.dataContractId!!)
@@ -115,6 +116,7 @@ class Profiles(
             highIdentityPublicKey.toNative(),
             BlockHeight(10000),
             CoreBlockHeight(platform.coreBlockHeight),
+            signer.nativeContext,
             BigInteger.valueOf(signer.signerCallback)
         )
         return Document(profileResult.unwrap(), profileDocument.dataContractId!!)

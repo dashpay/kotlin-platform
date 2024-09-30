@@ -41,11 +41,9 @@ struct STRUCT_TYPE;
 
 %typemap(out) STRUCT_TYPE * {
     if (!$1) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Vec_u8* null array ");
       return $null;
     }
     if (!$1->values) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Vec_u8.values null array");
       return $null;
     }
     $result = JCALL1(NewByteArray, jenv, $1->count);

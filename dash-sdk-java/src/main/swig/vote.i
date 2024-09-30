@@ -134,6 +134,22 @@ START_CLASS(ResourceVoteChoice, dpp_voting_vote_choices_resource_vote_choice_Res
     }
 END_CLASS();
 
+%rename (ContestedDocumentVotePollWinnerInfo) dpp_voting_vote_info_storage_contested_document_vote_poll_winner_info_ContestedDocumentVotePollWinnerInfo;
+START_CLASS(ContestedDocumentVotePollWinnerInfo, dpp_voting_vote_info_storage_contested_document_vote_poll_winner_info_ContestedDocumentVotePollWinnerInfo);
+     dpp_voting_vote_info_storage_contested_document_vote_poll_winner_info_ContestedDocumentVotePollWinnerInfo(bool no_winner) {
+        return no_winner ?
+            dpp_voting_vote_info_storage_contested_document_vote_poll_winner_info_ContestedDocumentVotePollWinnerInfo_NoWinner_ctor() :
+            dpp_voting_vote_info_storage_contested_document_vote_poll_winner_info_ContestedDocumentVotePollWinnerInfo_Locked_ctor();
+    }
+    dpp_voting_vote_info_storage_contested_document_vote_poll_winner_info_ContestedDocumentVotePollWinnerInfo(platform_value_types_identifier_Identifier * identifier) {
+        return dpp_voting_vote_info_storage_contested_document_vote_poll_winner_info_ContestedDocumentVotePollWinnerInfo_WonByIdentity_ctor(clone(identifier));
+    }
+END_CLASS();
+
+
+%rename (TupleContestedDocumentVotePollWinnerInfoBlockInfo) Tuple_dpp_voting_vote_info_storage_contested_document_vote_poll_winner_info_ContestedDocumentVotePollWinnerInfo_dpp_block_block_info_BlockInfo;
+
+
 MAP_STRUCT_TYPEMAP(
     std_collections_Map_keys_platform_value_types_identifier_Identifier_values_Option_dpp_voting_votes_resource_vote_ResourceVote,
     platform_value_types_identifier_Identifier,

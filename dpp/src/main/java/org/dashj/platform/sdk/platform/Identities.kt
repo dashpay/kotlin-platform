@@ -68,6 +68,7 @@ class Identities(val platform: Platform) {
                 identity,
                 AssetLockProof(assetLock.toNative()),
                 assetLockPrivateKey.privKeyBytes,
+                signer.nativeContext,
                 BigInteger.valueOf(signer.signerCallback),
                 platform.isTestNet()
             )
@@ -104,6 +105,7 @@ class Identities(val platform: Platform) {
                 identity,
                 AssetLockProof(assetLock.toNative()),
                 assetLockPrivateKey.privKeyBytes,
+                signer.nativeContext,
                 BigInteger.valueOf(signer.signerCallback),
                 platform.isTestNet()
             )

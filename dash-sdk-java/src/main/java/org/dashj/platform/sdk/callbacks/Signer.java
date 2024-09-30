@@ -1,12 +1,28 @@
 package org.dashj.platform.sdk.callbacks;
 
-import org.dashj.platform.sdk.BinaryData;
-import org.dashj.platform.sdk.Identifier;
-import org.dashj.platform.sdk.IdentityPublicKey;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-abstract public class Signer {
+import java.io.Closeable;
+import java.io.IOException;
+
+abstract public class Signer implements Closeable {
+    long nativeContext = 0;
     public abstract byte[] sign(byte @NotNull [] key, byte @NotNull [] data);
     public native long getSignerCallback();
+    private native long getNativeSigner();
+    private native void freeNativeSigner(long nativeContextProvider);
+
+    public long getNativeContext() {
+        if (nativeContext == 0) {
+            nativeContext = getNativeSigner();
+        }
+        return nativeContext;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (nativeContext != 0) {
+            freeNativeSigner(nativeContext);
+        }
+    }
 }

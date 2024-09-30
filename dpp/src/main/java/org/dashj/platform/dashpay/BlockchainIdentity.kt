@@ -395,7 +395,9 @@ class BlockchainIdentity {
             try {
                 registerIdentityWithISLock(keyParameter)
             } catch (e: Exception) {
-                if (e.message?.contains("Instant lock proof signature is invalid or wasn't created recently. Pleases try chain asset lock proof instead.") == true) {
+
+                if (e.message?.contains("Instant lock proof signature is invalid or wasn't created recently. Pleases try chain asset lock proof instead.") == true ||
+                    e.message?.contains(Regex("Asset Lock proof core chain height \\d+ is higher than the current consensus core height \\d+")) == true) {
                     registerIdentityWithChainLock(keyParameter, waitForChainlock)
                 } else {
                     throw e
@@ -698,6 +700,7 @@ class BlockchainIdentity {
             highIdentityPublicKey.toNative(),
             BlockHeight(10000),
             CoreBlockHeight(platform.coreBlockHeight),
+            signer.nativeContext,
             BigInteger.valueOf(signer.signerCallback)
         )
         val preorderDocument = documentResult.unwrap()
@@ -776,6 +779,7 @@ class BlockchainIdentity {
                 highIdentityPublicKey.toNative(),
                 BlockHeight(10000),
                 CoreBlockHeight(platform.coreBlockHeight),
+                signer.nativeContext,
                 BigInteger.valueOf(signer.signerCallback)
             )
             try {

@@ -181,32 +181,30 @@ public class DocumentTest extends BaseTest {
             ArrayList<WhereClause> where = new ArrayList<>();
             ArrayList<OrderClause> orderBy = new ArrayList<>();
             Result<List<Document>, String> docsResult =
-                    dashsdk.platformMobileFetchDocumentFetchDocumentsWithQuery(
+                    dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                            sdk,
                     dpnsId,
                     "domain",
                     where,
                     orderBy,
                     5,
-                    null,
-                    BigInteger.ZERO,
-                    BigInteger.ZERO
+                    null
             );
             docsResult.unwrap().forEach(document -> {
                 Map<String, PlatformValue> props = document.getV0().get_0().getProperties();
                 System.out.println(props.get("label").getText());
             });
-            where.add(new WhereClause("normalizedLabel", WhereOperator.StartsWith, new PlatformValue("bob")));
+            where.add(new WhereClause("normalizedLabel", WhereOperator.StartsWith, new PlatformValue("test")));
             where.add(new WhereClause("normalizedParentDomainName", WhereOperator.Equal, new PlatformValue("dash")));
             orderBy.add(new OrderClause("normalizedLabel"));
-            Result<List<Document>, String> docs2 = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQuery(
+            Result<List<Document>, String> docs2 = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                    sdk,
                     dpnsId,
                     "domain",
                     where,
                     orderBy,
                     100,
-                    null,
-                    BigInteger.ZERO,
-                    BigInteger.ZERO
+                    null
             );
             System.out.println("------ query ------");
             docs2.unwrap().forEach(document -> {
@@ -225,15 +223,14 @@ public class DocumentTest extends BaseTest {
             ArrayList<WhereClause> where = new ArrayList<>();
             ArrayList<OrderClause> orderBy = new ArrayList<>();
             Result<List<Document>, String> docsResult =
-                    dashsdk.platformMobileFetchDocumentFetchDocumentsWithQuery(
+                    dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                            sdk,
                             dpnsId,
                             "domain",
                             where,
                             orderBy,
                             5,
-                            null,
-                            BigInteger.ZERO,
-                            BigInteger.ZERO
+                            null
                     );
             docsResult.unwrap().forEach(document -> {
                 Map<String, PlatformValue> props = document.getV0().get_0().getProperties();
@@ -242,15 +239,14 @@ public class DocumentTest extends BaseTest {
             where.add(new WhereClause("normalizedLabel", WhereOperator.StartsWith, new PlatformValue("zys-aaa")));
             where.add(new WhereClause("normalizedParentDomainName", WhereOperator.Equal, new PlatformValue("dash")));
             orderBy.add(new OrderClause("normalizedLabel"));
-            Result<List<Document>, String> docs2 = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQuery(
+            Result<List<Document>, String> docs2 = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                    sdk,
                     dpnsId,
                     "domain",
                     where,
                     orderBy,
                     100,
-                    null,
-                    BigInteger.ZERO,
-                    BigInteger.ZERO
+                    null
             );
             System.out.println("------ query ------");
             docs2.unwrap().forEach(document -> {
@@ -272,15 +268,14 @@ public class DocumentTest extends BaseTest {
             where.add(new WhereClause("normalizedLabel", WhereOperator.StartsWith, new PlatformValue("tut")));
             where.add(new WhereClause("normalizedParentDomainName", WhereOperator.Equal, new PlatformValue("dash")));
             orderBy.add(new OrderClause("normalizedLabel"));
-            Result<List<Document>, String> docs2 = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQuery(
+            Result<List<Document>, String> docs2 = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                    sdk,
                     dpnsId,
                     "domain",
                     where,
                     orderBy,
                     100,
-                    null,
-                    BigInteger.ZERO,
-                    BigInteger.ZERO
+                    null
             );
             List<Document> documents = docs2.unwrap();
             assertFalse(documents.isEmpty());
