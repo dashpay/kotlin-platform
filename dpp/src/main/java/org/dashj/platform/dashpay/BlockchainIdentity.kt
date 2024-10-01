@@ -1008,18 +1008,6 @@ class BlockchainIdentity {
 
     // MARK: - Signing and Encryption
 
-    fun signStateTransition(
-        transition: StateTransitionIdentitySigned,
-        keyIndex: Int,
-        signingAlgorithm: KeyType,
-        keyParameter: KeyParameter? = null
-    ) {
-        val privateKey = maybeDecryptKey(keyIndex, signingAlgorithm, keyParameter)
-        checkState(privateKey != null, "The private key should exist")
-
-        transition.sign(getIdentityPublicKeyByPurpose(KeyIndexPurpose.AUTHENTICATION), privateKey!!.privateKeyAsHex)
-    }
-
     /**
      * Decrypts the key at the keyIndex if necessary using the keyParameter
      * @param keyIndex Int
@@ -1055,17 +1043,6 @@ class BlockchainIdentity {
     }
     fun getIdentityPublicKeyByPurpose(purpose: KeyIndexPurpose): IdentityPublicKey {
         return identity!!.getPublicKeyById(purpose.ordinal)!!
-    }
-
-    fun signStateTransition(transition: StateTransitionIdentitySigned, keyParameter: KeyParameter?) {
-        checkIdentity()
-        val identityPublicKey = getIdentityPublicKeyByPurpose(KeyIndexPurpose.AUTHENTICATION)
-        return signStateTransition(
-            transition,
-            KeyIndexPurpose.AUTHENTICATION.ordinal,
-            identityPublicKey.type,
-            keyParameter
-        )
     }
 
     fun derivationPathForType(type: KeyType): ImmutableList<ChildNumber>? {
