@@ -2160,11 +2160,11 @@ public class WalletTool {
                     blockchainIdentity.setIdentity(identity1);
                     blockchainIdentity.setUniqueId(identity1.getId().toSha256Hash());
                 } else {
-                    blockchainIdentity.registerIdentity(null, true);
+                    blockchainIdentity.registerIdentity(null, true, true);
                 }
             }
         } else {
-            blockchainIdentity.registerIdentity(null, true);
+            blockchainIdentity.registerIdentity(null, true, true);
         }
 //        blockchainIdentity.watchIdentity(10, 2000, RetryDelayType.SLOW20, new RegisterIdentityCallback() {
 //            @Override
