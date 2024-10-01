@@ -49,7 +49,7 @@ class DapiGrpcClientTest : BaseTest() {
     val dpp = DashPlatformProtocol(stateRepository)
 
     // default client used in most unit tests
-    private val client = DapiClient(masternodeList, dpp, false)
+    private val client = DapiClient(masternodeList, dpp, false, true)
 
 //    @Test
 //    fun getStatusOfInvalidNodeTest() {
@@ -141,7 +141,7 @@ class DapiGrpcClientTest : BaseTest() {
 
     @Test
     fun getNonExistantContract() {
-        val client = DapiClient(masternodeList.toList(), dpp, false)
+        val client = DapiClient(masternodeList.toList(), dpp, false, true)
         val contractId = Base58.decode("88w8Xqn25HwJhjodrHW133aXhjuTsTv9ozQaYpSHACE3")
         try {
             assertThrows(NotFoundException::class.java) { client.getDataContract(contractId) }
@@ -151,7 +151,7 @@ class DapiGrpcClientTest : BaseTest() {
 
     @Test
     fun getDocumentsTest() {
-        val client = DapiClient(masternodeList.toList(), dpp, false)
+        val client = DapiClient(masternodeList.toList(), dpp, false, true)
         try {
             val query = DocumentQuery.Builder()
                 .where("normalizedParentDomainName", "==", "dash")
@@ -178,7 +178,7 @@ class DapiGrpcClientTest : BaseTest() {
 
     @Test
     fun getDocumentsStartAtTest() {
-        val client = DapiClient(masternodeList.toList(), dpp, false)
+        val client = DapiClient(masternodeList.toList(), dpp, false, true)
         try {
             val query = DocumentQuery.Builder()
                 .build()
