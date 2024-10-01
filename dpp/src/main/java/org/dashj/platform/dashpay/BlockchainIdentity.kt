@@ -1866,12 +1866,12 @@ class BlockchainIdentity {
 
     fun encryptExtendedPublicKey(
         xpub: ByteArray,
-        contactIdentity: Identity,
-        index: Int,
+        otherContactIdentity: Identity,
+        otherContactKeyIndex: Int,
         aesKey: KeyParameter?
-    ): Pair<ByteArray, ByteArray> {
-        val contactIdentityPublicKey = contactIdentity.getPublicKeyById(index)
-            ?: throw IllegalArgumentException("index $index does not exist for $contactIdentity")
+    ): Triple<ByteArray, ByteArray, Int> {
+        val contactIdentityPublicKey = otherContactIdentity.getPublicKeyById(otherContactKeyIndex)
+            ?: throw IllegalArgumentException("index $otherContactKeyIndex does not exist for $otherContactIdentity")
 
         val contactPublicKey = contactIdentityPublicKey.getKey()
 
@@ -1891,11 +1891,12 @@ class BlockchainIdentity {
         contactPublicKey: ECKey,
         signingAlgorithm: KeyType,
         aesKey: KeyParameter?
-    ): Pair<ByteArray, ByteArray> {
+    ): Triple<ByteArray, ByteArray, Int> {
         val keyCrypter = KeyCrypterECDH()
         checkIdentity()
         // first decrypt our identity key if necessary (currently uses the first key [0])
-        val decryptedIdentityKey = maybeDecryptKey(KeyIndexPurpose.AUTHENTICATION.ordinal, signingAlgorithm, aesKey)
+        val myKeyIndex = identity!!.getFirstPublicKey(Purpose.ENCRYPTION)?.id ?: KeyIndexPurpose.AUTHENTICATION.ordinal
+        val decryptedIdentityKey = maybeDecryptKey(myKeyIndex, signingAlgorithm, aesKey)
 
         // derived the shared key (our private key + their public key)
         val encryptionKey = keyCrypter.deriveKey(decryptedIdentityKey, contactPublicKey)
@@ -1917,25 +1918,25 @@ class BlockchainIdentity {
         accountLabelBoas.write(encryptedAccountLabel.initialisationVector)
         accountLabelBoas.write(encryptedAccountLabel.encryptedBytes)
 
-        return Pair(boas.toByteArray(), accountLabelBoas.toByteArray())
+        return Triple(boas.toByteArray(), accountLabelBoas.toByteArray(), myKeyIndex)
     }
 
     fun decryptExtendedPublicKey(
         encryptedXpub: ByteArray,
-        contactIdentity: Identity,
-        contactKeyIndex: Int,
-        keyIndex: Int,
+        otherContactIdentity: Identity,
+        otherContactKeyIndex: Int,
+        myKeyIndex: Int,
         aesKey: KeyParameter?
     ): String {
-        val contactIdentityPublicKey = contactIdentity.getPublicKeyById(contactKeyIndex)
-            ?: throw IllegalArgumentException("index $contactKeyIndex does not exist for $contactIdentity")
+        val contactIdentityPublicKey = otherContactIdentity.getPublicKeyById(otherContactKeyIndex)
+            ?: throw IllegalArgumentException("index $otherContactKeyIndex does not exist for $otherContactIdentity")
         val contactPublicKey = contactIdentityPublicKey.getKey()
 
         return decryptExtendedPublicKey(
             encryptedXpub,
             contactPublicKey,
             contactIdentityPublicKey.type,
-            keyIndex,
+            myKeyIndex,
             aesKey
         )
     }
@@ -1943,26 +1944,27 @@ class BlockchainIdentity {
     /**
      *
      * @param encryptedXpub ByteArray
-     * @param contactPublicKey ECKey
+     * @param otherContactPublicKey ECKey
      * @param signingAlgorithm KeyType
      * @param keyParameter KeyParameter The decryption key to the encrypted wallet
      * @return DeterministicKey The extended public key without the derivation path
      */
     fun decryptExtendedPublicKey(
         encryptedXpub: ByteArray,
-        contactPublicKey: ECKey,
+        otherContactPublicKey: ECKey,
         signingAlgorithm: KeyType,
-        keyIndex: Int,
+        myKeyIndex: Int,
         keyParameter: KeyParameter?
     ): String {
+        ContactRequests.log.info("encryptedPublicKey: {} for decryption", encryptedXpub.toHex())
         val keyCrypter = KeyCrypterECDH()
 
         // first decrypt our identity key if necessary (currently uses the first key [0])
         val decryptedIdentityKey =
-            maybeDecryptKey(keyIndex, signingAlgorithm, keyParameter)
+            maybeDecryptKey(myKeyIndex, signingAlgorithm, keyParameter)
 
         // derive the shared key (our private key + their public key)
-        val encryptionKey = keyCrypter.deriveKey(decryptedIdentityKey, contactPublicKey)
+        val encryptionKey = keyCrypter.deriveKey(decryptedIdentityKey, otherContactPublicKey)
 
         // separate the encrypted data (IV + ciphertext) and then decrypt the extended public key
         val encryptedData =
@@ -1972,21 +1974,21 @@ class BlockchainIdentity {
         return DeterministicKey.deserializeContactPub(params, decryptedData).serializePubB58(params)
     }
 
-    fun addContactPaymentKeyChain(contactIdentity: Identity, contactRequest: Document, encryptionKey: KeyParameter?) {
-        val accountReference = if (contactRequest.data.containsKey("accountReference")) {
-            (contactRequest.data["accountReference"] as Long).toInt()
-        } else {
-            0 // default account reference
-        }
+    fun addPaymentKeyChainFromContact(
+        contactIdentity: Identity,
+        contactRequest: ContactRequest,
+        encryptionKey: KeyParameter?
+    ) {
+        val accountReference = contactRequest.accountReference
 
         val contact = EvolutionContact(uniqueId, account, contactIdentity.id.toSha256Hash(), accountReference)
 
         if (!wallet!!.hasSendingKeyChain(contact)) {
             val xpub = decryptExtendedPublicKey(
-                contactRequest.data["encryptedPublicKey"] as ByteArray,
+                contactRequest.encryptedPublicKey,
                 contactIdentity,
-                (contactRequest.data["senderKeyIndex"] as Long).toInt(),
-                (contactRequest.data["recipientKeyIndex"] as Long).toInt(),
+                otherContactKeyIndex = contactRequest.recipientKeyIndex, // other
+                myKeyIndex = contactRequest.senderKeyIndex, // mine
                 encryptionKey
             )
             val contactKeyChain = FriendKeyChain(wallet!!.params, xpub, contact)
@@ -1994,19 +1996,25 @@ class BlockchainIdentity {
         }
     }
 
-    fun addPaymentKeyChainFromContact(
-        contactIdentity: Identity,
+    fun addPaymentKeyChainToContact(
+        otherContactIdentity: Identity,
         contactRequest: ContactRequest,
         encryptionKey: KeyParameter?
     ): Boolean {
-        val contact = EvolutionContact(uniqueId, account, contactIdentity.id.toSha256Hash(), -1)
+        val contact = EvolutionContact(uniqueId, account, otherContactIdentity.id.toSha256Hash(), -1)
         if (!wallet!!.hasReceivingKeyChain(contact)) {
             val encryptedXpub = Converters.byteArrayFromBase64orByteArray(contactRequest.encryptedPublicKey)
-            val senderKeyIndex = contactRequest.senderKeyIndex
-            val recipientKeyIndex = contactRequest.recipientKeyIndex
-            val contactKeyChain = getReceiveFromContactChain(contactIdentity, encryptionKey)
+            val senderKeyIndex = contactRequest.senderKeyIndex // otherContactIdentity
+            val recipientKeyIndex = contactRequest.recipientKeyIndex // mine
+            val contactKeyChain = getReceiveFromContactChain(otherContactIdentity, encryptionKey)
 
-            val serializedContactXpub = decryptExtendedPublicKey(encryptedXpub, contactIdentity, recipientKeyIndex, senderKeyIndex, encryptionKey)
+            val serializedContactXpub = decryptExtendedPublicKey(
+                encryptedXpub,
+                otherContactIdentity,
+                otherContactKeyIndex = senderKeyIndex,
+                myKeyIndex = recipientKeyIndex,
+                encryptionKey
+            )
 
             val ourContactXpub = contactKeyChain.watchingKey.serializeContactPub()
             val ourSerializedXpub = DeterministicKey.deserializeContactPub(params, ourContactXpub).serializePubB58(params)

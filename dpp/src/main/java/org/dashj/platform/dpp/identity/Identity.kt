@@ -12,6 +12,7 @@ import org.dashj.platform.dpp.BaseObject
 import org.dashj.platform.dpp.Metadata
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.sdk.Identity
+import org.dashj.platform.sdk.Purpose
 import org.dashj.platform.sdk.SecurityLevel
 import kotlin.math.max
 
@@ -100,6 +101,22 @@ class Identity : BaseObject {
     fun getFirstPublicKey(securityLevel: SecurityLevel): IdentityPublicKey? {
         return try {
             publicKeys.first { it.securityLevel == securityLevel }
+        } catch (e: NoSuchElementException) {
+            null
+        }
+    }
+
+    fun getFirstPublicKey(purpose: Purpose): IdentityPublicKey? {
+        return try {
+            publicKeys.first { it.purpose == purpose && it.disabledAt == null}
+        } catch (e: NoSuchElementException) {
+            null
+        }
+    }
+
+    fun getFirstPublicKey(purpose: Purpose, securityLevel: SecurityLevel): IdentityPublicKey? {
+        return try {
+            publicKeys.first { it.purpose == purpose && it.securityLevel == securityLevel && it.disabledAt == null}
         } catch (e: NoSuchElementException) {
             null
         }
