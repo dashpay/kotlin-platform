@@ -539,7 +539,8 @@ class DapiClient(
         return try {
             DataContract.from(dataContract.unwrap())
         } catch (e: Exception) {
-            throw NotFoundException("DataContract ${contractIdByteArray.toHex()} not found")
+            logger.error("get data contract error", e)
+            throw NotFoundException("DataContract ${contractIdByteArray.toBase58()} not found")
         }
     }
 
