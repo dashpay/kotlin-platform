@@ -669,7 +669,7 @@ class BlockchainIdentity {
         val signer = WalletSignerCallback(wallet!!, keyParameter)
 
         var i = 0
-        val highIdentityPublicKey = identity!!.getFirstPublicKey(SecurityLevel.HIGH)
+        val highIdentityPublicKey = identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
 
         preorderDocuments.forEach { preorder ->
@@ -795,7 +795,7 @@ class BlockchainIdentity {
         signer: WalletSignerCallback
     ): org.dashj.platform.sdk.Document {
         var error = ""
-        val highIdentityPublicKey = identity!!.getFirstPublicKey(SecurityLevel.HIGH)
+        val highIdentityPublicKey = identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
         val credits = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(platform.rustSdk, identity!!.id.toNative()).unwrap()
         log.info("credit balance: {}", credits)

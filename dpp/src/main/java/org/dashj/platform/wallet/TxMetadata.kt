@@ -19,6 +19,7 @@ import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.sdk.BlockHeight
 import org.dashj.platform.sdk.CoreBlockHeight
+import org.dashj.platform.sdk.Purpose
 import org.dashj.platform.sdk.SecurityLevel
 import org.dashj.platform.sdk.callbacks.Signer
 import org.dashj.platform.sdk.dashsdk
@@ -43,7 +44,7 @@ class TxMetadata(
     ): Document {
         val profileDocument = createDocument(keyIndex, encryptionKeyIndex, encryptedMetadata, identity)
         profileDocument.createdAt = Date().time
-        val highIdentityPublicKey = identity.getFirstPublicKey(SecurityLevel.HIGH)
+        val highIdentityPublicKey = identity.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
 
         val documentResult = dashsdk.platformMobilePutPutDocumentSdk(
