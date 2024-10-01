@@ -2073,6 +2073,9 @@ class BlockchainIdentity {
     // Transaction Metadata Methods
     @Throws(KeyCrypterException::class)
     fun publishTxMetaData(txMetadataItems: List<TxMetadataItem>, keyParameter: KeyParameter?) {
+        if (!platform.hasApp("dashwallet")) {
+            return
+        }
         val keyIndex = 1
         val encryptionKeyIndex = 0
         val encryptionKey = privateKeyAtPath(keyIndex, TxMetadataDocument.childNumber, encryptionKeyIndex, KeyType.ECDSA_SECP256K1, keyParameter)
@@ -2119,6 +2122,9 @@ class BlockchainIdentity {
     }
 
     fun getTxMetaData(createdAfter: Long = -1, keyParameter: KeyParameter?): Map<TxMetadataDocument, List<TxMetadataItem>> {
+        if (!platform.hasApp("dashwallet")) {
+            return hashMapOf()
+        }
         val documents = TxMetadata(platform).get(uniqueIdentifier, createdAfter)
 
         val results = LinkedHashMap<TxMetadataDocument, List<TxMetadataItem>>()
