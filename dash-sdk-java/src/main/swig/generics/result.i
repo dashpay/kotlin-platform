@@ -25,7 +25,7 @@
             jclass myClass = jenv->FindClass("org/dashj/platform/sdk/" #RETURN_TYPE);
             jmethodID constructor = jenv->GetMethodID(myClass, "<init>", "(JZ)V");
             void * clonedObject = CLONE_FN($1->ok);
-            jobject okObject = jenv->NewObject(myClass, constructor, (jlong) clonedObject, true);
+            jobject okObject = jenv->NewObject(myClass, constructor, (jlong)clonedObject, static_cast<jboolean>(true));
 
             jmethodID midSuccess = jenv->GetStaticMethodID(resultClass, "Ok", "(Ljava/lang/Object;)Lorg/dashj/platform/sdk/base/Result;");
             $result = jenv->CallStaticObjectMethod(resultClass, midSuccess, okObject);
@@ -90,7 +90,7 @@
                 jclass myClass = jenv->FindClass("org/dashj/platform/sdk/" #RETURN_TYPE);
                 jmethodID constructor = jenv->GetMethodID(myClass, "<init>", "(JZ)V");
                 void * clonedObject = CLONE_FN($1->ok);
-                jobject okObject = jenv->NewObject(myClass, constructor, (jlong) clonedObject, true);
+                jobject okObject = jenv->NewObject(myClass, constructor, (jlong)clonedObject, static_cast<jboolean>(true));
 
                 jmethodID midSuccess = jenv->GetStaticMethodID(resultClass, "Ok", "(Ljava/lang/Object;)Lorg/dashj/platform/sdk/base/Result;");
                 $result = jenv->CallStaticObjectMethod(resultClass, midSuccess, okObject);
@@ -102,6 +102,7 @@
         }
         // destroy the Result<T, E>
         CTYPE##_destroy($1);
+        $1 = nullptr;
     }
 }
 
@@ -165,7 +166,7 @@
             }
             for (uintptr_t i = 0; i < $1->ok->count; ++i) {
                 auto * valueClone = clone((CTYPE_ITEM *)$1->ok->values[i]);
-                jobject elementObj = jenv->NewObject(valueClass, valueConstructor, valueClone, true);
+                jobject elementObj = jenv->NewObject(valueClass, valueConstructor, (jlong)valueClone, static_cast<jboolean>(true));
                 jenv->CallBooleanMethod(listObj, addMethod, elementObj);
                 jenv->DeleteLocalRef(elementObj);
             }
@@ -183,6 +184,7 @@
         }
         // destroy the Result<T, E>
         CTYPE##_destroy($1);
+        $1 = nullptr;
     }
 }
 
@@ -239,13 +241,13 @@
                 //printf("int item: %d\n", *$1->ok);
                 jclass integerClass = (jenv)->FindClass("java/lang/Integer");
                 jmethodID constructor = (jenv)->GetMethodID(integerClass, "<init>", "(I)V");
-                elementObj = (jenv)->NewObject(integerClass, constructor, (int)(long)*$1->ok); // ok is a pointer, but acts as a value
+                elementObj = (jenv)->NewObject(integerClass, constructor, (int32_t)(long)*$1->ok); // ok is a pointer, but acts as a value
             } else if (strcmp(#RETURN_TYPE, "Long") == 0) {
                 //printf("long item\n");
                 //printf("long item: %lld\n", $1->ok);
                 jclass integerClass = (jenv)->FindClass("java/lang/Long");
                 jmethodID constructor = (jenv)->GetMethodID(integerClass, "<init>", "(J)V");
-                elementObj = (jenv)->NewObject(integerClass, constructor, (long)*$1->ok);  // ok is a pointer, but acts as a value
+                elementObj = (jenv)->NewObject(integerClass, constructor, (int64_t)*$1->ok);  // ok is a pointer, but acts as a value
             } else {
                 printf("invalid? item\n");
             }
