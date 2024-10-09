@@ -15,7 +15,7 @@ class DapiClientTest : BaseTest() {
     val PARAMS = TestNet3Params.get()
     val stateRepository = StateRepositoryMock()
     val dpp = DashPlatformProtocol(stateRepository, PARAMS)
-    val client = DapiClient(PARAMS.defaultHPMasternodeList.toList(), dpp, false)
+    val client = DapiClient(PARAMS.defaultHPMasternodeList.toList(), dpp, false, true)
 
     @Test
     fun jRPCTests() {

@@ -30,6 +30,7 @@ import org.bitcoinj.crypto.ChildNumber
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.EncryptedData
 import org.bitcoinj.crypto.HDUtils
+import org.bitcoinj.crypto.IDeterministicKey
 import org.bitcoinj.crypto.KeyCrypterAESCBC
 import org.bitcoinj.crypto.KeyCrypterECDH
 import org.bitcoinj.crypto.KeyCrypterException
@@ -57,7 +58,6 @@ import org.dashj.platform.dpp.errors.concensus.basic.identity.InvalidInstantAsse
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.identity.IdentityPublicKey
-import org.dashj.platform.dpp.statetransition.StateTransitionIdentitySigned
 import org.dashj.platform.dpp.toBase58
 import org.dashj.platform.dpp.toBase64
 import org.dashj.platform.dpp.toHex
@@ -415,8 +415,7 @@ class BlockchainIdentity {
         )
         checkState(assetLockTransaction != null, "The credit funding transaction must exist")
 
-        val (privateKeyList, identityPublicKeys) = createIdentityPublicKeys(keyParameter)
-        val privateKeys = privateKeyList.map { maybeDecryptKey(it, keyParameter)?.privKeyBytes!! }
+        val (_, identityPublicKeys) = createIdentityPublicKeys(keyParameter)
 
         val signingKey = maybeDecryptKey(assetLockTransaction!!.assetLockPublicKey, keyParameter)
         var registeredOrError = false
@@ -476,13 +475,9 @@ class BlockchainIdentity {
         )
         checkState(assetLockTransaction != null, "The credit funding transaction must exist")
 
-        val (privateKeyList, identityPublicKeys) = createIdentityPublicKeys(keyParameter)
+        val (_, identityPublicKeys) = createIdentityPublicKeys(keyParameter)
 
         val signingKey = maybeDecryptKey(assetLockTransaction!!.assetLockPublicKey, keyParameter)
-        val privateKeys = privateKeyList.map {
-            println(it)
-            maybeDecryptKey(it, keyParameter)?.privKeyBytes!!
-        }
 
         var instantLock: InstantSendLock? =
             wallet!!.context.instantSendManager?.getInstantSendLockByTxId(assetLockTransaction!!.txId)
@@ -532,20 +527,32 @@ class BlockchainIdentity {
     }
 
     private fun createIdentityPublicKeys(keyParameter: KeyParameter?): Pair<List<ECKey>, List<IdentityPublicKey>> {
-        val identityPrivateKey = checkNotNull(
+        val masterPrivateKey = checkNotNull(
             privateKeyAtIndex(0, KeyType.ECDSA_SECP256K1, keyParameter)
         ) { "keys must exist" }
 
-        val identityPrivateKey2 = checkNotNull(
+        val highPrivateKey = checkNotNull(
             privateKeyAtIndex(1, KeyType.ECDSA_SECP256K1, keyParameter)
-        ) { "keys must exist" }
+        ) { "key must exist" }
+
+        val encryptionPrivateKey = checkNotNull(
+            privateKeyAtIndex(2, KeyType.ECDSA_SECP256K1, keyParameter)
+        ) { "key must exist" }
+
+//        val criticalAuthenticationKey = checkNotNull(
+//            privateKeyAtIndex(3, KeyType.ECDSA_SECP256K1, keyParameter)
+//        ) { "key must exist" }
+//
+//        val criticalTransferKey = checkNotNull(
+//            privateKeyAtIndex(4, KeyType.ECDSA_SECP256K1, keyParameter)
+//        ) { "key must exist" }
 
         val masterKey = IdentityPublicKey(
             0,
             KeyType.ECDSA_SECP256K1,
             Purpose.AUTHENTICATION,
             SecurityLevel.MASTER,
-            identityPrivateKey.pubKey,
+            masterPrivateKey.pubKey,
             false
         )
 
@@ -554,7 +561,7 @@ class BlockchainIdentity {
             KeyType.ECDSA_SECP256K1,
             Purpose.AUTHENTICATION,
             SecurityLevel.HIGH,
-            identityPrivateKey2.pubKey,
+            highPrivateKey.pubKey,
             false
         )
 
@@ -563,10 +570,32 @@ class BlockchainIdentity {
             KeyType.ECDSA_SECP256K1,
             Purpose.ENCRYPTION,
             SecurityLevel.MEDIUM,
-            identityPrivateKey.pubKey,
+            encryptionPrivateKey.pubKey,
             false
         )
-        return Pair(listOf(identityPrivateKey, identityPrivateKey2), listOf(masterKey, highKey))
+
+//        val criticalAuthKey = IdentityPublicKey(
+//            3,
+//            KeyType.ECDSA_SECP256K1,
+//            Purpose.AUTHENTICATION,
+//            SecurityLevel.CRITICAL,
+//            criticalAuthenticationKey.pubKey,
+//            false
+//        )
+//
+//        val transferKey = IdentityPublicKey(
+//            4,
+//            KeyType.ECDSA_SECP256K1,
+//            Purpose.TRANSFER,
+//            SecurityLevel.MEDIUM,
+//            criticalTransferKey.pubKey,
+//            false
+//        )
+
+        return Pair(
+            listOf(masterPrivateKey, highPrivateKey, encryptionPrivateKey/*, criticalAuthenticationKey, criticalTransferKey*/),
+            listOf(masterKey, highKey, encryptionKey/*, criticalAuthKey, transferKey*/)
+        )
     }
 
     fun recoverIdentity(creditFundingTransaction: AssetLockTransaction): Boolean {
@@ -587,8 +616,8 @@ class BlockchainIdentity {
     }
 
     fun recoverIdentity(keyParameter: KeyParameter? = null): Boolean {
-        val (key1, key2) = createIdentityPublicKeys(keyParameter)
-        return recoverIdentity(key1[0].pubKeyHash)
+        val (privateKeyList, _) = createIdentityPublicKeys(keyParameter)
+        return recoverIdentity(privateKeyList[0].pubKeyHash)
     }
 
     fun recoverIdentity(pubKeyId: ByteArray): Boolean {
@@ -640,7 +669,7 @@ class BlockchainIdentity {
         val signer = WalletSignerCallback(wallet!!, keyParameter)
 
         var i = 0
-        val highIdentityPublicKey = identity!!.getFirstPublicKey(SecurityLevel.HIGH)
+        val highIdentityPublicKey = identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
 
         preorderDocuments.forEach { preorder ->
@@ -766,7 +795,7 @@ class BlockchainIdentity {
         signer: WalletSignerCallback
     ): org.dashj.platform.sdk.Document {
         var error = ""
-        val highIdentityPublicKey = identity!!.getFirstPublicKey(SecurityLevel.HIGH)
+        val highIdentityPublicKey = identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
         val credits = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(platform.rustSdk, identity!!.id.toNative()).unwrap()
         log.info("credit balance: {}", credits)
@@ -979,18 +1008,6 @@ class BlockchainIdentity {
 
     // MARK: - Signing and Encryption
 
-    fun signStateTransition(
-        transition: StateTransitionIdentitySigned,
-        keyIndex: Int,
-        signingAlgorithm: KeyType,
-        keyParameter: KeyParameter? = null
-    ) {
-        val privateKey = maybeDecryptKey(keyIndex, signingAlgorithm, keyParameter)
-        checkState(privateKey != null, "The private key should exist")
-
-        transition.sign(getIdentityPublicKeyByPurpose(KeyIndexPurpose.AUTHENTICATION), privateKey!!.privateKeyAsHex)
-    }
-
     /**
      * Decrypts the key at the keyIndex if necessary using the keyParameter
      * @param keyIndex Int
@@ -1028,17 +1045,6 @@ class BlockchainIdentity {
         return identity!!.getPublicKeyById(purpose.ordinal)!!
     }
 
-    fun signStateTransition(transition: StateTransitionIdentitySigned, keyParameter: KeyParameter?) {
-        checkIdentity()
-        val identityPublicKey = getIdentityPublicKeyByPurpose(KeyIndexPurpose.AUTHENTICATION)
-        return signStateTransition(
-            transition,
-            KeyIndexPurpose.AUTHENTICATION.ordinal,
-            identityPublicKey.type,
-            keyParameter
-        )
-    }
-
     fun derivationPathForType(type: KeyType): ImmutableList<ChildNumber>? {
         if (isLocal) {
             if (type == KeyType.ECDSA_SECP256K1) {
@@ -1060,18 +1066,44 @@ class BlockchainIdentity {
      */
     private fun privateKeyAtIndex(index: Int, type: KeyType, keyParameter: KeyParameter?): ECKey? {
         checkState(isLocal, "this must own a wallet")
+        checkState((wallet!!.isEncrypted && keyParameter != null) ||
+                (!wallet!!.isEncrypted && keyParameter == null))
 
         when (type) {
             KeyType.ECDSA_SECP256K1 -> {
                 val authenticationChain = authenticationGroup!!.getKeyChain(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY)
-                // decrypt keychain
-                val decryptedChain = if (wallet!!.isEncrypted) {
-                    authenticationChain.toDecrypted(keyParameter)
-                } else {
-                    authenticationChain
+                val key = try {
+                    authenticationChain.getKey(index)
+                } catch (e: IllegalArgumentException) {
+                    // decrypt keychain, because the key does not exist
+
+                    val keyCrypter = wallet!!.keyCrypter
+                    val parent = authenticationChain.watchingKey
+                    val decryptedParent = keyParameter?.let { parent.decrypt(keyCrypter, it) as IDeterministicKey } ?: parent
+                    log.info("decrypted parent key")
+
+                    // decrypt the key chain
+                    // this is not the best way because all keys are decrypted
+                    // but dashj doesn't have a means of decrypting the parent key to derive a new child
+                    val freshKey = decryptedParent.deriveChildKey(
+                        ChildNumber(
+                            index,
+                            true
+                        )
+                    )
+                    checkState(freshKey.path.last().isHardened)
+                    val encryptedKey = if (keyParameter != null) {
+                        freshKey.encrypt(keyCrypter, keyParameter, parent)
+                    } else {
+                        freshKey
+                    }
+
+                    authenticationGroup!!.addNewKey(
+                        AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY,
+                        encryptedKey
+                    )
+                    encryptedKey
                 }
-                val key = decryptedChain.getKey(index) // watchingKey
-                checkState(key.path.last().isHardened)
                 return key as ECKey?
             }
             else -> throw IllegalArgumentException("$type is not supported")
@@ -1811,12 +1843,12 @@ class BlockchainIdentity {
 
     fun encryptExtendedPublicKey(
         xpub: ByteArray,
-        contactIdentity: Identity,
-        index: Int,
+        otherContactIdentity: Identity,
+        otherContactKeyIndex: Int,
         aesKey: KeyParameter?
-    ): Pair<ByteArray, ByteArray> {
-        val contactIdentityPublicKey = contactIdentity.getPublicKeyById(index)
-            ?: throw IllegalArgumentException("index $index does not exist for $contactIdentity")
+    ): Triple<ByteArray, ByteArray, Int> {
+        val contactIdentityPublicKey = otherContactIdentity.getPublicKeyById(otherContactKeyIndex)
+            ?: throw IllegalArgumentException("index $otherContactKeyIndex does not exist for $otherContactIdentity")
 
         val contactPublicKey = contactIdentityPublicKey.getKey()
 
@@ -1836,11 +1868,12 @@ class BlockchainIdentity {
         contactPublicKey: ECKey,
         signingAlgorithm: KeyType,
         aesKey: KeyParameter?
-    ): Pair<ByteArray, ByteArray> {
+    ): Triple<ByteArray, ByteArray, Int> {
         val keyCrypter = KeyCrypterECDH()
         checkIdentity()
         // first decrypt our identity key if necessary (currently uses the first key [0])
-        val decryptedIdentityKey = maybeDecryptKey(KeyIndexPurpose.AUTHENTICATION.ordinal, signingAlgorithm, aesKey)
+        val myKeyIndex = identity!!.getFirstPublicKey(Purpose.ENCRYPTION)?.id ?: KeyIndexPurpose.AUTHENTICATION.ordinal
+        val decryptedIdentityKey = maybeDecryptKey(myKeyIndex, signingAlgorithm, aesKey)
 
         // derived the shared key (our private key + their public key)
         val encryptionKey = keyCrypter.deriveKey(decryptedIdentityKey, contactPublicKey)
@@ -1862,25 +1895,25 @@ class BlockchainIdentity {
         accountLabelBoas.write(encryptedAccountLabel.initialisationVector)
         accountLabelBoas.write(encryptedAccountLabel.encryptedBytes)
 
-        return Pair(boas.toByteArray(), accountLabelBoas.toByteArray())
+        return Triple(boas.toByteArray(), accountLabelBoas.toByteArray(), myKeyIndex)
     }
 
     fun decryptExtendedPublicKey(
         encryptedXpub: ByteArray,
-        contactIdentity: Identity,
-        contactKeyIndex: Int,
-        keyIndex: Int,
+        otherContactIdentity: Identity,
+        otherContactKeyIndex: Int,
+        myKeyIndex: Int,
         aesKey: KeyParameter?
     ): String {
-        val contactIdentityPublicKey = contactIdentity.getPublicKeyById(contactKeyIndex)
-            ?: throw IllegalArgumentException("index $contactKeyIndex does not exist for $contactIdentity")
+        val contactIdentityPublicKey = otherContactIdentity.getPublicKeyById(otherContactKeyIndex)
+            ?: throw IllegalArgumentException("index $otherContactKeyIndex does not exist for $otherContactIdentity")
         val contactPublicKey = contactIdentityPublicKey.getKey()
 
         return decryptExtendedPublicKey(
             encryptedXpub,
             contactPublicKey,
             contactIdentityPublicKey.type,
-            keyIndex,
+            myKeyIndex,
             aesKey
         )
     }
@@ -1888,26 +1921,27 @@ class BlockchainIdentity {
     /**
      *
      * @param encryptedXpub ByteArray
-     * @param contactPublicKey ECKey
+     * @param otherContactPublicKey ECKey
      * @param signingAlgorithm KeyType
      * @param keyParameter KeyParameter The decryption key to the encrypted wallet
      * @return DeterministicKey The extended public key without the derivation path
      */
     fun decryptExtendedPublicKey(
         encryptedXpub: ByteArray,
-        contactPublicKey: ECKey,
+        otherContactPublicKey: ECKey,
         signingAlgorithm: KeyType,
-        keyIndex: Int,
+        myKeyIndex: Int,
         keyParameter: KeyParameter?
     ): String {
+        ContactRequests.log.info("encryptedPublicKey: {} for decryption", encryptedXpub.toHex())
         val keyCrypter = KeyCrypterECDH()
 
         // first decrypt our identity key if necessary (currently uses the first key [0])
         val decryptedIdentityKey =
-            maybeDecryptKey(keyIndex, signingAlgorithm, keyParameter)
+            maybeDecryptKey(myKeyIndex, signingAlgorithm, keyParameter)
 
         // derive the shared key (our private key + their public key)
-        val encryptionKey = keyCrypter.deriveKey(decryptedIdentityKey, contactPublicKey)
+        val encryptionKey = keyCrypter.deriveKey(decryptedIdentityKey, otherContactPublicKey)
 
         // separate the encrypted data (IV + ciphertext) and then decrypt the extended public key
         val encryptedData =
@@ -1917,21 +1951,21 @@ class BlockchainIdentity {
         return DeterministicKey.deserializeContactPub(params, decryptedData).serializePubB58(params)
     }
 
-    fun addContactPaymentKeyChain(contactIdentity: Identity, contactRequest: Document, encryptionKey: KeyParameter?) {
-        val accountReference = if (contactRequest.data.containsKey("accountReference")) {
-            (contactRequest.data["accountReference"] as Long).toInt()
-        } else {
-            0 // default account reference
-        }
+    fun addPaymentKeyChainFromContact(
+        contactIdentity: Identity,
+        contactRequest: ContactRequest,
+        encryptionKey: KeyParameter?
+    ) {
+        val accountReference = contactRequest.accountReference
 
         val contact = EvolutionContact(uniqueId, account, contactIdentity.id.toSha256Hash(), accountReference)
 
         if (!wallet!!.hasSendingKeyChain(contact)) {
             val xpub = decryptExtendedPublicKey(
-                contactRequest.data["encryptedPublicKey"] as ByteArray,
+                contactRequest.encryptedPublicKey,
                 contactIdentity,
-                (contactRequest.data["senderKeyIndex"] as Long).toInt(),
-                (contactRequest.data["recipientKeyIndex"] as Long).toInt(),
+                otherContactKeyIndex = contactRequest.recipientKeyIndex, // other
+                myKeyIndex = contactRequest.senderKeyIndex, // mine
                 encryptionKey
             )
             val contactKeyChain = FriendKeyChain(wallet!!.params, xpub, contact)
@@ -1939,19 +1973,25 @@ class BlockchainIdentity {
         }
     }
 
-    fun addPaymentKeyChainFromContact(
-        contactIdentity: Identity,
+    fun addPaymentKeyChainToContact(
+        otherContactIdentity: Identity,
         contactRequest: ContactRequest,
         encryptionKey: KeyParameter?
     ): Boolean {
-        val contact = EvolutionContact(uniqueId, account, contactIdentity.id.toSha256Hash(), -1)
+        val contact = EvolutionContact(uniqueId, account, otherContactIdentity.id.toSha256Hash(), -1)
         if (!wallet!!.hasReceivingKeyChain(contact)) {
             val encryptedXpub = Converters.byteArrayFromBase64orByteArray(contactRequest.encryptedPublicKey)
-            val senderKeyIndex = contactRequest.senderKeyIndex
-            val recipientKeyIndex = contactRequest.recipientKeyIndex
-            val contactKeyChain = getReceiveFromContactChain(contactIdentity, encryptionKey)
+            val senderKeyIndex = contactRequest.senderKeyIndex // otherContactIdentity
+            val recipientKeyIndex = contactRequest.recipientKeyIndex // mine
+            val contactKeyChain = getReceiveFromContactChain(otherContactIdentity, encryptionKey)
 
-            val serializedContactXpub = decryptExtendedPublicKey(encryptedXpub, contactIdentity, recipientKeyIndex, senderKeyIndex, encryptionKey)
+            val serializedContactXpub = decryptExtendedPublicKey(
+                encryptedXpub,
+                otherContactIdentity,
+                otherContactKeyIndex = senderKeyIndex,
+                myKeyIndex = recipientKeyIndex,
+                encryptionKey
+            )
 
             val ourContactXpub = contactKeyChain.watchingKey.serializeContactPub()
             val ourSerializedXpub = DeterministicKey.deserializeContactPub(params, ourContactXpub).serializePubB58(params)
@@ -2033,6 +2073,9 @@ class BlockchainIdentity {
     // Transaction Metadata Methods
     @Throws(KeyCrypterException::class)
     fun publishTxMetaData(txMetadataItems: List<TxMetadataItem>, keyParameter: KeyParameter?) {
+        if (!platform.hasApp("dashwallet")) {
+            return
+        }
         val keyIndex = 1
         val encryptionKeyIndex = 0
         val encryptionKey = privateKeyAtPath(keyIndex, TxMetadataDocument.childNumber, encryptionKeyIndex, KeyType.ECDSA_SECP256K1, keyParameter)
@@ -2079,6 +2122,9 @@ class BlockchainIdentity {
     }
 
     fun getTxMetaData(createdAfter: Long = -1, keyParameter: KeyParameter?): Map<TxMetadataDocument, List<TxMetadataItem>> {
+        if (!platform.hasApp("dashwallet")) {
+            return hashMapOf()
+        }
         val documents = TxMetadata(platform).get(uniqueIdentifier, createdAfter)
 
         val results = LinkedHashMap<TxMetadataDocument, List<TxMetadataItem>>()

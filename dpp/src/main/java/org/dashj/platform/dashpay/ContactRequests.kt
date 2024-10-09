@@ -5,14 +5,18 @@ import java.util.Timer
 import kotlin.concurrent.timerTask
 import org.bouncycastle.crypto.params.KeyParameter
 import org.dashj.platform.dapiclient.model.DocumentQuery
+import org.dashj.platform.dashpay.BlockchainIdentity.KeyIndexPurpose
 import org.dashj.platform.dashpay.callback.SendContactRequestCallback
 import org.dashj.platform.dashpay.callback.WalletSignerCallback
 import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
+import org.dashj.platform.dpp.identity.IdentityPublicKey
+import org.dashj.platform.dpp.toHex
 import org.dashj.platform.sdk.BlockHeight
 import org.dashj.platform.sdk.CoreBlockHeight
 import org.dashj.platform.sdk.KeyType
+import org.dashj.platform.sdk.Purpose
 import org.dashj.platform.sdk.SecurityLevel
 import org.dashj.platform.sdk.dashsdk
 import org.dashj.platform.sdk.platform.Documents
@@ -33,35 +37,22 @@ class ContactRequests(val platform: Platform) {
         val contactKey = contactKeyChain.watchingKey
         val contactPub = contactKey.serializeContactPub()
 
-        val toUserPublicKey = toUser.publicKeys.find { publicKey ->
-            // is the publicKey disabled?
-            if (publicKey.disabledAt == null || publicKey.disabledAt!! > Date().time) {
-                // is the public key of type ECDSA with a high enough security level?
-                publicKey.type == KeyType.ECDSA_SECP256K1 && publicKey.securityLevel <= SecurityLevel.MEDIUM
-            } else {
-                false
-            }
-        }
+//        val toUserPublicKey = toUser.publicKeys.find { publicKey ->
+//            // is the publicKey disabled?
+//            if (publicKey.disabledAt == null || publicKey.disabledAt!! > Date().time) {
+//                // is the public key of type ECDSA with a high enough security level?
+//                publicKey.type == KeyType.ECDSA_SECP256K1 && publicKey.securityLevel <= SecurityLevel.MEDIUM
+//            } else {
+//                false
+//            }
+//        }
+        val toUserPublicKey = toUser.getFirstPublicKey(Purpose.ENCRYPTION) ?: toUser.publicKeys[KeyIndexPurpose.AUTHENTICATION.ordinal]
 
         if (toUserPublicKey != null) {
-            val (encryptedContactPubKey, encryptedAccountLabel) = fromUser.encryptExtendedPublicKey(
-                contactPub,
-                toUser,
-                toUserPublicKey.id,
-                aesKey
-            )
-            val accountReference = fromUser.getAccountReference(aesKey, toUser)
-
-            val contactRequestDocument = ContactRequest.builder(platform)
-                .to(toUser.id)
-                .from(fromUser.uniqueIdentifier)
-                .encryptedPubKey(encryptedContactPubKey, fromUser.getIdentityPublicKeyByPurpose(BlockchainIdentity.KeyIndexPurpose.AUTHENTICATION).id, toUserPublicKey.id)
-                .accountReference(accountReference)
-                .encryptedAccountLabel(encryptedAccountLabel)
-                .build().document
+            val contactRequestDocument = createDocument(fromUser, contactPub, toUser, toUserPublicKey, aesKey)
 
             val signer = WalletSignerCallback(fromUser.wallet!!, aesKey)
-            val highIdentityPublicKey = fromUser.identity!!.getFirstPublicKey(SecurityLevel.HIGH)
+            val highIdentityPublicKey = fromUser.identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
                 ?: error("can't find a public key with HIGH security level")
 
             val credits = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(platform.rustSdk, fromUser.identity!!.id.toNative()).unwrap()
@@ -83,6 +74,31 @@ class ContactRequests(val platform: Platform) {
             return ContactRequest(Document(publishedContactRequest, contactRequestDocument.dataContractId!!))
         }
         throw IllegalArgumentException("No valid keys to use in toUser's identity")
+    }
+
+    fun createDocument(
+        fromUser: BlockchainIdentity,
+        contactPub: ByteArray,
+        toUser: Identity,
+        toUserPublicKey: IdentityPublicKey,
+        aesKey: KeyParameter?
+    ): Document {
+        val (encryptedContactPubKey, encryptedAccountLabel, senderKeyIndex) = fromUser.encryptExtendedPublicKey(
+            contactPub,
+            toUser,
+            toUserPublicKey.id,
+            aesKey
+        )
+        log.info("encryptedPublicKey: {} for encryption", encryptedContactPubKey.toHex())
+        val accountReference = fromUser.getAccountReference(aesKey, toUser)
+        val contactRequestDocument = ContactRequest.builder(platform)
+            .to(toUser.id)
+            .from(fromUser.uniqueIdentifier)
+            .encryptedPubKey(encryptedContactPubKey, senderKeyIndex, toUserPublicKey.id)
+            .accountReference(accountReference)
+            .encryptedAccountLabel(encryptedAccountLabel)
+            .build().document
+        return contactRequestDocument
     }
 
     /**
