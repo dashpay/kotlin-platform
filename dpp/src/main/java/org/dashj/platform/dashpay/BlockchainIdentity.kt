@@ -682,9 +682,12 @@ class BlockchainIdentity {
                     // if the identity doesn't exist, wait 10 seconds for network propagation
                     // TODO: move this to rust
                     if (e.message!!.contains("Identifier Error: Identity not found")) {
-                        Thread.sleep(10000);
+                        Thread.sleep(3000)
                         platform.client.getIdentityBalance(uniqueIdentifier)
                         registerPreorder(preorder, highIdentityPublicKey, signer)
+                    } else {
+                        log.info("can't retry preorders on this error:", e)
+                        throw e
                     }
                 }
             }
@@ -748,7 +751,9 @@ class BlockchainIdentity {
             log.info("current balance: {}", balance)
             val document = broadcastDomainDocument(domain, signer)
 
-            log.info("domain doc id: {}", Identifier(document.v0._0.id.bytes))
+            document?.let {
+                log.info("domain doc id: {}", Identifier(it.v0._0.id.bytes))
+            }
 
             val string = usernames[i++]
             val usernameInfo = usernameStatuses[string] ?: UsernameInfo(null, UsernameStatus.PREORDERED, string)
@@ -760,7 +765,7 @@ class BlockchainIdentity {
 
         val usernamesLeft = ArrayList(usernames)
         for (username in usernames) {
-            val normalizedName = username.toLowerCase()
+            val normalizedName = username.lowercase()
             for (nameDocumentTransition in domainDocuments) {
                 if (nameDocumentTransition.data["normalizedLabel"] == normalizedName) {
                     val usernameInfo = usernameStatuses[username]!!
@@ -793,8 +798,8 @@ class BlockchainIdentity {
     private fun broadcastDomainDocument(
         domain: Document,
         signer: WalletSignerCallback
-    ): org.dashj.platform.sdk.Document {
-        var error = ""
+    ): org.dashj.platform.sdk.Document? {
+        var error: Exception? = null
         val highIdentityPublicKey = identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
         val credits = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(platform.rustSdk, identity!!.id.toNative()).unwrap()
@@ -812,17 +817,54 @@ class BlockchainIdentity {
                 BigInteger.valueOf(signer.signerCallback)
             )
             try {
-                return documentResult.unwrap()
+                log.info("broadcastDomainDocument(...) result = {}", documentResult)
+                documentResult.unwrap()
             } catch (e: Exception) {
                 // swallow
-                error = e.toString()
-                error(error)
-                /*if (!error.contains("preorderDocument was not found") &&
-                    !error.contains("Protocol error: unknown version error result did not have metadata"))
-                    throw e*/
+                error = e
+                if (e.message?.contains(Regex("Document [a-zA-Z0-9]{32,44} has duplicate unique properties \\[\"normalizedParentDomainName\", \"normalizedLabel\"\\] with other documents")) == true) {
+                    // the document was already submitted
+                    log.info("the domain document was already submitted.  check to see if we can obtain the document")
+                    val username = domain.data["normalizedLabel"] as String
+                    val document = platform.names.get(username)
+                    if (document == null) {
+                        if (Names.isUsernameContestable(username)) {
+                            val contenders = platform.names.getVoteContenders(username)
+
+                            if (contenders.isEmpty()) {
+                                error("$username not found because there are no contenders")
+                            }
+
+                            val documentWithVotes = contenders.map[uniqueIdentifier]
+                                ?: error("$username does not have $uniqueIdentifier as a contender")
+
+                            val recoveredDocument = documentWithVotes.seralizedDocument?.let {
+                                platform.names.deserialize(it)
+                            }
+
+                            return recoveredDocument?.toNative()
+                        }
+                        log.info("the document could not be found, though the put operation failed with a duplicate error")
+                        throw e
+                    }
+                    return document.toNative()
+                } else if (e.message?.contains("preorderDocument was not found with a salted domain hash of") == false &&
+                    e.message?.contains("Protocol error: unknown version error result did not have metadata") == false) {
+                    // preorder issues may be due to a bug in the preorder process or because the ST wasn't propagated
+                    throw e
+                } else {
+                    // should we try again, check for the preorder
+                    val fullName = Names.getFullName(
+                        domain.data["normalizedLabel"] as String,
+                        domain.data["normalizedParentDomainName"] as String
+                    )
+                    if (platform.names.getPreorder(Names.getSaltedDomainHashBytes(domain.data["preorderSalt"] as ByteArray, fullName)) == null) {
+                        error("cannot find preorder document, though it should be somewhere: ${e.message}")
+                    }
+                }
             }
         }
-        throw IllegalStateException(error)
+        error("broadcastDomainDocument out of retries: ${error?.message}")
     }
 
     fun removePreorders(keyParameter: KeyParameter? = null) {
