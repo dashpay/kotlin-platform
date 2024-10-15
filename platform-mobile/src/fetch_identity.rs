@@ -19,15 +19,20 @@ pub fn test_identifier() -> Identifier {
     Identifier::from_string("7Yowk46VwwHqmD5yZyyygggh937aP6h2UW7aQWBdWpM5", Encoding::Base58).unwrap()
 }
 
+pub fn test_not_exist_identifier() -> Identifier {
+    Identifier::from_string("7Yowk46VwwHqmD5yZyyyhijh937aP6h2UW7aQWBdWpM5", Encoding::Base58).unwrap()
+}
+
 #[ferment_macro::export]
 pub fn fetch_identity_with_sdk(
     rust_sdk: *mut DashSdk,
     identifier: Identifier
-) -> Result<Identity, String> {
+) -> Result<Option<Identity>, String> {
     tracing::info!("fetch_identity_with_sdk");
     unsafe {
         match identity_read_with_sdk(rust_sdk, &identifier) {
-            Ok(identity) => Ok(identity),
+            Ok(Some(identity)) => Ok(Some(identity)),
+            Ok(None) => Ok(None),
             Err(err) => Err(err.to_string())
         }
     }
@@ -38,7 +43,7 @@ pub fn fetch_identity_balance_with_sdk(
     rust_sdk: *mut DashSdk,
     identifier: Identifier
 ) -> Result<u64, String> {
-    tracing::info!("fetch_identity_with_sdk");
+    tracing::info!("fetch_identity_balance_with_sdk");
     unsafe {
         match identity_read_balance_with_sdk(rust_sdk, &identifier) {
             Ok(balance) => Ok(balance),
@@ -61,7 +66,8 @@ pub fn fetch_identity_with_keyhash_sdk(
     }
 }
 
-unsafe fn identity_read_with_sdk(rust_sdk: *mut DashSdk, id: &Identifier) -> Result<Identity, ProtocolError> {
+// TODO: this should return Result<Option<Identity>, String>
+unsafe fn identity_read_with_sdk(rust_sdk: *mut DashSdk, id: &Identifier) -> Result<Option<Identity>, ProtocolError> {
 
     let rt = unsafe { (*rust_sdk).get_runtime() }.clone();
 
@@ -76,8 +82,8 @@ unsafe fn identity_read_with_sdk(rust_sdk: *mut DashSdk, id: &Identifier) -> Res
         let identity_result = Identity::fetch_with_settings(&sdk, id, settings).await;
 
         match identity_result {
-            Ok(Some(identity)) => Ok(identity),
-            Ok(None) => Err(ProtocolError::IdentifierError("Identity not found".to_string())), // Placeholder for actual error handling
+            Ok(Some(identity)) => Ok(Some(identity)),
+            Ok(None) => Ok(None), // Placeholder for actual error handling
             Err(e) => Err(ProtocolError::IdentifierError(
                 format!("Identifier not found: failure: {})", e))
             )
@@ -151,6 +157,21 @@ fn fetch_identity_with_sdk_test() {
         Err(err) => panic!("error fetching identity: {}", err)
     }
 }
+
+#[test]
+fn fetch_identity_with_sdk_error_test() {
+    let mut rust_sdk = create_dash_sdk_using_core_testnet();
+    let result = fetch_identity_with_sdk(
+        &mut rust_sdk,
+        test_not_exist_identifier()
+    );
+    match result {
+        Ok(identity) => tracing::info!("success fetching identity: {:?}", identity),
+        Err(err) => panic!("error fetching identity: {}", err)
+    }
+}
+
+
 
 #[test]
 fn fetch_identity_balance_with_sdk_test() {

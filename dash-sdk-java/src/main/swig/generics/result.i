@@ -68,22 +68,25 @@
   * Result<Option<T>, String>
   */
 %define DEFINE_OPTIONAL_RESULT(RETURN_TYPE, ERROR_TYPE, CTYPE, CLONE_FN)
-%typemap(javaclassname) CTYPE* "org.dashj.platform.sdk.base.Result<RETURN_TYPE, String>"
-%typemap(javatype) CTYPE* "org.dashj.platform.sdk.base.Result<RETURN_TYPE,String>"
-%typemap(jtype) CTYPE* "org.dashj.platform.sdk.base.Result<RETURN_TYPE,String>"
-%typemap(jstype) CTYPE* "org.dashj.platform.sdk.base.Result<RETURN_TYPE,String>"
+%typemap(javaclassname) CTYPE* "org.dashj.platform.sdk.base.Result<java.util.Optional<RETURN_TYPE>, String>"
+%typemap(javatype) CTYPE* "org.dashj.platform.sdk.base.Result<java.util.Optional<RETURN_TYPE, String>"
+%typemap(jtype) CTYPE* "org.dashj.platform.sdk.base.Result<java.util.Optional<RETURN_TYPE>, String>"
+%typemap(jstype) CTYPE* "org.dashj.platform.sdk.base.Result<java.util.Optional<RETURN_TYPE>, String>"
 %typemap(jni) CTYPE* "jobject"
 
 
 %typemap(out) CTYPE* {
     if (!$1) {
-        $result = NULL;
+        $result = NULL; // should we throw an exception instead, or it will be thrown in Java
     } else {
+        jclass optionalClass = jenv->FindClass("java/util/Optional");
         jclass resultClass = jenv->FindClass("org/dashj/platform/sdk/base/Result");
+        jmethodID emptyMethod = jenv->GetStaticMethodID(optionalClass, "empty", "()Ljava/util/Optional;");
+        jmethodID ofMethod = jenv->GetStaticMethodID(optionalClass, "of", "(Ljava/lang/Object;)Ljava/util/Optional;");
 
         if ($1->error == NULL) {
             if ($1->ok == NULL) {
-                jobject okObject = NULL;
+                jobject okObject = jenv->CallStaticObjectMethod(optionalClass, emptyMethod);
                 jmethodID midSuccess = jenv->GetStaticMethodID(resultClass, "Ok", "(Ljava/lang/Object;)Lorg/dashj/platform/sdk/base/Result;");
                 $result = jenv->CallStaticObjectMethod(resultClass, midSuccess, okObject);
             } else {
@@ -91,9 +94,9 @@
                 jmethodID constructor = jenv->GetMethodID(myClass, "<init>", "(JZ)V");
                 void * clonedObject = CLONE_FN($1->ok);
                 jobject okObject = jenv->NewObject(myClass, constructor, (jlong) clonedObject, true);
-
+                jobject optionalObject = jenv->CallStaticObjectMethod(optionalClass, ofMethod, okObject);
                 jmethodID midSuccess = jenv->GetStaticMethodID(resultClass, "Ok", "(Ljava/lang/Object;)Lorg/dashj/platform/sdk/base/Result;");
-                $result = jenv->CallStaticObjectMethod(resultClass, midSuccess, okObject);
+                $result = jenv->CallStaticObjectMethod(resultClass, midSuccess, optionalObject);
             }
         } else {
             jstring errorString = jenv->NewStringUTF($1->error);
@@ -287,6 +290,7 @@
 %enddef
 
 DEFINE_RESULT(Identity, String, Result_ok_dpp_identity_identity_Identity_err_String, platform_mobile_identity_Identity_clone);
+DEFINE_OPTIONAL_RESULT(Identity, String, Result_ok_Option_dpp_identity_identity_Identity_err_String, platform_mobile_identity_Identity_clone);
 DEFINE_RESULT(Document, String, Result_ok_dpp_document_Document_err_String, clone);
 DEFINE_RESULT(DataContract, String, Result_ok_platform_mobile_data_contracts_DataContractFFI_err_String, clone);
 DEFINE_OPTIONAL_RESULT(DataContract, String, Result_ok_Option_platform_mobile_data_contracts_DataContractFFI_err_String, clone);
