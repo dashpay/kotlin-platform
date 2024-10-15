@@ -8,6 +8,7 @@ package org.dashj.platform
  */
 import com.google.common.io.BaseEncoding
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class PlatformTests {
@@ -36,5 +37,28 @@ class PlatformTests {
         // val bouncy64 =
         assertEquals(bouncy64(b), google64(b))
         assertEquals(bouncy64(b), google64op(b))
+    }
+
+    @Test fun regexTest() {
+        val errorString = "Protocol error: Generic Error: Document C2z6f1BtabvWyDVHbeCqzKRn5jn9uHgmQdUe5mpEhZbU has duplicate unique properties [\"normalizedParentDomainName\", \"normalizedLabel\"] with other documents"
+        val errorString2 = "Attempted to unwrap a Failure: Protocol error: Generic Error: Document obQ535W6AGqn5DhoCJfM8XYzK9QMddGLXS9ytmFMGNb has duplicate unique properties [\"normalizedParentDomainName\", \"normalizedLabel\"] with other documents"
+        val errorString3 = "Document 6pHYWaENTWKSKHT5iTFRTDidb9qj3Pte8WKXQ1hUmZZZ has duplicate unique properties [\"normalizedParentDomainName\", \"normalizedLabel\"] with other documents\n"
+        assertTrue(errorString.contains(
+            Regex(
+               "Document [a-zA-Z0-9]{32,44} has duplicate unique properties \\[\"normalizedParentDomainName\", \"normalizedLabel\"\\] with other documents"
+            ))
+        )
+
+        assertTrue(errorString2.contains(
+            Regex(
+                "Document [a-zA-Z0-9]{32,44} has duplicate unique properties \\[\"normalizedParentDomainName\", \"normalizedLabel\"\\] with other documents"
+            ))
+        )
+
+        assertTrue(errorString3.contains(
+            Regex(
+                "Document [a-zA-Z0-9]{32,44} has duplicate unique properties \\[\"normalizedParentDomainName\", \"normalizedLabel\"\\] with other documents"
+            ))
+        )
     }
 }

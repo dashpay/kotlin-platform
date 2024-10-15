@@ -1,7 +1,7 @@
 package org.dashj.platform.sdk;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
 public class BaseTest {
     static {
@@ -29,12 +29,12 @@ public class BaseTest {
 
     static MemoryFactory memoryFactory = MemoryFactory.getInstance();
 
-    @BeforeAll
+    @BeforeClass
     public static void start() {
 
     }
 
-    @AfterAll
+    @AfterClass
     public static void end() {
         System.out.printf("objects remaining: %d\n", memoryFactory.size());
     }

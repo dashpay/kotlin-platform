@@ -1,34 +1,35 @@
 package org.dashj.platform.sdk;
 
 import org.dashj.platform.sdk.base.Result;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
-public class DocumentTest extends BaseTest {
+public class DocumentTest extends SdkBaseTest {
 
-    static SWIGTYPE_p_DashSdk sdk;
+//    static SWIGTYPE_p_DashSdk sdk;
+//
+//    @BeforeClass
+//    public static void startUp() {
+//        sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, true);
+//    }
+//
+//    @AfterClass
+//    public static void tearDown() {
+//        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
+//    }
 
-    @BeforeAll
-    static void startUp() {
-        sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, true);
-    }
 
-    @AfterAll
-    static void tearDown() {
-        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
-    }
 //    @Test
 //    public void getDocumentTest() {
 //        SWIGTYPE_p_DashSdk sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, true);
@@ -62,7 +63,7 @@ public class DocumentTest extends BaseTest {
 //    }
 
     @Test
-    void getDocumentsTest() throws Exception {
+    public void getDocumentsTest() throws Exception {
         Identifier domainId = new Identifier(dpnsContractId);
         Result<List<Document>, String> docs = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
                 sdk,

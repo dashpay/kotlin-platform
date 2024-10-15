@@ -1,34 +1,22 @@
 package org.dashj.platform.sdk;
 
 import org.dashj.platform.sdk.base.Result;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import java.math.BigInteger;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
-public class DataContractTest extends BaseTest {
-    static SWIGTYPE_p_DashSdk sdk;
+public class DataContractTest extends SdkBaseTest {
 
-    @BeforeAll
-    static void startUp() {
-        sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, true);
-    }
-
-    @AfterAll
-    static void tearDown() {
-        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
-    }
     @Test
     public void fetchDataContractTest() throws Exception {
         Identifier contractId = new Identifier(dpnsContractId);
-        Result<DataContract, String> result = dashsdk.platformMobileDataContractsFetchDataContract(
+        Result<Optional<DataContract>, String> result = dashsdk.platformMobileDataContractsFetchDataContract(
                 sdk, contractId);
 
-        DataContract dataContract = result.unwrap();
+        DataContract dataContract = result.unwrap().get();
         assertArrayEquals(dpnsContractId, dataContract.getId().get_0().get_0());
         assertEquals(2, dataContract.getDoc_types().size());
         dataContract.getDoc_types().forEach(System.out::println);
@@ -37,7 +25,7 @@ public class DataContractTest extends BaseTest {
     @Test
     public void fetchDataContractFailureTest() throws Exception {
         Identifier contractId = new Identifier(identifier);
-        Result<DataContract, String> result = dashsdk.platformMobileDataContractsFetchDataContract(
+        Result<Optional<DataContract>, String> result = dashsdk.platformMobileDataContractsFetchDataContract(
                 sdk, contractId);
         System.out.println("missing contract request: " + result.toString());
     }
