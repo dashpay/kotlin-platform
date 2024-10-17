@@ -36,6 +36,7 @@ class Names(val platform: Platform) {
         const val DPNS_DOMAIN_DOCUMENT = "dpns.domain"
         const val DPNS_PREORDER_DOCUMENT = "dpns.preorder"
         const val CONTESTED_INDEX = "parentNameAndLabel"
+        const val SALTEDDOMAINHASH_KEY = "saltedDomainHash"
 
         fun isUniqueIdentity(domainDocument: Document): Boolean {
             val records = domainDocument.data["records"] as Map<*, *>
@@ -66,6 +67,12 @@ class Names(val platform: Platform) {
         private fun getLabel(name: String): String {
             val nameSlice = name.indexOf('.')
             return if (nameSlice == -1) name else name.slice(0..nameSlice)
+        }
+
+        fun getFullName(label: String, parentDomain: String): String {
+            val normalizedLabel = normalizeString(label)
+            val normalizedParentDomainName = normalizeString(parentDomain)
+            return "$normalizedLabel.$normalizedParentDomainName"
         }
 
         fun getSaltedDomainHashBytes(
@@ -134,7 +141,7 @@ class Names(val platform: Platform) {
         identity: Identity
     ): Document {
         val map = HashMap<String, Any?>(1)
-        map["saltedDomainHash"] = saltedDomainHash.bytes; // .bytes.toBase64()
+        map[SALTEDDOMAINHASH_KEY] = saltedDomainHash.bytes; // .bytes.toBase64()
 
         val preorderDocument = platform.documents.create(
             DPNS_PREORDER_DOCUMENT,
@@ -407,5 +414,15 @@ class Names(val platform: Platform) {
             identityPublicKey,
             signerCallback
         )
+    }
+
+    fun getPreorder(saltedDomainHash: ByteArray): Document? {
+        val documents = platform.documents.get(
+            DPNS_PREORDER_DOCUMENT,
+            DocumentQuery.builder()
+                .where(SALTEDDOMAINHASH_KEY, "==", saltedDomainHash)
+                .build()
+        )
+        return if (documents.isNotEmpty()) documents[0] else null
     }
 }

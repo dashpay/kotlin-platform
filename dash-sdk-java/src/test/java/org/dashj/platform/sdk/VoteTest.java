@@ -8,9 +8,9 @@ import org.bitcoinj.params.TestNet3Params;
 import org.dashj.platform.sdk.base.Result;
 import org.dashj.platform.sdk.callbacks.Signer;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
@@ -19,28 +19,28 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
-public class VoteTest extends BaseTest {
+public class VoteTest extends SdkBaseTest {
 
-    static SWIGTYPE_p_DashSdk sdk;
-
-    @BeforeAll
-    static void startUp() {
-        sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, true);
-    }
-
-    @AfterAll
-    static void tearDown() {
-        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
-    }
+//    static SWIGTYPE_p_DashSdk sdk;
+//
+//    @BeforeClass
+//    public static void startUp() {
+//        sdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, true);
+//    }
+//
+//    @AfterClass
+//    public static void tearDown() {
+//        dashsdk.platformMobileSdkDestroyDashSdk(sdk);
+//    }
 
     @Test
-    void getVoteContendorsTest() throws Exception {
+    public void getVoteContendorsTest() throws Exception {
         String name = "test100";
         ArrayList<PlatformValue> indexes = new ArrayList<>();
         indexes.add(new PlatformValue("dash"));
@@ -86,7 +86,7 @@ public class VoteTest extends BaseTest {
     }
 
     @Test
-    void getVoteContendorsForNonExistantTest() throws Exception {
+    public void getVoteContendorsForNonExistantTest() throws Exception {
         ArrayList<PlatformValue> indexes = new ArrayList<>();
         indexes.add(new PlatformValue("dash"));
         indexes.add(new PlatformValue("test11101010010110101010"));
@@ -110,7 +110,7 @@ public class VoteTest extends BaseTest {
     }
 
     @Test
-    void getContestedResources() throws Exception {
+    public void getContestedResources() throws Exception {
         Result<ContestedResources, String> result = dashsdk.platformMobileVotingGetContestedResources(
                 sdk,
                 "domain",
@@ -125,7 +125,7 @@ public class VoteTest extends BaseTest {
     }
 
     @Test
-    void putToPlatformTest() throws Exception {
+    public void putToPlatformTest() throws Exception {
         ArrayList<PlatformValue> indexes = new ArrayList<>();
         String name = "rev1ew000";
         indexes.add(new PlatformValue("dash"));
@@ -173,10 +173,10 @@ public class VoteTest extends BaseTest {
         boas.write(privateKey.getKey().getPubKeyHash());
         Sha256Hash idBytes = Sha256Hash.of(boas.toByteArray());
         System.out.println(Base58.encode(idBytes.getBytes()));
-        Result<Identity, String> identityResult = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(sdk, new Identifier(idBytes.getBytes()));
+        Result<Optional<Identity>, String> identityResult = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(sdk, new Identifier(idBytes.getBytes()));
 
         try {
-            Identity identity = identityResult.unwrap();
+            Identity identity = identityResult.unwrap().get();
             IdentityPublicKey ipk = identity.getV0().get_0().getPublicKeys().values().stream().findFirst().get();
             Signer signer = new Signer() {
                 @Override

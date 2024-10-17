@@ -85,6 +85,9 @@ class Platform(val params: NetworkParameters) {
             params.id.contains("bintang") -> {
                 apps["dashwallet"] = ClientAppDefinition("Fds5DDfXoLwpUZ71AAVYZP1uod8S7Ze2bR28JExBvZKR")
             }
+            params.id.contains("production") -> {
+                apps["dashwallet"] = ClientAppDefinition("EVKMFboB3QBUa9Jo7PP5bsLyohzUz8zvw5c2gJs1SfcX")
+            }
         }
         System.loadLibrary("sdklib")
         client = DapiClient(params.defaultHPMasternodeList.toList(), dpp, true, isTestNet())

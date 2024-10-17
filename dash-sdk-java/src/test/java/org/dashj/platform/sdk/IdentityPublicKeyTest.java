@@ -1,15 +1,11 @@
 package org.dashj.platform.sdk;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import java.math.BigInteger;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 public class IdentityPublicKeyTest extends BaseTest {
 
@@ -55,7 +51,7 @@ public class IdentityPublicKeyTest extends BaseTest {
 
     @Test
     public void createIdentityPublicKeyInJavaAndDestroyWithNullsTest() {
-        Identifier contract = new Identifier(contractIdentifier);
+        //Identifier contract = new Identifier(contractIdentifier);
         KeyID keyId = new KeyID(2);
 
         Purpose purpose = Purpose.AUTHENTICATION;

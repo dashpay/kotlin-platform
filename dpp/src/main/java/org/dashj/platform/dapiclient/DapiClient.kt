@@ -451,7 +451,7 @@ class DapiClient(
             RustIdentifier(id)
         )
         return try {
-            Identity(result.unwrap())
+            Identity(result.unwrap().get())
         } catch (e: Exception) {
             null
         }
@@ -537,7 +537,7 @@ class DapiClient(
             contractId.toNative()
         )
         return try {
-            DataContract.from(dataContract.unwrap())
+            DataContract.from(dataContract.unwrap().get())
         } catch (e: Exception) {
             logger.error("get data contract error", e)
             throw NotFoundException("DataContract ${contractIdByteArray.toBase58()} not found")
@@ -578,6 +578,7 @@ class DapiClient(
             if (documentQuery.limit == -1) 100 else documentQuery.limit.toLong(),
             start
         )
+        logger.info("getDocuments(...) result = {}", result)
         return result.unwrap().map {
             Document(it, contractIdentifier)
         }

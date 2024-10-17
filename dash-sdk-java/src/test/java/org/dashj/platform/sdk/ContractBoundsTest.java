@@ -1,11 +1,8 @@
 package org.dashj.platform.sdk;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.Assert.assertEquals;
 
 public class ContractBoundsTest extends BaseTest {
 
@@ -48,7 +45,7 @@ public class ContractBoundsTest extends BaseTest {
     public void createSingleContractInJavaAndDestroy2() {
         Identifier id = new Identifier(identifier);
         ContractBounds singleContract = new ContractBounds(id);
-        Assertions.assertEquals(ContractBounds.Tag.SingleContract, singleContract.getTag());
+        assertEquals(ContractBounds.Tag.SingleContract, singleContract.getTag());
         assertEquals(id, singleContract.getSingle_contract_document_type().getId());
         singleContract.delete();
         id.delete();

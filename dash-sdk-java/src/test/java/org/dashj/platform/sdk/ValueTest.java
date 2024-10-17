@@ -1,7 +1,7 @@
 package org.dashj.platform.sdk;
 
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -9,26 +9,28 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+
 
 public class ValueTest extends BaseTest {
     @Test
     public void getPlatformValueTest() {
-        PlatformValue value = dashsdk.platformMobileGetPlatformValue();
+        PlatformValue value = dashsdk.platformMobileTestsGetPlatformValueBool(false);
+        assertNotNull(value);
         assertEquals(PlatformValue.Tag.Bool, value.getTag());
-
+        assertFalse(value.getBool());
         value.delete();
     }
 
     @Test
     public void getPlatformValueMapTest() {
-        PlatformValue value = dashsdk.platformMobileGetPlatformValueWithMap();
+        PlatformValue value = dashsdk.platformMobileTestsGetPlatformValueWithMap();
+        assertNotNull(value);
         assertEquals(PlatformValue.Tag.Map, value.getTag());
         PlatformValueMap valueMap = value.getMap();
         Map<PlatformValue, PlatformValue> map = valueMap.get_0();
@@ -107,7 +109,7 @@ public class ValueTest extends BaseTest {
         });
         assertNotNull(map1.get(key));
         assertEquals(value, map1.get(key));
-        assertNotEquals(value.getCPointer(), map1.get(key).getCPointer(), "objects should not have same c pointer");
+        assertNotEquals(value.getCPointer(), map1.get(key).getCPointer());
     }
 
     @Test
