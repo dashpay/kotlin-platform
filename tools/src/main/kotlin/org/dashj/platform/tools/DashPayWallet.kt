@@ -158,7 +158,7 @@ class DashPayWallet(val blockchainIdentity: BlockchainIdentity, val peerGroup: P
                         if (encryptionKey == null && wallet.isEncrypted) {
                             encryptionKey = wallet.keyCrypter!!.deriveKey(password)
                         }
-                        blockchainIdentity.addContactPaymentKeyChain(contactIdentity!!, it, encryptionKey)
+                        blockchainIdentity.addPaymentKeyChainToContact(contactIdentity!!, ContactRequest(it), encryptionKey)
                         addedContact = true
                     }
                 } catch (e: KeyCrypterException) {

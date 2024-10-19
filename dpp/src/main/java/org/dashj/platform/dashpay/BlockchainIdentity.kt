@@ -1993,7 +1993,7 @@ class BlockchainIdentity {
         return DeterministicKey.deserializeContactPub(params, decryptedData).serializePubB58(params)
     }
 
-    fun addPaymentKeyChainFromContact(
+    fun addPaymentKeyChainToContact(
         contactIdentity: Identity,
         contactRequest: ContactRequest,
         encryptionKey: KeyParameter?
@@ -2006,8 +2006,8 @@ class BlockchainIdentity {
             val xpub = decryptExtendedPublicKey(
                 contactRequest.encryptedPublicKey,
                 contactIdentity,
-                otherContactKeyIndex = contactRequest.recipientKeyIndex, // other
-                myKeyIndex = contactRequest.senderKeyIndex, // mine
+                otherContactKeyIndex = contactRequest.senderKeyIndex, // other
+                myKeyIndex = contactRequest.recipientKeyIndex, // mine
                 encryptionKey
             )
             val contactKeyChain = FriendKeyChain(wallet!!.params, xpub, contact)
@@ -2015,7 +2015,7 @@ class BlockchainIdentity {
         }
     }
 
-    fun addPaymentKeyChainToContact(
+    fun addPaymentKeyChainFromContact(
         otherContactIdentity: Identity,
         contactRequest: ContactRequest,
         encryptionKey: KeyParameter?
@@ -2030,8 +2030,8 @@ class BlockchainIdentity {
             val serializedContactXpub = decryptExtendedPublicKey(
                 encryptedXpub,
                 otherContactIdentity,
-                otherContactKeyIndex = senderKeyIndex,
-                myKeyIndex = recipientKeyIndex,
+                otherContactKeyIndex = recipientKeyIndex,
+                myKeyIndex = senderKeyIndex,
                 encryptionKey
             )
 
