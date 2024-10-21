@@ -2043,7 +2043,7 @@ class BlockchainIdentity {
                 addContactToWallet(contactKeyChain, encryptionKey)
                 return true
             } else {
-                log.warn("contactRequest does not match account 0")
+                log.warn("contactRequest does not match account 0 sent to {}", otherContactIdentity.id)
             }
         }
         return false
