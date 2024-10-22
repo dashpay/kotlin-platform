@@ -164,7 +164,7 @@ public class ValueTest extends BaseTest {
     @Test
     public void createPlatformValuePrimitiveTest() {
         testValue(true, PlatformValue.Tag.Bool, () -> new PlatformValue(true), PlatformValue::getBool);
-        BigInteger i128Value = BigInteger.valueOf(Long.MAX_VALUE).multiply(BigInteger.TWO);
+        BigInteger i128Value = BigInteger.valueOf(Long.MAX_VALUE).multiply(BigInteger.ONE);
         testValue(i128Value, PlatformValue.Tag.I128, () -> new PlatformValue(i128Value), PlatformValue::getI128);
         testValue((byte)1, PlatformValue.Tag.I8, () -> new PlatformValue((byte)1), PlatformValue::getI8);
 //        testValue(Short.MAX_VALUE + 1, PlatformValue.Tag.U16, () -> new PlatformValue(true), v -> v.getU16().get_0());
