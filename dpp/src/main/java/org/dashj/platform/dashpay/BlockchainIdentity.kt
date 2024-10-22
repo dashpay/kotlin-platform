@@ -818,11 +818,12 @@ class BlockchainIdentity {
             )
             try {
                 log.info("broadcastDomainDocument(...) result = {}", documentResult)
-                documentResult.unwrap()
+                return documentResult.unwrap()
             } catch (e: Exception) {
                 // swallow
                 error = e
-                if (e.message?.contains(Regex("Document [a-zA-Z0-9]{32,44} has duplicate unique properties \\[\"normalizedParentDomainName\", \"normalizedLabel\"\\] with other documents")) == true) {
+                if (e.message?.contains(Regex("Document [a-zA-Z0-9]{32,44} has duplicate unique properties \\[\"normalizedParentDomainName\", \"normalizedLabel\"\\] with other documents")) == true ||
+                    e.message?.contains(Regex("Insufficient identity ([A-Za-z0-9]+) balance (\\d+) required (\\d+)")) == true) {
                     // the document was already submitted
                     log.info("the domain document was already submitted.  check to see if we can obtain the document")
                     val username = domain.data["normalizedLabel"] as String
