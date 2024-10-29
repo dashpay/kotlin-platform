@@ -89,6 +89,10 @@ pub fn update_sdk_with_address_list(
 pub fn create_dash_sdk_using_core_testnet() -> DashSdk {
     create_dash_sdk(0, 0, true)
 }
+
+pub fn create_dash_sdk_using_core_mainnet() -> DashSdk {
+    create_dash_sdk(0, 0, false)
+}
 #[ferment_macro::export]
 pub fn create_dash_sdk(
     quorum_public_key_callback: u64,
@@ -137,7 +141,7 @@ pub fn create_dash_sdk_with_context(
         } else {
             Config::new_mainnet()
         };
-        tracing::info!("config created");
+        tracing::info!("configuring for testnet={} using platform port={}", cfg.is_testnet, cfg.platform_port);
         let data_contract_cache = Arc::new(Cache::new(NonZeroUsize::new(100).expect("Non Zero")));
         let sdk = if quorum_public_key_callback != 0 {
             // use the callbacks to obtain quorum public keys

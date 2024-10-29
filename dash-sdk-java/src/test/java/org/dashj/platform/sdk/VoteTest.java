@@ -125,6 +125,33 @@ public class VoteTest extends SdkBaseTest {
     }
 
     @Test
+    public void getVotePoolsTest() throws Exception {
+        Identifier dpnsContractid = new Identifier(dpnsContractId);
+
+        //SWIGTYPE_p_DashSdk mainnetSdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, false);
+
+        Result<VotePollsGroupedByTimeStamp, String> result = dashsdk.platformMobileVotingGetVotepolls(
+                sdk,
+                new TimestampMillis(System.currentTimeMillis()),
+                true,
+                new TimestampMillis(System.currentTimeMillis() + 14 * 24 * 3600 * 1000),
+                true
+        );
+
+        VotePollsGroupedByTimeStamp votePolls = result.unwrap();
+        assertNotNull(votePolls);
+        List<TupleTimeStampMillisVotePoll> list = votePolls.get_0();
+        System.out.println("results returned: " + list.size());
+
+        for (TupleTimeStampMillisVotePoll item : list) {
+            System.out.println("timestamp: " + item.getO_0().get_0().longValue());
+            for (VotePoll votePoll : item.getO_1()) {
+                System.out.println(votePoll.getContested_document_resource_vote_poll().get_0().getDocument_type_name());
+            }
+        }
+    }
+
+    @Test
     public void putToPlatformTest() throws Exception {
         ArrayList<PlatformValue> indexes = new ArrayList<>();
         String name = "rev1ew000";

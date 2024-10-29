@@ -11,7 +11,7 @@ use dpp::data_contract::accessors::v0::DataContractV0Getters;
 use dpp::data_contract::DataContract;
 use dpp::data_contract::document_type::accessors::DocumentTypeV0Getters;
 use dpp::document::Document;
-use dpp::identity::{Identity, identity_public_key::IdentityPublicKey, TimestampMillis};
+use dpp::identity::{Identity, identity_public_key::IdentityPublicKey, identity_public_key::TimestampMillis};
 use dpp::prelude::{BlockHeight, CoreBlockHeight};
 use dpp::ProtocolError;
 use dpp::state_transition::StateTransition;
@@ -37,7 +37,7 @@ use tracing::trace;
 use crate::config::{Config, EntryPoint};
 use crate::fetch_document::fetch_documents_with_query_and_sdk;
 use crate::put::{CallbackSigner, SignerCallback, wait_for_response_concurrent};
-use crate::sdk::{create_dash_sdk_using_core_testnet, DashSdk};
+use crate::sdk::{create_dash_sdk_using_core_testnet, create_dash_sdk_using_core_mainnet, DashSdk};
 
 #[ferment_macro::export]
 pub fn put_vote_to_platform(
@@ -381,7 +381,7 @@ fn get_votes_test() {
     }
 }
 
-//#[ferment_macro::export]
+#[ferment_macro::export]
 pub fn get_votepolls(
     rust_sdk: * mut DashSdk,
     start_time: TimestampMillis,
@@ -396,6 +396,8 @@ pub fn get_votepolls(
         let sdk = unsafe { (*rust_sdk).get_sdk() };
         let settings = unsafe { (*rust_sdk).get_request_settings() };
 
+        tracing::info!("get_vote_polls({}, {})", start_time, end_time);
+
         let query = VotePollsByEndDateDriveQuery {
             start_time: Some((start_time, start_time_included)),
             end_time: Some((end_time, end_time_included)),
@@ -405,7 +407,10 @@ pub fn get_votepolls(
         };
 
         match VotePoll::fetch_many_with_settings(&sdk, query.clone(), settings).await {
-            Ok(votes) => Ok(votes),
+            Ok(votes) => {
+                tracing::info!("get_vote_polls: {}", votes.0.len());
+                Ok(votes)
+            },
             Err(e) => Err(e.to_string())
         }
     })
@@ -423,9 +428,32 @@ fn get_votepolls_test() {
 
     let resources_result = get_votepolls(
         &mut sdk,
-        start_mills - 1000 * 2 * 3600,
+        start_mills,
         true,
-        start_mills + 1000 * 7 * 24 * 3600,
+        start_mills + 14 * 24 * 3600 * 1000,
+        true
+    );
+    match resources_result {
+        Ok(resources) => println!("contested resources = {:?}", resources),
+        Err(e) => panic!("error: {}", e)
+    }
+}
+
+#[test]
+fn get_votepolls_mainnet_test() {
+    let mut sdk = create_dash_sdk_using_core_mainnet();
+    tracing::warn!("sdk: {:?}", sdk.get_sdk());
+
+    let start = SystemTime::now();
+    let since_the_epoch = start.duration_since(UNIX_EPOCH)
+        .expect("Time went backwards");
+    let start_mills = since_the_epoch.as_millis() as u64;
+
+    let resources_result = get_votepolls(
+        &mut sdk,
+        start_mills,
+        true,
+        start_mills + 14 * 24 * 3600 * 1000,
         true
     );
     match resources_result {

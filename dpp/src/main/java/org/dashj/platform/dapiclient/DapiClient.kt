@@ -33,10 +33,12 @@ import org.dashj.platform.dpp.identity.IdentityPublicKey
 import org.dashj.platform.dpp.statetransition.StateTransition
 import org.dashj.platform.dpp.toBase58
 import org.dashj.platform.dpp.toHex
+import org.dashj.platform.dpp.toTimestampMillis
 import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.dpp.voting.Contenders
 import org.dashj.platform.dpp.voting.ContestedResources
 import org.dashj.platform.dpp.voting.Vote
+import org.dashj.platform.dpp.voting.VotePollsGroupedByTimestamp
 import org.dashj.platform.sdk.PlatformValue
 import org.dashj.platform.sdk.SWIGTYPE_p_DashSdk
 import org.dashj.platform.sdk.Start
@@ -1111,5 +1113,16 @@ class DapiClient(
         )
 
         return Vote(result.unwrap())
+    }
+
+    fun getVotePolls(startTime: Long, startTimeIncluded: Boolean = true, endTime:Long, endTimeIncluded: Boolean = true): VotePollsGroupedByTimestamp {
+        val result = dashsdk.platformMobileVotingGetVotepolls(
+            rustSdk,
+            startTime.toTimestampMillis(),
+            startTimeIncluded,
+            endTime.toTimestampMillis(),
+            endTimeIncluded
+        )
+        return VotePollsGroupedByTimestamp(result.unwrap());
     }
 }
