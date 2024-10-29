@@ -84,7 +84,7 @@ pub fn fetch_documents_with_query_and_sdk(
     rt.block_on(async {
         let sdk = unsafe { (*rust_sdk).get_sdk() };
 
-        tracing::warn!("using existing data contract id and fetching...");
+        //tracing::warn!("using existing data contract id and fetching...");
 
         let contract = match unsafe { (*rust_sdk).get_data_contract(&data_contract_id) } {
             Some(data_contract) => data_contract.clone(),
@@ -129,7 +129,6 @@ pub fn fetch_documents_with_query_and_sdk(
         let data_contract_cache = unsafe { (*rust_sdk).data_contract_cache.clone() };
         match fetch_documents_with_retry(sdk.clone(), data_contract_cache, all_docs_query, settings, extra_retries).await {
             Ok(docs) => {
-                tracing::warn!("convert to Vec");
                 let into_vec = |map: BTreeMap<Identifier, Option<Document>>| {
                     map.into_iter()
                         .filter_map(|(_key, value)| value)
@@ -143,78 +142,78 @@ pub fn fetch_documents_with_query_and_sdk(
     })
 }
 
-#[ferment_macro::export]
-pub unsafe fn fetch_documents_with_query_and_sdk2(
-    rust_sdk: *mut DashSdk,
-    contract_id: Identifier,
-    document_type: String,
-    where_clauses: Vec<WhereClause>,
-    order_clauses: Vec<OrderClause>,
-    limit: u32,
-    start: Option<StartPoint>
-) -> Result<Vec<Document>, String> {
-    let rt = (*rust_sdk).get_runtime();
-
-    // Execute the async block using the Tokio runtime
-    rt.block_on(async {
-        let sdk = (*rust_sdk).get_sdk();
-
-        let data_contract_id = contract_id;
-        tracing::warn!("using existing data contract id and fetching...");
-
-        let contract = match ((*rust_sdk).get_data_contract(&contract_id)) {
-            Some(data_contract) => data_contract.clone(),
-            None => {
-                match (DataContract::fetch(&sdk, data_contract_id.clone())
-                    .await) {
-                    Ok(Some(data_contract)) => {
-                        unsafe { (*rust_sdk).add_data_contract(&data_contract); };
-                        Arc::new(data_contract)
-                    },
-                    Ok(None) => return Err("data contract not found".to_string()),
-                    Err(e) => return Err(e.to_string())
-                }
-            }
-        };
-
-        tracing::warn!("contract_fetch_result: {:?}", contract);
-
-
-        tracing::warn!("fetching many...");
-        // Fetch multiple documents so that we get document ID
-        let mut all_docs_query =
-            DocumentQuery::new(Arc::clone(&contract), &document_type)
-                .expect("create SdkDocumentQuery");
-        for wc in where_clauses {
-            all_docs_query = all_docs_query.with_where(wc);
-        }
-        for oc in order_clauses {
-            all_docs_query = all_docs_query.with_order_by(oc);
-        }
-        all_docs_query.limit = limit;
-        all_docs_query.start = match start {
-            Some(s) => Some(s.into()),
-            None => None
-        };
-        let settings = unsafe { (*rust_sdk).get_request_settings() };
-        tracing::warn!("fetching many... query created");
-        let docs = Document::fetch_many_with_settings(&sdk, all_docs_query, settings)
-            .await;
-        match docs {
-            Ok(docs) => {
-                tracing::warn!("convert to Vec");
-                let into_vec = |map: BTreeMap<Identifier, Option<Document>>| {
-                    map.into_iter()
-                        .filter_map(|(_key, value)| value)
-                        .collect::<Vec<Document>>()
-                };
-
-                Ok(into_vec(docs))
-            }
-            Err(e) => Err(e.to_string())
-        }
-    })
-}
+// #[ferment_macro::export]
+// pub unsafe fn fetch_documents_with_query_and_sdk2(
+//     rust_sdk: *mut DashSdk,
+//     contract_id: Identifier,
+//     document_type: String,
+//     where_clauses: Vec<WhereClause>,
+//     order_clauses: Vec<OrderClause>,
+//     limit: u32,
+//     start: Option<StartPoint>
+// ) -> Result<Vec<Document>, String> {
+//     let rt = (*rust_sdk).get_runtime();
+//
+//     // Execute the async block using the Tokio runtime
+//     rt.block_on(async {
+//         let sdk = (*rust_sdk).get_sdk();
+//
+//         let data_contract_id = contract_id;
+//         tracing::warn!("using existing data contract id and fetching...");
+//
+//         let contract = match ((*rust_sdk).get_data_contract(&contract_id)) {
+//             Some(data_contract) => data_contract.clone(),
+//             None => {
+//                 match (DataContract::fetch(&sdk, data_contract_id.clone())
+//                     .await) {
+//                     Ok(Some(data_contract)) => {
+//                         unsafe { (*rust_sdk).add_data_contract(&data_contract); };
+//                         Arc::new(data_contract)
+//                     },
+//                     Ok(None) => return Err("data contract not found".to_string()),
+//                     Err(e) => return Err(e.to_string())
+//                 }
+//             }
+//         };
+//
+//         tracing::warn!("contract_fetch_result: {:?}", contract);
+//
+//
+//         tracing::warn!("fetching many...");
+//         // Fetch multiple documents so that we get document ID
+//         let mut all_docs_query =
+//             DocumentQuery::new(Arc::clone(&contract), &document_type)
+//                 .expect("create SdkDocumentQuery");
+//         for wc in where_clauses {
+//             all_docs_query = all_docs_query.with_where(wc);
+//         }
+//         for oc in order_clauses {
+//             all_docs_query = all_docs_query.with_order_by(oc);
+//         }
+//         all_docs_query.limit = limit;
+//         all_docs_query.start = match start {
+//             Some(s) => Some(s.into()),
+//             None => None
+//         };
+//         let settings = unsafe { (*rust_sdk).get_request_settings() };
+//         tracing::warn!("fetching many... query created");
+//         let docs = Document::fetch_many_with_settings(&sdk, all_docs_query, settings)
+//             .await;
+//         match docs {
+//             Ok(docs) => {
+//                 tracing::warn!("convert to Vec");
+//                 let into_vec = |map: BTreeMap<Identifier, Option<Document>>| {
+//                     map.into_iter()
+//                         .filter_map(|(_key, value)| value)
+//                         .collect::<Vec<Document>>()
+//                 };
+//
+//                 Ok(into_vec(docs))
+//             }
+//             Err(e) => Err(e.to_string())
+//         }
+//     })
+// }
 
 // Contenders: 5
 // Abstain: 0
@@ -250,8 +249,7 @@ pub unsafe fn deserialize_document_sdk(
 
         tracing::warn!("using existing data contract id and fetching...");
 
-        let cfg = Config::new();
-        let sdk = cfg.setup_api().await;
+        let sdk = unsafe { (*rust_sdk).get_sdk() };
 
         let contract = match ((*rust_sdk).get_data_contract(&data_contract_id)) {
             Some(data_contract) => data_contract.clone(),

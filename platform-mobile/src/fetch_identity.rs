@@ -99,12 +99,8 @@ unsafe fn identity_read_balance_with_sdk(rust_sdk: *mut DashSdk, id: &Identifier
     // Execute the async block using the Tokio runtime
     rt.block_on(async {
         // Your async code here
-        let cfg = Config::new();
         let id: Identifier = id.clone();
-        tracing::info!("Setting up SDK");
         let sdk = unsafe { (*rust_sdk).get_sdk() };
-        tracing::info!("Finished SDK, {:?}", sdk);
-        tracing::info!("Call fetch");
         let settings = unsafe { (*rust_sdk).get_request_settings() };
         let identity_result = IdentityBalance::fetch_with_settings(&sdk, id, settings).await;
 
@@ -126,7 +122,6 @@ unsafe fn identity_from_keyhash_sdk(rust_sdk: *mut DashSdk, pubkey_hash: &Public
     // Execute the async block using the Tokio runtime
     rt.block_on(async {
         // Your async code here
-        let cfg = Config::new();
         let key_hash = pubkey_hash.clone();
         tracing::info!("Setting up SDK");
         let sdk = unsafe { (*rust_sdk).get_sdk() };
