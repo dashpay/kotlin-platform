@@ -364,7 +364,6 @@ pub fn put_identity_sdk(
     // Execute the async block using the Tokio runtime
     rt.block_on(async {
         // Your async code here
-        let cfg = Config::new();
         trace!("Setting up SDK");
         let sdk = unsafe { (*rust_sdk).get_sdk() };
         trace!("Finished SDK, {:?}", sdk);
@@ -435,10 +434,7 @@ pub fn topup_identity_sdk(
     // Execute the async block using the Tokio runtime
     rt.block_on(async {
         // Your async code here
-        let cfg = Config::new();
-        trace!("Setting up SDK");
         let sdk = unsafe { (*rust_sdk).get_sdk() };
-        trace!("Finished SDK, {:?}", sdk);
         trace!("Set up network, private key and signer");
 
         let network = if is_testnet {
@@ -531,7 +527,6 @@ pub fn put_document_sdk(
     let rt = unsafe { (*rust_sdk).get_runtime() };
     rt.block_on(async {
         // Your async code here
-        let cfg = Config::new();
         trace!("Setting up SDK");
         let sdk = unsafe { (*rust_sdk).get_sdk() };
 

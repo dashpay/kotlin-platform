@@ -147,7 +147,6 @@ fn test_put_documents_for_username() {
     // Execute the async block using the Tokio runtime
     match rt.block_on(async {
         // Your async code here
-        let cfg = Config::new();
         tracing::warn!("Setting up SDK");
         let sdk = rust_sdk.get_sdk();
         tracing::warn!("Finished SDK, {:?}", sdk);
