@@ -64,6 +64,8 @@ use dpp::serialization::PlatformSerializable;
 use drive_proof_verifier::types::Documents;
 use rs_dapi_client::transport::BoxFuture;
 use dash_sdk::platform::transition::replace_document::ReplaceDocument;
+use dpp::util::hash::hash_double_to_vec;
+
 pub fn get_wait_result_error(response: &WaitForStateTransitionResultResponse) -> Option<&StateTransitionBroadcastError> {
     match &response.version {
         Some(dapi_grpc::platform::v0::wait_for_state_transition_result_response::Version::V0(response_v0)) => {
@@ -596,7 +598,10 @@ pub fn put_document_sdk(
             settings,
             extra_retries
         ).await.or_else(|err|Err(err.to_string()))?;
-
+        tracing::info!(
+            "state transition (hash): {}",
+            hex::encode(hash_double_to_vec(transition.serialize_to_bytes().unwrap()))
+        );
         let result_document = wait_for_response_concurrent(
             &new_document,
             &sdk,
@@ -720,7 +725,10 @@ pub fn replace_document_sdk(
             settings,
             extra_retries
         ).await.or_else(|err|Err(err.to_string()))?;
-
+        tracing::info!(
+            "state transition (hash): {}",
+            hex::encode(hash_double_to_vec(transition.serialize_to_bytes().unwrap()))
+        );
         let result_document = wait_for_response_concurrent(
             &document,
             &sdk,

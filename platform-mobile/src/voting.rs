@@ -72,6 +72,10 @@ pub fn put_vote_to_platform(
             Some(settings)
         ).await.or_else(|err|Err(err.to_string()))?;
         tracing::info!("Call Vote::wait_for_response");
+        tracing::info!(
+            "state transition (hash): {}",
+            hex::encode(hash_double_to_vec(masternode_vote_transition.serialize_to_bytes().unwrap()))
+        );
 
         let vote = <Vote as PutVote<SimpleSigner>>::wait_for_response::<'_, '_, '_>(
             &vote,
