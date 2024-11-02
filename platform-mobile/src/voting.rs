@@ -39,6 +39,7 @@ use crate::fetch_document::fetch_documents_with_query_and_sdk;
 use crate::put::{CallbackSigner, SignerCallback, wait_for_response_concurrent};
 use crate::sdk::{create_dash_sdk_using_core_testnet, create_dash_sdk_using_core_mainnet, DashSdk};
 
+/// push a vote from a single masternode designated by [voter_pro_tx_hash]
 #[ferment_macro::export]
 pub fn put_vote_to_platform(
     rust_sdk: *mut DashSdk,
@@ -238,6 +239,12 @@ pub fn get_vote_contenders(
         }
     })
 }
+
+/// Get the contested resources for a given data contract ([data_contract_id]) and the specified
+/// document type ([document_type_name]).
+///
+/// For `domain` documents of the DPNS data contract, the contested resources are text items
+/// from the `normalizedLabel` field.
 #[ferment_macro::export]
 pub fn get_contested_resources(
     rust_sdk: * mut DashSdk,
@@ -356,11 +363,11 @@ pub fn get_votes(
         let settings = unsafe { (*rust_sdk).get_request_settings() };
 
         let query = ContestedResourceVotesGivenByIdentityQuery {
-            identity_id: data_contract_id, //Identifier::from_string("", Encoding::Base58).unwrap(),
+            identity_id: data_contract_id,
             offset: None,
             limit: None,
             start_at: None,
-            order_ascending: false,
+            order_ascending: true,
         };
 
         match Vote::fetch_with_settings(&sdk, query.clone(), settings).await {
@@ -374,7 +381,7 @@ pub fn get_votes(
 fn get_votes_test() {
     let mut sdk = create_dash_sdk_using_core_testnet();
     tracing::warn!("sdk: {:?}", sdk.get_sdk());
-    let contract_id = Identifier::from_string("HLWuAX1TebsXFNC8W2e8yUzaqLRCaB29pPxomNcRbBjK", Encoding::Base58).unwrap();
+    // let contract_id = Identifier::from_string("HLWuAX1TebsXFNC8W2e8yUzaqLRCaB29pPxomNcRbBjK", Encoding::Base58).unwrap();
     let resources_result = get_votes(
         &mut sdk,
         Identifier::from(dpns_contract::ID_BYTES)
@@ -385,6 +392,11 @@ fn get_votes_test() {
     }
 }
 
+/// Gets the vote polls that have end dates within the range of ([start_time], [end_time])
+///
+/// This is useful to determine the active contests for a particular document field such as the
+/// `normalizedLabel` of the `domain` document of the DPNS contract.  [start_time] should be set to
+/// the current time and the [end_time] should be set to 14 days from the [start_time].
 #[ferment_macro::export]
 pub fn get_votepolls(
     rust_sdk: * mut DashSdk,
