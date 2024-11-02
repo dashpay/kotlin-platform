@@ -27,7 +27,6 @@ import org.dashj.platform.dpp.DashPlatformProtocol
 import org.dashj.platform.dpp.contract.DataContract
 import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.identifier.Identifier
-import org.dashj.platform.dpp.identifier.RustIdentifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.identity.IdentityPublicKey
 import org.dashj.platform.dpp.statetransition.StateTransition
@@ -40,6 +39,7 @@ import org.dashj.platform.dpp.voting.ContestedResources
 import org.dashj.platform.dpp.voting.Vote
 import org.dashj.platform.dpp.voting.VotePollsGroupedByTimestamp
 import org.dashj.platform.sdk.PlatformValue
+import org.dashj.platform.dpp.voting.ResourceVotesByIdentity
 import org.dashj.platform.sdk.SWIGTYPE_p_DashSdk
 import org.dashj.platform.sdk.Start
 import org.dashj.platform.sdk.callbacks.ContextProvider
@@ -450,7 +450,7 @@ class DapiClient(
         val identityId = Identifier.from(id)
         val result = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(
             rustSdk,
-            RustIdentifier(id)
+            identityId.toNative()
         )
         return try {
             Identity(result.unwrap().get())
@@ -1103,6 +1103,7 @@ class DapiClient(
         identityPublicKey: IdentityPublicKey,
         signerCallback: Signer
     ): Vote {
+        logger.info("broadcastVote($vote, $voterProTxHash, $identityPublicKey, ...)")
         val result = dashsdk.platformMobileVotingPutVoteToPlatform(
             rustSdk,
             vote.toNative(),
@@ -1124,5 +1125,17 @@ class DapiClient(
             endTimeIncluded
         )
         return VotePollsGroupedByTimestamp(result.unwrap());
+    }
+
+    fun getLastVoteFromMasternode(protxHash: Sha256Hash, dataContractId: Identifier, documentType: String, indexName: String, indexes: List<String>): ResourceVotesByIdentity {
+        val result = dashsdk.platformMobileVotingGetLastVoteFromMasternode(
+            rustSdk,
+            Identifier.from(protxHash).toNative(),
+            indexName,
+            indexes.map { PlatformValue(it) },
+            documentType,
+            dataContractId.toNative()
+        )
+        return ResourceVotesByIdentity(result.unwrap())
     }
 }
