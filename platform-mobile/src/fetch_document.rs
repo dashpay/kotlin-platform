@@ -84,8 +84,6 @@ pub fn fetch_documents_with_query_and_sdk(
     rt.block_on(async {
         let sdk = unsafe { (*rust_sdk).get_sdk() };
 
-        //tracing::warn!("using existing data contract id and fetching...");
-
         let contract = match unsafe { (*rust_sdk).get_data_contract(&data_contract_id) } {
             Some(data_contract) => data_contract.clone(),
             None => {
@@ -104,7 +102,6 @@ pub fn fetch_documents_with_query_and_sdk(
 
         tracing::warn!("contract_fetch_result: {:?}", contract);
 
-        tracing::warn!("fetching many...");
         // Fetch multiple documents so that we get document ID
         let mut all_docs_query =
             DocumentQuery::new(Arc::clone(&contract), &document_type)
@@ -121,7 +118,6 @@ pub fn fetch_documents_with_query_and_sdk(
             None => None
         };
         let settings = unsafe { (*rust_sdk).get_request_settings() };
-        tracing::warn!("fetching many... query created");
         let extra_retries = match settings.retries {
             Some(retries) => retries,
             None => 5 as usize
@@ -141,79 +137,6 @@ pub fn fetch_documents_with_query_and_sdk(
         }
     })
 }
-
-// #[ferment_macro::export]
-// pub unsafe fn fetch_documents_with_query_and_sdk2(
-//     rust_sdk: *mut DashSdk,
-//     contract_id: Identifier,
-//     document_type: String,
-//     where_clauses: Vec<WhereClause>,
-//     order_clauses: Vec<OrderClause>,
-//     limit: u32,
-//     start: Option<StartPoint>
-// ) -> Result<Vec<Document>, String> {
-//     let rt = (*rust_sdk).get_runtime();
-//
-//     // Execute the async block using the Tokio runtime
-//     rt.block_on(async {
-//         let sdk = (*rust_sdk).get_sdk();
-//
-//         let data_contract_id = contract_id;
-//         tracing::warn!("using existing data contract id and fetching...");
-//
-//         let contract = match ((*rust_sdk).get_data_contract(&contract_id)) {
-//             Some(data_contract) => data_contract.clone(),
-//             None => {
-//                 match (DataContract::fetch(&sdk, data_contract_id.clone())
-//                     .await) {
-//                     Ok(Some(data_contract)) => {
-//                         unsafe { (*rust_sdk).add_data_contract(&data_contract); };
-//                         Arc::new(data_contract)
-//                     },
-//                     Ok(None) => return Err("data contract not found".to_string()),
-//                     Err(e) => return Err(e.to_string())
-//                 }
-//             }
-//         };
-//
-//         tracing::warn!("contract_fetch_result: {:?}", contract);
-//
-//
-//         tracing::warn!("fetching many...");
-//         // Fetch multiple documents so that we get document ID
-//         let mut all_docs_query =
-//             DocumentQuery::new(Arc::clone(&contract), &document_type)
-//                 .expect("create SdkDocumentQuery");
-//         for wc in where_clauses {
-//             all_docs_query = all_docs_query.with_where(wc);
-//         }
-//         for oc in order_clauses {
-//             all_docs_query = all_docs_query.with_order_by(oc);
-//         }
-//         all_docs_query.limit = limit;
-//         all_docs_query.start = match start {
-//             Some(s) => Some(s.into()),
-//             None => None
-//         };
-//         let settings = unsafe { (*rust_sdk).get_request_settings() };
-//         tracing::warn!("fetching many... query created");
-//         let docs = Document::fetch_many_with_settings(&sdk, all_docs_query, settings)
-//             .await;
-//         match docs {
-//             Ok(docs) => {
-//                 tracing::warn!("convert to Vec");
-//                 let into_vec = |map: BTreeMap<Identifier, Option<Document>>| {
-//                     map.into_iter()
-//                         .filter_map(|(_key, value)| value)
-//                         .collect::<Vec<Document>>()
-//                 };
-//
-//                 Ok(into_vec(docs))
-//             }
-//             Err(e) => Err(e.to_string())
-//         }
-//     })
-// }
 
 // Contenders: 5
 // Abstain: 0
@@ -247,7 +170,7 @@ pub unsafe fn deserialize_document_sdk(
     rt.block_on(async {
         let sdk = (*rust_sdk).get_sdk();
 
-        tracing::warn!("using existing data contract id and fetching...");
+        tracing::info!("using existing data contract id and fetching...");
 
         let sdk = unsafe { (*rust_sdk).get_sdk() };
 
@@ -277,7 +200,7 @@ pub unsafe fn deserialize_document_sdk(
 //
 //     for document in docs {
 //         // Use `document` here
-//         tracing::info!("{:?}", document); // Assuming Document implements Debug
+//         println!("{:?}", document); // Assuming Document implements Debug
 //     }
 // }
 //
@@ -288,7 +211,7 @@ pub unsafe fn deserialize_document_sdk(
 //
 //     for document in docs {
 //         // Use `document` here
-//         tracing::info!("{:?}", document); // Assuming Document implements Debug
+//         println!("{:?}", document); // Assuming Document implements Debug
 //     }
 // }
 
@@ -299,7 +222,7 @@ pub unsafe fn deserialize_document_sdk(
 //
 //     for document in docs {
 //         // Use `document` here
-//         tracing::info!("{:?}", document); // Assuming Document implements Debug
+//         println!("{:?}", document); // Assuming Document implements Debug
 //     }
 //}
 
@@ -319,10 +242,10 @@ pub unsafe fn deserialize_document_sdk(
 //
 //     match docs_result {
 //         Ok(docs) => {
-//             tracing::info!("query results");
+//             println!("query results");
 //             for document in docs {
 //                 // Use `document` here
-//                 tracing::info!("{:?}", document); // Assuming Document implements Debug
+//                 println!("{:?}", document); // Assuming Document implements Debug
 //             }
 //         }
 //         Err(e) => panic!("{}", e)
@@ -347,38 +270,10 @@ fn docs_full_query_sdk_test() {
 
     match docs_result {
         Ok(docs) => {
-            tracing::info!("query results");
+            println!("query results");
             for document in docs {
                 // Use `document` here
-                tracing::info!("{:?}", document); // Assuming Document implements Debug
-            }
-        }
-        Err(e) => panic!("{}", e)
-    }
-}
-
-#[test]
-fn docs_full_query_sdk2_test() {
-    let mut sdk = create_dash_sdk_using_core_testnet();
-    let contract_id = Identifier::from(dpns_contract::ID_BYTES);
-    let docs_result = unsafe {
-        fetch_documents_with_query_and_sdk2(
-            &mut sdk,
-            contract_id,
-            "domain".to_string(),
-            vec![],
-            vec![],
-            100,
-            None
-        )
-    };
-
-    match docs_result {
-        Ok(docs) => {
-            tracing::info!("query results");
-            for document in docs {
-                // Use `document` here
-                tracing::info!("{:?}", document); // Assuming Document implements Debug
+                println!("{:?}", document); // Assuming Document implements Debug
             }
         }
         Err(e) => panic!("{}", e)
@@ -408,10 +303,53 @@ fn docs_startswith_query_sdk_test() {
 
     match docs_result {
         Ok(docs) => {
-            tracing::info!("query results: {}", docs.len());
+            println!("query results: {}", docs.len());
             for document in docs {
                 // Use `document` here
-                tracing::info!("{:?}", document); // Assuming Document implements Debug
+                println!("{:?}", document); // Assuming Document implements Debug
+            }
+        }
+        Err(e) => panic!("{}", e)
+    }
+}
+
+#[test]
+fn docs_get_all_query_sdk_test() {
+    let mut sdk = create_dash_sdk_using_core_testnet();
+    let contract_id = Identifier::from(dpns_contract::ID_BYTES);
+    let docs_result = unsafe {
+        fetch_documents_with_query_and_sdk(
+            &mut sdk,
+            contract_id,
+            "domain".to_string(),
+            vec![],
+            vec![],
+            100,
+            None
+        )
+    };
+
+    match docs_result {
+        Ok(docs) => {
+            println!("query results: {}", docs.len());
+            let docs_result2 = unsafe {
+                fetch_documents_with_query_and_sdk(
+                    &mut sdk,
+                    contract_id,
+                    "domain".to_string(),
+                    vec![],
+                    vec![],
+                    100,
+                    Some(StartPoint::StartAt(docs.last().unwrap().id().to_vec()))
+                )
+            };
+            match docs_result2 {
+                Ok(docuemnts) => { },
+                Err(e) => { panic!("error: {}", e)}
+            }
+            for document in docs {
+                // Use `document` here
+                println!("{:?}", document); // Assuming Document implements Debug
             }
         }
         Err(e) => panic!("{}", e)
@@ -441,10 +379,10 @@ fn docs_startswith_query_sdk_using_single_node_test() {
 
     match docs_result {
         Ok(docs) => {
-            tracing::info!("query results: {}", docs.len());
+            println!("query results: {}", docs.len());
             for document in docs {
                 // Use `document` here
-                tracing::info!("{:?}", document); // Assuming Document implements Debug
+                println!("{:?}", document); // Assuming Document implements Debug
             }
         }
         Err(e) => panic!("{}", e)
@@ -474,12 +412,12 @@ fn docs_domain_query_sort_test() {
 
     match docs_result {
         Ok(docs) => {
-            tracing::info!("query results: {}", docs.len());
+            println!("query results: {}", docs.len());
             for document in docs {
                 match document {
                     Document::V0(document_v0) => {
                         // Use `document` here
-                        tracing::info!("{:?}", document_v0.properties().get("normalizedLabel")); // Assuming Document implements Debug
+                        println!("{:?}", document_v0.properties().get("normalizedLabel")); // Assuming Document implements Debug
                     }
                 }
             }
@@ -765,7 +703,7 @@ fn check_all_nodes_test() {
 
         match docs_result {
             Ok(docs) => {
-                tracing::info!("{}: success", address);
+                println!("{}: success", address);
                 good_nodes.push(address.to_string());
             }
             Err(e) => {
@@ -806,7 +744,7 @@ fn check_all_nodes_mainnet_test() {
 
         match docs_result {
             Ok(docs) => {
-                tracing::info!("{}: success", address);
+                println!("{}: success", address);
                 good_nodes.push(address.to_string());
             }
             Err(e) => {
