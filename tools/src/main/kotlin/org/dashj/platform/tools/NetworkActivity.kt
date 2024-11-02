@@ -35,6 +35,7 @@ class NetworkActivity {
             sdk = Client(
                 ClientOptions(network = network)
             )
+            sdk.platform.useValidNodes()
             platform = sdk.platform
             getNetworkActivity()
         }
