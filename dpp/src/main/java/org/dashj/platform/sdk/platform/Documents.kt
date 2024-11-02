@@ -226,4 +226,8 @@ class Documents(val platform: Platform) {
         }
         return result
     }
+
+    fun getVoteFromMasternode(proTxHash: Sha256Hash, dataContractId: Identifier, documentType: String, indexName: String, indexes: List<String>) {
+        platform.client.getLastVoteFromMasternode(proTxHash, dataContractId, documentType, indexName, indexes)
+    }
 }

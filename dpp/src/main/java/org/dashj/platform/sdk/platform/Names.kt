@@ -441,4 +441,14 @@ class Names(val platform: Platform) {
             currentTime + votingPeriod(platform.params)
         )
     }
+
+    fun getVoteFromMasternode(proTxHash: Sha256Hash, normalizedLabel: String) {
+        return platform.documents.getVoteFromMasternode(
+            proTxHash,
+            platform.apps[DPNS_DATA_CONTRACT]!!.contractId,
+            "domain",
+            CONTESTED_INDEX,
+            listOf(DEFAULT_PARENT_DOMAIN, normalizedLabel)
+        )
+    }
 }

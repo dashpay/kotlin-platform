@@ -175,9 +175,7 @@ SET_STRUCT_TYPEMAP(
 LIST_STRUCT_TYPEMAP(Vec_drive_proof_verifier_types_ContestedResource, drive_proof_verifier_types_ContestedResource, ContestedResource, clone);
 
 %rename (VotePollsGroupedByTimeStamp) drive_proof_verifier_types_VotePollsGroupedByTimestamp;
-// %extend drive_proof_verifier_types_VotePollsGroupedByTimestamp {
-//
-// };
+%rename (ResourceVotesByIdentity) drive_proof_verifier_types_ResourceVotesByIdentity;
 
 %rename (TupleTimeStampMillisVotePoll) Tuple_dpp_prelude_TimestampMillis_Vec_dpp_voting_vote_polls_VotePoll;
 LIST_STRUCT_TYPEMAP(
@@ -218,4 +216,21 @@ LIST_STRUCT_TYPEMAP(
     char *document_type_name,
     platform_value_types_identifier_Identifier *data_contract_id
 );
+
+%newobject platform_mobile_voting_get_votepolls(
+    DashSdk *rust_sdk,
+    dpp_identity_identity_public_key_TimestampMillis *start_time,
+    bool start_time_included,
+    dpp_identity_identity_public_key_TimestampMillis *end_time,
+    bool end_time_included
+);
+
+%newobject platform_mobile_voting_get_last_vote_from_masternode(DashSdk *rust_sdk,
+    platform_value_types_identifier_Identifier *masternode_protxhash,
+    char *index_name,
+    Vec_platform_value_Value *index_values,
+    char *document_type_name,
+    platform_value_types_identifier_Identifier *contract_id
+);
+
 
