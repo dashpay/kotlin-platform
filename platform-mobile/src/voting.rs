@@ -467,7 +467,10 @@ fn get_votepolls_mainnet_test() {
 }
 
 use dash_sdk::platform::query::VoteQuery;
-//#[ferment_macro::export]
+use dpp::serialization::PlatformSerializable;
+use dpp::util::hash::hash_double_to_vec;
+
+#[ferment_macro::export]
 pub fn get_last_vote_from_masternode(
     rust_sdk: * mut DashSdk,
     masternode_protxhash: Identifier,
@@ -506,10 +509,10 @@ fn get_votes_from_identity_test() {
     tracing::warn!("sdk: {:?}", sdk.get_sdk());
 
     //let masternode_identifier = Identifier::from_string("2Ey6wdP5YYSqhq96KmU349CeSCsV4avrsNCaXqogGEr9", Encoding::Base58).unwrap();
-    let masternode_identifier = Identifier::from_string("bc77a5a2cec455c79fb92fb683dbd87a2a92b663c9a46d0c50d11889b4aeb121", Encoding::Hex).unwrap();
+    let masternode_identifier = Identifier::from_string("c0aae8ab24aab988cc84385d16af7ffcfd365d0e016f5799759e0525a435a617", Encoding::Hex).unwrap();
     let contract_id = Identifier::from(dpns_contract::ID_BYTES);
     let index_name =  "parentNameAndLabel".to_string();
-    let index_values = vec![Value::Text("dash".to_string()), Value::Text("test110".to_string())];
+    let index_values = vec![Value::Text("dash".to_string()), Value::Text("test-10101".to_string())];
     let document_type_name = "domain".to_string();
 
     let result = get_last_vote_from_masternode(
