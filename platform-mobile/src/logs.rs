@@ -62,38 +62,57 @@ impl<S> Layer<S> for AndroidLogLayer
     }
 }
 
+#[cfg(target_os = "android")]
+use tracing::Level;
+#[cfg(target_os = "android")]
+use tracing_logcat::{LogcatMakeWriter, LogcatTag};
+#[cfg(target_os = "android")]
+use tracing_subscriber::fmt::format::Format;
+
 static mut LOGS_SETUP: bool = false;
 #[cfg(target_os = "android")]
 pub fn setup_logs() {
-    unsafe {
-        if (LOGS_SETUP) {
-            return
-        }
-        LOGS_SETUP = true;
-    }
+    let tag = LogcatTag::Fixed(env!("CARGO_PKG_NAME").to_owned());
+    let writer = LogcatMakeWriter::new(tag)
+        .expect("Failed to initialize logcat writer");
+    
+    tracing_subscriber::fmt()
+        .event_format(Format::default().with_level(false).without_time())
+        .with_writer(writer)
+        .with_ansi(false)
+        .with_max_level(Level::INFO) //TRACE
+        .init();
 
-    let env_filter = match tracing_subscriber::EnvFilter::try_from_default_env() {
-        Ok(filter) => filter,
-        Err(e) => {
-            // android_log_message("platform-mobile", &format!("Error parsing env filter: {}. Using default.", e));
-            tracing_subscriber::EnvFilter::new("info,dash_sdk=trace,h2=info")
-        }
-    };
-    let subscriber = tracing_subscriber::registry()
-        .with(AndroidLogLayer)
-        .with(
-            tracing_subscriber::fmt::layer()
-                .with_ansi(false)
-                .with_writer(std::io::stderr)
-        )
-        .with(env_filter);
+    // unsafe {
+    //     if (LOGS_SETUP) {
+    //         return
+    //     }
+    //     LOGS_SETUP = true;
+    // }
 
-    //tracing::subscriber::set_global_default(subscriber)
-    //    .expect("Unable to set global default subscriber");
+    // let env_filter = match tracing_subscriber::EnvFilter::try_from_default_env() {
+    //     Ok(filter) => filter,
+    //     Err(e) => {
+    //         let filter = tracing_subscriber::EnvFilter::new("info,dash_sdk=trace,h2=info");
+    //         android_log_message("platform-mobile", &format!("Error parsing env filter: {}. Using default.", e));
+    //         filter
+    //     }
+    // };
+    // let subscriber = tracing_subscriber::registry()
+    //     .with(AndroidLogLayer)
+    //     .with(
+    //         tracing_subscriber::fmt::layer()
+    //             .with_ansi(false)
+    //             .with_writer(std::io::stderr)
+    //     )
+    //     .with(env_filter);
 
-    if let Err(e) = tracing::subscriber::set_global_default(subscriber) {
-        crate::logs::android_log_message("platform-mobile", &*format!("Unable to set global default subscriber: {}", e));
-    }
+    // //tracing::subscriber::set_global_default(subscriber)
+    // //    .expect("Unable to set global default subscriber");
+
+    // if let Err(e) = tracing::subscriber::set_global_default(subscriber) {
+    //     crate::logs::android_log_message("platform-mobile", &*format!("Unable to set global default subscriber: {}", e));
+    // }
 
     setup_panic_hook();
 }

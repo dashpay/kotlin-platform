@@ -57,6 +57,7 @@ async-trait = "0.1.74"
 
 [target.'cfg(target_os = "android")'.dependencies]
 libc = "0.2.155"
+tracing-logcat = "0.1.0"
 
 #[build-dependencies]
 #cbindgen = "0.26.0"
