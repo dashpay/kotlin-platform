@@ -39,3 +39,29 @@
         return $self->_0 == other->_0;
     }
 }
+
+%extend dpp_prelude_TimestampMillis {
+    dpp_prelude_TimestampMillis() {
+        return dpp_prelude_TimestampMillis_ctor(time(NULL) * 1000);
+    }
+    dpp_prelude_TimestampMillis(long long timestamp) {
+        return dpp_prelude_TimestampMillis_ctor(timestamp);
+    }
+    ~dpp_prelude_TimestampMillis() {
+        dpp_prelude_TimestampMillis_destroy($self);
+    }
+
+    long long toLong() {
+        return $self ? $self->_0 : -1;
+    }
+
+//     bool isNull() {
+//         return (uint64_t)$self < 10;
+//     }
+
+    bool objectEquals(dpp_prelude_TimestampMillis* other) {
+        if ($self == other) return true;
+        if ($self == nullptr || other == nullptr) return false;
+        return $self->_0 == other->_0;
+    }
+}

@@ -37,11 +37,16 @@ import org.dashj.platform.sdk.dashsdk
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.FileWriter
 import java.math.BigInteger
+import java.text.SimpleDateFormat
 import java.util.*
 
 
 object PlatformExplorer {
+    var monitorQuorumUsage = false
+    val dateFormat: SimpleDateFormat
     var dpnsContractId: ByteArray = byteArrayOf(
         230.toByte(),
         104,
@@ -84,6 +89,13 @@ object PlatformExplorer {
     lateinit var signer: Signer
     lateinit var kit: WalletAppKit
     lateinit var authenticationGroupExtension: AuthenticationGroupExtension
+    lateinit var fileOutputWriter: FileWriter
+
+    init {
+        val tz = TimeZone.getTimeZone("UTC")
+        dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'") // Quoted "Z" to indicate UTC, no timezone offset
+        dateFormat.timeZone = tz
+    }
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -205,6 +217,16 @@ object PlatformExplorer {
             ): ByteArray? {
                 val quorumHash = Sha256Hash.wrap(quorumHashBytes)
                 var quorumPublicKey: ByteArray? = null
+                if (monitorQuorumUsage) {
+                    fileOutputWriter.write(
+                        dateFormat.format(Date()) +
+                            ", " + Sha256Hash.wrap(quorumHashBytes) +
+                            ", " + coreChainLockedHeight +
+                            ", " + kit.chain().bestChainHeight +
+                            "\n"
+                    )
+                    fileOutputWriter.flush()
+                }
                 println("searching for quorum: $quorumType, $quorumHash, $coreChainLockedHeight")
                 kit.wallet().context.masternodeListManager.getQuorumListAtTip(
                     LLMQParameters.LLMQType.fromValue(
@@ -252,6 +274,7 @@ object PlatformExplorer {
             println("8.  Query Data contract by id")
             println("10. Query all contested resources for DOMAIN")
             println("11. Query votes for DOMAIN documents for a name")
+            println("12. Monitor Quorum Usage")
 
 
             println("w. Wallet info")
@@ -270,8 +293,12 @@ object PlatformExplorer {
                     )
                     try {
 
-                        val identity = value.unwrap();
-                        print(identity)
+                        val identityOptional = value.unwrap()
+                        if (identityOptional.isPresent) {
+                            print(identityOptional.get())
+                        } else {
+                            print("identity not found")
+                        }
                     } catch (e: Exception) {
                         println("fetch identity error: ${value.unwrapError()}")
                     }
@@ -529,6 +556,30 @@ object PlatformExplorer {
                             "null"
                         })
                         println("  Votes: " + value.v0._0.voteTally)
+                    }
+                }
+                "12" -> {
+                    println("Monitor Quorum Usage")
+                    //fileOutputStream = FileOutputStream("platform-quorum-usage-" + dateFormat.format(Date()))
+                    fileOutputWriter = FileWriter("platform-quorum-usage-" + dateFormat.format(Date()) + ".txt")
+                    fileOutputWriter.write("Time, Quorum Hash, Block Index\n")
+                    var quitMonitor = false
+                    monitorQuorumUsage = true
+                    while(!quitMonitor) {
+                        try {
+                            dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                                sdk,
+                                Identifier(dpnsContractId),
+                                "domain",
+                                listOf(),
+                                listOf(),
+                                5,
+                                null
+                            )
+                        } catch(e: Exception) {
+                            e.printStackTrace()
+                        }
+                        Thread.sleep(60*1000);
                     }
                 }
                 "w" -> {

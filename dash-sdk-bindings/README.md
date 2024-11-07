@@ -9,7 +9,6 @@ mkdir dashpay
 cd dashpay
 
 git clone https://github.com/dashpay/kotlin-platform.git
-git clone --branch feat/support-android https://github.com/hashengineering/bls-signatures.git # the android PR is not yet merged
 git clone --branch feat/add-android-support https://github.com/hashengineering/rs-x11-hash.git # the android PR is not yet merged
 git clone https://github.com/hashengineering/platform.git 
 git clone --branch feat/opaque-default https://github.com/dashpay/ferment.git 

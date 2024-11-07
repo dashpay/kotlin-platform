@@ -64,6 +64,8 @@ use dpp::serialization::PlatformSerializable;
 use drive_proof_verifier::types::Documents;
 use rs_dapi_client::transport::BoxFuture;
 use dash_sdk::platform::transition::replace_document::ReplaceDocument;
+use dpp::util::hash::hash_double_to_vec;
+
 pub fn get_wait_result_error(response: &WaitForStateTransitionResultResponse) -> Option<&StateTransitionBroadcastError> {
     match &response.version {
         Some(dapi_grpc::platform::v0::wait_for_state_transition_result_response::Version::V0(response_v0)) => {
@@ -116,7 +118,7 @@ pub async fn wait_for_response_concurrent(
             Ok(Ok(document)) => {
                 success_count += 1;
                 if success_count >= 3 {
-                    tracing::warn!("wait_for_response_concurrent, success: {:?}", document);
+                    tracing::info!("wait_for_response_concurrent, success: {:?}", document);
                     return Ok(document);
                 }
             }
@@ -168,7 +170,7 @@ pub async fn wait_for_response_concurrent_identity(
             Ok(Ok(identity)) => {
                 success_count += 1;
                 if success_count >= 3 {
-                    tracing::warn!("wait_for_response_concurrent, success: {:?}", identity);
+                    tracing::info!("wait_for_response_concurrent, success: {:?}", identity);
                     return Ok(identity);
                 }
             }
@@ -223,7 +225,7 @@ impl Signer for CallbackSigner {
         // stub
         let key_data = identity_public_key.data();
         let mut result = [0u8; 128];
-        trace!("CallbackSigner::sign({:?}, {:?})", key_data.as_slice(), data);
+        tracing::info!("CallbackSigner::sign({:?}, {:?})", key_data.as_slice(), data);
         let length = (self.signer_callback)(self.signer_context, key_data.as_slice().as_ptr(), key_data.len() as u32, data.as_ptr(), data.len() as u32, result.as_mut_ptr());
 
         // Check the return value to determine if the operation was successful
@@ -364,7 +366,6 @@ pub fn put_identity_sdk(
     // Execute the async block using the Tokio runtime
     rt.block_on(async {
         // Your async code here
-        let cfg = Config::new();
         trace!("Setting up SDK");
         let sdk = unsafe { (*rust_sdk).get_sdk() };
         trace!("Finished SDK, {:?}", sdk);
@@ -381,7 +382,7 @@ pub fn put_identity_sdk(
         };
         let signer = CallbackSigner::new(signer_context, signer_callback).expect("signer");
         let request_settings = unsafe { (*rust_sdk).get_request_settings() };
-        tracing::info!("Call Identity::put_to_platform_and_wait_for_response");
+        tracing::info!("call Identity::put_to_platform & wait_for_response");
 
         let asset_lock_proof: AssetLockProof = asset_lock_proof.into();
         // this PR has not been merged yet, but there is a way to detect if the put_identity will fail
@@ -406,8 +407,12 @@ pub fn put_identity_sdk(
             Err(err) => return Err(err.to_string())
         };
 
-        tracing::info!("state transition (signable): {}", hex::encode(state_transition.signable_bytes().unwrap()));
-        tracing::info!("state transition (serialized): {}", hex::encode(state_transition.serialize_to_bytes().unwrap()));
+        //tracing::info!("state transition (signable): {}", hex::encode(state_transition.signable_bytes().unwrap()));
+        //tracing::info!("state transition (serialized): {}", hex::encode(state_transition.serialize_to_bytes().unwrap()));
+        tracing::info!(
+            "state transition (hash): {}",
+            hex::encode(hash_double_to_vec(state_transition.serialize_to_bytes().unwrap()))
+        );
 
         let identity_result = wait_for_response_concurrent_identity(
             &identity,
@@ -435,11 +440,7 @@ pub fn topup_identity_sdk(
     // Execute the async block using the Tokio runtime
     rt.block_on(async {
         // Your async code here
-        let cfg = Config::new();
-        trace!("Setting up SDK");
         let sdk = unsafe { (*rust_sdk).get_sdk() };
-        trace!("Finished SDK, {:?}", sdk);
-        trace!("Set up network, private key and signer");
 
         let network = if is_testnet {
             Network::Testnet
@@ -454,7 +455,7 @@ pub fn topup_identity_sdk(
         let user_fee_increase = 1;
         let request_settings = unsafe { (*rust_sdk).get_request_settings() };
 
-        trace!("Call Identity::top_up_identity");
+        trace!("call Identity::top_up_identity");
         let identity_result = identity.top_up_identity(
             &sdk,
             asset_lock_proof.into(),
@@ -530,13 +531,7 @@ pub fn put_document_sdk(
 
     let rt = unsafe { (*rust_sdk).get_runtime() };
     rt.block_on(async {
-        // Your async code here
-        let cfg = Config::new();
-        trace!("Setting up SDK");
         let sdk = unsafe { (*rust_sdk).get_sdk() };
-
-        trace!("Finished SDK, {:?}", sdk);
-        trace!("Set up entropy, data contract and signer");
 
         let data_contract = match unsafe { (*rust_sdk).get_data_contract(&data_contract_id) } {
             Some(data_contract) => data_contract.clone(),
@@ -561,7 +556,6 @@ pub fn put_document_sdk(
         let signer = CallbackSigner::new(signer_context, signer_callback).expect("signer");
         let entropy_generator = DefaultEntropyGenerator;
         let entropy = entropy_generator.generate().unwrap();
-        //let document_entropy = entropy_generator.generate().unwrap();
         trace!("document_entropy: {:?}", entropy);
         trace!("IdentityPublicKey: {:?}", identity_public_key);
 
@@ -587,7 +581,7 @@ pub fn put_document_sdk(
             user_fee_increase: None,
         };
 
-        trace!("Call Document::put_to_platform_and_wait_for_response");
+        trace!("call Document::put_to_platform & wait_for_response");
         let data_contract_cache = unsafe {&(*rust_sdk).data_contract_cache.clone() };
         let extra_retries = settings.request_settings.retries.unwrap_or_else(|| 5usize);
         let transition = put_document_with_retry(
@@ -601,7 +595,10 @@ pub fn put_document_sdk(
             settings,
             extra_retries
         ).await.or_else(|err|Err(err.to_string()))?;
-
+        tracing::info!(
+            "state transition (hash): {}",
+            hex::encode(hash_double_to_vec(transition.serialize_to_bytes().unwrap()))
+        );
         let result_document = wait_for_response_concurrent(
             &new_document,
             &sdk,
@@ -675,10 +672,7 @@ pub fn replace_document_sdk(
     rt.block_on(async {
         // Your async code here
         let cfg = Config::new();
-        trace!("Setting up SDK");
         let sdk = unsafe { (*rust_sdk).get_sdk() };
-        trace!("Finished SDK, {:?}", sdk);
-        trace!("Set up entropy, data contract and signer");
 
         let data_contract = match unsafe { (*rust_sdk).get_data_contract(&data_contract_id) } {
             Some(data_contract) => data_contract.clone(),
@@ -711,7 +705,7 @@ pub fn replace_document_sdk(
             user_fee_increase: None,
         };
 
-        trace!("Call Document::replace_on_platform_and_wait_for_response");
+        trace!("call Document::replace_on_platform & wait_for_response");
 
         let data_contract_cache = unsafe {&(*rust_sdk).data_contract_cache.clone() };
         let extra_retries = settings.request_settings.retries.unwrap_or_else(|| 5usize);
@@ -725,7 +719,10 @@ pub fn replace_document_sdk(
             settings,
             extra_retries
         ).await.or_else(|err|Err(err.to_string()))?;
-
+        tracing::info!(
+            "state transition (hash): {}",
+            hex::encode(hash_double_to_vec(transition.serialize_to_bytes().unwrap()))
+        );
         let result_document = wait_for_response_concurrent(
             &document,
             &sdk,

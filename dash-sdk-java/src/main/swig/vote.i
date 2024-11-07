@@ -149,7 +149,6 @@ END_CLASS();
 
 %rename (TupleContestedDocumentVotePollWinnerInfoBlockInfo) Tuple_dpp_voting_vote_info_storage_contested_document_vote_poll_winner_info_ContestedDocumentVotePollWinnerInfo_dpp_block_block_info_BlockInfo;
 
-
 MAP_STRUCT_TYPEMAP(
     std_collections_Map_keys_platform_value_types_identifier_Identifier_values_Option_dpp_voting_votes_resource_vote_ResourceVote,
     platform_value_types_identifier_Identifier,
@@ -175,6 +174,35 @@ SET_STRUCT_TYPEMAP(
 
 LIST_STRUCT_TYPEMAP(Vec_drive_proof_verifier_types_ContestedResource, drive_proof_verifier_types_ContestedResource, ContestedResource, clone);
 
+%rename (VotePollsGroupedByTimeStamp) drive_proof_verifier_types_VotePollsGroupedByTimestamp;
+%rename (ResourceVotesByIdentity) drive_proof_verifier_types_ResourceVotesByIdentity;
+
+%rename (TupleTimeStampMillisVotePoll) Tuple_dpp_prelude_TimestampMillis_Vec_dpp_voting_vote_polls_VotePoll;
+LIST_STRUCT_TYPEMAP(
+    Vec_Tuple_dpp_prelude_TimestampMillis_Vec_dpp_voting_vote_polls_VotePoll,
+    Tuple_dpp_prelude_TimestampMillis_Vec_dpp_voting_vote_polls_VotePoll,
+    TupleTimeStampMillisVotePoll,
+    clone
+);
+
+//Vec_Tuple_dpp_prelude_TimestampMillis_Vec_dpp_voting_vote_polls_VotePoll
+//Tuple_dpp_prelude_TimestampMillis_Vec_dpp_voting_vote_polls_VotePoll
+LIST_STRUCT_TYPEMAP(
+    Vec_dpp_voting_vote_polls_VotePoll,
+    dpp_voting_vote_polls_VotePoll,
+    VotePoll,
+    clone
+);
+// LIST_PAIR_TYPEMAP(
+//     Vec_Tuple_dpp_prelude_TimestampMillis_Vec_dpp_voting_vote_polls_VotePoll,
+//     Tuple_dpp_prelude_TimestampMillis_Vec_dpp_voting_vote_polls_VotePoll,
+//     dpp_prelude_TimestampMillis,
+//     dpp_voting_vote_polls_VotePoll,
+//     TimestampMillis,
+//     VotePoll
+// );
+
+// Methods
 %newobject platform_mobile_voting_get_vote_contenders(
     RustSdk *rust_sdk,
     char *index_name,
@@ -188,4 +216,21 @@ LIST_STRUCT_TYPEMAP(Vec_drive_proof_verifier_types_ContestedResource, drive_proo
     char *document_type_name,
     platform_value_types_identifier_Identifier *data_contract_id
 );
+
+%newobject platform_mobile_voting_get_votepolls(
+    DashSdk *rust_sdk,
+    dpp_identity_identity_public_key_TimestampMillis *start_time,
+    bool start_time_included,
+    dpp_identity_identity_public_key_TimestampMillis *end_time,
+    bool end_time_included
+);
+
+%newobject platform_mobile_voting_get_last_vote_from_masternode(DashSdk *rust_sdk,
+    platform_value_types_identifier_Identifier *masternode_protxhash,
+    char *index_name,
+    Vec_platform_value_Value *index_values,
+    char *document_type_name,
+    platform_value_types_identifier_Identifier *contract_id
+);
+
 

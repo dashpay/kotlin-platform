@@ -12,6 +12,7 @@ import org.bitcoinj.core.AddressFormatException
 import org.bitcoinj.core.Base58
 import org.bitcoinj.core.Sha256Hash
 import org.dashj.platform.dpp.util.Converters
+import org.dashj.platform.sdk.TimestampMillis
 import org.json.JSONObject
 
 fun JSONObject.append(jsonObject: JSONObject): JSONObject {
@@ -157,4 +158,8 @@ fun Map<String, Any?>.deepCompare(map: Map<String, Any?>): Boolean {
         }
     }
     return equals
+}
+
+fun Long.toTimestampMillis(): TimestampMillis {
+    return TimestampMillis(this)
 }

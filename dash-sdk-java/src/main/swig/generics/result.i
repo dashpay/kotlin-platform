@@ -300,5 +300,7 @@ DEFINE_RESULT(Contenders, String, Result_ok_drive_proof_verifier_types_Contender
 DEFINE_RESULT(Vote, String, Result_ok_dpp_voting_votes_Vote_err_String, clone)
 DEFINE_LIST_RESULT(Document, String, Result_ok_Vec_dpp_document_Document_err_String, dpp_document_Document);
 
+DEFINE_RESULT(VotePollsGroupedByTimeStamp, String, Result_ok_drive_proof_verifier_types_VotePollsGroupedByTimestamp_err_String, clone);
+DEFINE_RESULT(ResourceVotesByIdentity, String, Result_ok_drive_proof_verifier_types_ResourceVotesByIdentity_err_String, clone);
 // primitive types
 DEFINE_PRIMITIVE_RESULT(Long, String, Result_ok_u64_err_String);

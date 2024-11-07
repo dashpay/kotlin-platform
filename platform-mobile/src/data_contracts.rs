@@ -137,3 +137,19 @@ fn get_missing_data_contract_test() {
 
     assert!(data_contract_result.is_ok());
 }
+
+#[cfg(test)]
+mod tests {
+    use rand::Rng;
+    use platform_value::string_encoding::{encode, Encoding};
+
+    #[test]
+    fn generate_random_32_byte_vector() {
+        let mut rng = rand::thread_rng();
+        let random_bytes: Vec<u8> = (0..32).map(|_| rng.gen()).collect();
+        println!("{:?}", random_bytes);
+        // Encode in Base58 and print
+        let base58_encoded = encode(&random_bytes, Encoding::Base58);
+        println!("Base58: {}", base58_encoded);
+    }
+}

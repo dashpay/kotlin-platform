@@ -11,7 +11,7 @@ use dpp::data_contract::accessors::v0::DataContractV0Getters;
 use dpp::data_contract::DataContract;
 use dpp::data_contract::document_type::accessors::DocumentTypeV0Getters;
 use dpp::document::Document;
-use dpp::identity::{Identity, identity_public_key::IdentityPublicKey, TimestampMillis};
+use dpp::identity::{Identity, identity_public_key::IdentityPublicKey, identity_public_key::TimestampMillis};
 use dpp::prelude::{BlockHeight, CoreBlockHeight};
 use dpp::ProtocolError;
 use dpp::state_transition::StateTransition;
@@ -37,8 +37,9 @@ use tracing::trace;
 use crate::config::{Config, EntryPoint};
 use crate::fetch_document::fetch_documents_with_query_and_sdk;
 use crate::put::{CallbackSigner, SignerCallback, wait_for_response_concurrent};
-use crate::sdk::{create_dash_sdk_using_core_testnet, DashSdk};
+use crate::sdk::{create_dash_sdk_using_core_testnet, create_dash_sdk_using_core_mainnet, DashSdk};
 
+/// push a vote from a single masternode designated by [voter_pro_tx_hash]
 #[ferment_macro::export]
 pub fn put_vote_to_platform(
     rust_sdk: *mut DashSdk,
@@ -72,6 +73,10 @@ pub fn put_vote_to_platform(
             Some(settings)
         ).await.or_else(|err|Err(err.to_string()))?;
         tracing::info!("Call Vote::wait_for_response");
+        tracing::info!(
+            "state transition (hash): {}",
+            hex::encode(hash_double_to_vec(masternode_vote_transition.serialize_to_bytes().unwrap()))
+        );
 
         let vote = <Vote as PutVote<SimpleSigner>>::wait_for_response::<'_, '_, '_>(
             &vote,
@@ -234,6 +239,12 @@ pub fn get_vote_contenders(
         }
     })
 }
+
+/// Get the contested resources for a given data contract ([data_contract_id]) and the specified
+/// document type ([document_type_name]).
+///
+/// For `domain` documents of the DPNS data contract, the contested resources are text items
+/// from the `normalizedLabel` field.
 #[ferment_macro::export]
 pub fn get_contested_resources(
     rust_sdk: * mut DashSdk,
@@ -352,11 +363,11 @@ pub fn get_votes(
         let settings = unsafe { (*rust_sdk).get_request_settings() };
 
         let query = ContestedResourceVotesGivenByIdentityQuery {
-            identity_id: data_contract_id, //Identifier::from_string("", Encoding::Base58).unwrap(),
+            identity_id: data_contract_id,
             offset: None,
             limit: None,
             start_at: None,
-            order_ascending: false,
+            order_ascending: true,
         };
 
         match Vote::fetch_with_settings(&sdk, query.clone(), settings).await {
@@ -370,7 +381,7 @@ pub fn get_votes(
 fn get_votes_test() {
     let mut sdk = create_dash_sdk_using_core_testnet();
     tracing::warn!("sdk: {:?}", sdk.get_sdk());
-    let contract_id = Identifier::from_string("HLWuAX1TebsXFNC8W2e8yUzaqLRCaB29pPxomNcRbBjK", Encoding::Base58).unwrap();
+    // let contract_id = Identifier::from_string("HLWuAX1TebsXFNC8W2e8yUzaqLRCaB29pPxomNcRbBjK", Encoding::Base58).unwrap();
     let resources_result = get_votes(
         &mut sdk,
         Identifier::from(dpns_contract::ID_BYTES)
@@ -381,7 +392,12 @@ fn get_votes_test() {
     }
 }
 
-//#[ferment_macro::export]
+/// Gets the vote polls that have end dates within the range of ([start_time], [end_time])
+///
+/// This is useful to determine the active contests for a particular document field such as the
+/// `normalizedLabel` of the `domain` document of the DPNS contract.  [start_time] should be set to
+/// the current time and the [end_time] should be set to 14 days from the [start_time].
+#[ferment_macro::export]
 pub fn get_votepolls(
     rust_sdk: * mut DashSdk,
     start_time: TimestampMillis,
@@ -396,6 +412,8 @@ pub fn get_votepolls(
         let sdk = unsafe { (*rust_sdk).get_sdk() };
         let settings = unsafe { (*rust_sdk).get_request_settings() };
 
+        tracing::info!("get_vote_polls({}, {})", start_time, end_time);
+
         let query = VotePollsByEndDateDriveQuery {
             start_time: Some((start_time, start_time_included)),
             end_time: Some((end_time, end_time_included)),
@@ -405,7 +423,10 @@ pub fn get_votepolls(
         };
 
         match VotePoll::fetch_many_with_settings(&sdk, query.clone(), settings).await {
-            Ok(votes) => Ok(votes),
+            Ok(votes) => {
+                tracing::info!("get_vote_polls: {}", votes.0.len());
+                Ok(votes)
+            },
             Err(e) => Err(e.to_string())
         }
     })
@@ -423,9 +444,32 @@ fn get_votepolls_test() {
 
     let resources_result = get_votepolls(
         &mut sdk,
-        start_mills - 1000 * 2 * 3600,
+        start_mills,
         true,
-        start_mills + 1000 * 7 * 24 * 3600,
+        start_mills + 14 * 24 * 3600 * 1000,
+        true
+    );
+    match resources_result {
+        Ok(resources) => println!("contested resources = {:?}", resources),
+        Err(e) => panic!("error: {}", e)
+    }
+}
+
+#[test]
+fn get_votepolls_mainnet_test() {
+    let mut sdk = create_dash_sdk_using_core_mainnet();
+    tracing::warn!("sdk: {:?}", sdk.get_sdk());
+
+    let start = SystemTime::now();
+    let since_the_epoch = start.duration_since(UNIX_EPOCH)
+        .expect("Time went backwards");
+    let start_mills = since_the_epoch.as_millis() as u64;
+
+    let resources_result = get_votepolls(
+        &mut sdk,
+        start_mills,
+        true,
+        start_mills + 14 * 24 * 3600 * 1000,
         true
     );
     match resources_result {
@@ -435,7 +479,10 @@ fn get_votepolls_test() {
 }
 
 use dash_sdk::platform::query::VoteQuery;
-//#[ferment_macro::export]
+use dpp::serialization::PlatformSerializable;
+use dpp::util::hash::hash_double_to_vec;
+
+#[ferment_macro::export]
 pub fn get_last_vote_from_masternode(
     rust_sdk: * mut DashSdk,
     masternode_protxhash: Identifier,
@@ -474,10 +521,10 @@ fn get_votes_from_identity_test() {
     tracing::warn!("sdk: {:?}", sdk.get_sdk());
 
     //let masternode_identifier = Identifier::from_string("2Ey6wdP5YYSqhq96KmU349CeSCsV4avrsNCaXqogGEr9", Encoding::Base58).unwrap();
-    let masternode_identifier = Identifier::from_string("bc77a5a2cec455c79fb92fb683dbd87a2a92b663c9a46d0c50d11889b4aeb121", Encoding::Hex).unwrap();
+    let masternode_identifier = Identifier::from_string("c0aae8ab24aab988cc84385d16af7ffcfd365d0e016f5799759e0525a435a617", Encoding::Hex).unwrap();
     let contract_id = Identifier::from(dpns_contract::ID_BYTES);
     let index_name =  "parentNameAndLabel".to_string();
-    let index_values = vec![Value::Text("dash".to_string()), Value::Text("test110".to_string())];
+    let index_values = vec![Value::Text("dash".to_string()), Value::Text("test-10101".to_string())];
     let document_type_name = "domain".to_string();
 
     let result = get_last_vote_from_masternode(

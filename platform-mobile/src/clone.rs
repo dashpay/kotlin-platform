@@ -12,7 +12,7 @@ use dpp::voting::votes::resource_vote::ResourceVote;
 use dpp::voting::votes::resource_vote::v0::ResourceVoteV0;
 use dpp::voting::votes::Vote;
 use drive::query::{OrderClause, WhereClause, WhereOperator};
-use drive_proof_verifier::types::{Contenders, ContestedResource, ContestedResources, Voter, Voters};
+use drive_proof_verifier::types::{Contenders, ContestedResource, ContestedResources, ResourceVotesByIdentity, VotePollsGroupedByTimestamp, Voter, Voters};
 use platform_value::{Hash256, Value, ValueMap};
 
 #[allow(non_snake_case)]
@@ -31,6 +31,13 @@ pub fn Revision_clone(revision: Revision) -> Revision {
 pub fn TimestampMillis_clone(time: TimestampMillis) -> TimestampMillis {
     time.clone()
 }
+
+#[allow(non_snake_case)]
+#[ferment_macro::export]
+pub fn prelude_TimestampMillis_clone(time: dpp::prelude::TimestampMillis) -> dpp::prelude::TimestampMillis {
+    time.clone()
+}
+
 #[allow(non_snake_case)]
 #[ferment_macro::export]
 pub fn CoreBlockHeight_clone(height: CoreBlockHeight) -> CoreBlockHeight {
@@ -204,5 +211,23 @@ pub fn ResourceVoteChoice_clone(o: ResourceVoteChoice) -> ResourceVoteChoice {
 #[allow(non_snake_case)]
 #[ferment_macro::export]
 pub fn ResourceVoteV0_clone(o: ResourceVoteV0) -> ResourceVoteV0 {
+    o.clone()
+}
+
+#[allow(non_snake_case)]
+#[ferment_macro::export]
+pub fn VotePollsGroupedByTimestamp_clone(o: VotePollsGroupedByTimestamp) -> VotePollsGroupedByTimestamp {
+    return o.clone()
+}
+
+#[allow(non_snake_case)]
+#[ferment_macro::export]
+pub fn Tuple_dpp_prelude_TimestampMillis_Vec_dpp_voting_vote_polls_VotePoll_clone(o: (dpp::prelude::TimestampMillis, Vec<VotePoll>)) -> (dpp::prelude::TimestampMillis, Vec<VotePoll>) {
+    o.clone()
+}
+
+#[allow(non_snake_case)]
+#[ferment_macro::export]
+pub fn ResourceVotesByIdentity_clone(o: ResourceVotesByIdentity) -> ResourceVotesByIdentity {
     o.clone()
 }

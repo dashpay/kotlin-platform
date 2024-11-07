@@ -19,6 +19,7 @@ import org.dashj.platform.dpp.voting.ContestedDocumentResourceVotePoll
 import org.dashj.platform.dpp.voting.ResourceVote
 import org.dashj.platform.dpp.voting.ResourceVoteChoice
 import org.dashj.platform.dpp.voting.Vote
+import org.dashj.platform.dpp.voting.VotePoll
 import org.dashj.platform.sdk.callbacks.Signer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -202,5 +203,31 @@ class Documents(val platform: Platform) {
             )
         )
         return platform.client.broadcastVote(vote, voterProTxHash, identityPublicKey, signerCallback)
+    }
+
+    fun getVotePolls(
+        dataContractId: Identifier,
+        documentType: String,
+        startTime: Long, startTimeIncluded: Boolean = true, endTime:Long, endTimeIncluded: Boolean = true): List<VotePoll> {
+        val votePollsGroupedByTimestamp = platform.client.getVotePolls(startTime, startTimeIncluded, endTime, endTimeIncluded)
+
+        val result = arrayListOf<VotePoll>()
+        votePollsGroupedByTimestamp.list.forEach { votePollGroup ->
+            votePollGroup.second.forEach { votePoll ->
+                when (votePoll) {
+                    is ContestedDocumentResourceVotePoll -> {
+                        if (votePoll.dataContractId == dataContractId && votePoll.documentTypeName == documentType) {
+                            result.add(votePoll)
+                        }
+                    }
+                    // add other VotePoll types here
+                }
+            }
+        }
+        return result
+    }
+
+    fun getVoteFromMasternode(proTxHash: Sha256Hash, dataContractId: Identifier, documentType: String, indexName: String, indexes: List<String>) {
+        platform.client.getLastVoteFromMasternode(proTxHash, dataContractId, documentType, indexName, indexes)
     }
 }

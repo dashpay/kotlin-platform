@@ -8,6 +8,7 @@ package org.dashj.platform.sdk.platform
 
 import java.io.ByteArrayOutputStream
 import org.bitcoinj.core.ECKey
+import org.bitcoinj.core.NetworkParameters
 import org.bitcoinj.core.Sha256Hash
 import org.dashj.platform.dapiclient.SystemIds
 import org.dashj.platform.dapiclient.model.DocumentQuery
@@ -20,9 +21,11 @@ import org.dashj.platform.dpp.util.Entropy
 import org.dashj.platform.dpp.voting.Contenders
 import org.dashj.platform.dpp.voting.ResourceVoteChoice
 import org.dashj.platform.dpp.voting.Vote
+import org.dashj.platform.dpp.voting.VotePoll
 import org.dashj.platform.sdk.callbacks.Signer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.TimeUnit
 
 class Names(val platform: Platform) {
 
@@ -96,6 +99,8 @@ class Names(val platform: Platform) {
             val regex = Regex("^[a-zA-Z01-]{3,19}$")
             return regex.matches(username)
         }
+
+        fun votingPeriod(params: NetworkParameters): Long = if (params.id == NetworkParameters.ID_MAINNET) TimeUnit.DAYS.toMillis(14) else TimeUnit.MINUTES.toMillis(90)
     }
 
     fun register(
@@ -424,5 +429,26 @@ class Names(val platform: Platform) {
                 .build()
         )
         return if (documents.isNotEmpty()) documents[0] else null
+    }
+
+    fun getCurrentVotePolls() : List<VotePoll> {
+        val currentTime = System.currentTimeMillis()
+        return platform.documents.getVotePolls(
+            SystemIds.dpnsDataContractId,
+            DOMAIN_DOCUMENT,
+            currentTime,
+            true,
+            currentTime + votingPeriod(platform.params)
+        )
+    }
+
+    fun getVoteFromMasternode(proTxHash: Sha256Hash, normalizedLabel: String) {
+        return platform.documents.getVoteFromMasternode(
+            proTxHash,
+            platform.apps[DPNS_DATA_CONTRACT]!!.contractId,
+            "domain",
+            CONTESTED_INDEX,
+            listOf(DEFAULT_PARENT_DOMAIN, normalizedLabel)
+        )
     }
 }

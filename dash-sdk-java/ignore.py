@@ -16,6 +16,8 @@ def format_arguments(args_str):
     return ', '.join(formatted_args)
 
 def should_ignore(declaration):
+    if 'platform_mobile_sdk_destroy_dash_sdk' in declaration:
+        return False
     return '_ctor' in declaration or '_destroy' in declaration or '_clone' in declaration
 
 def should_do_clone(declaration):
