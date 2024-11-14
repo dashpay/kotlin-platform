@@ -270,6 +270,7 @@ object PlatformExplorer {
             println("5.  Query all DPNS DOMAIN documents")
             println("6a. Query DPNS DOMAIN documents for name")
             println("6b. Query DPNS DOMAIN documents for id")
+            println("6c. Query DPNS DOMAIN documents for identity")
             println("7.  Query DPNS DOMAIN documents starting with")
             println("8.  Query Data contract by id")
             println("10. Query all contested resources for DOMAIN")
@@ -394,6 +395,34 @@ object PlatformExplorer {
                         "domain",
                         listOf(WhereClause("\$id", WhereOperator.Equal, PlatformValue(Hash256(identifier.bytes)))),
                         listOf(OrderClause("\$id", true)),
+                        100,
+                        null
+                    )
+                    try {
+                        val docs = docs_result.unwrap()
+                        if (docs.isNotEmpty()) {
+                            docs.forEach { doc ->
+                                printDomainDocument(doc)
+                                printDocument(doc)
+                            }
+                        } else {
+                            println("no document found for $id")
+                        }
+                    } catch (e: Exception) {
+                        println("error retrieving document for $id")
+                    }
+                }
+                "6c" -> {
+                    println("Enter an identity id:")
+                    val id = scanner.nextLine()
+                    val identifier = Identifier(Base58.decode(id))
+                    println(" > $id")
+                    val docs_result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                        sdk,
+                        Identifier(dpnsContractId),
+                        "domain",
+                        listOf(WhereClause("records.identity", WhereOperator.Equal, PlatformValue(Hash256(identifier.bytes)))),
+                        listOf(OrderClause("records.identity", true)),
                         100,
                         null
                     )
