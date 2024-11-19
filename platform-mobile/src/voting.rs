@@ -233,7 +233,7 @@ pub fn get_vote_contenders(
             ContestedDocumentVotePollDriveQueryResultType::DocumentsAndVoteTally,
         };
         let settings = unsafe { (*rust_sdk).get_request_settings() };
-        match ContenderWithSerializedDocument::fetch_many_with_settings(&sdk, query.clone(), settings).await {
+        match ContenderWithSerializedDocument::fetch_many(&sdk, query.clone()).await {
                 Ok(contenders) => Ok(contenders),
                 Err(e) => Err(e.to_string())
         }
@@ -303,7 +303,7 @@ pub fn get_contested_resources(
 
             tracing::info!("get_contested_resources: query ContestedResources for {:?}", query);
             let settings = unsafe { (*rust_sdk).get_request_settings() };
-            let contested_resources = ContestedResource::fetch_many_with_settings(&sdk, query, settings).await;
+            let contested_resources = ContestedResource::fetch_many(&sdk, query).await;
 
             match contested_resources {
                 Ok(resources) => Ok(resources),
@@ -422,7 +422,7 @@ pub fn get_votepolls(
             order_ascending: true,
         };
 
-        match VotePoll::fetch_many_with_settings(&sdk, query.clone(), settings).await {
+        match VotePoll::fetch_many(&sdk, query.clone()).await {
             Ok(votes) => {
                 tracing::info!("get_vote_polls: {}", votes.0.len());
                 Ok(votes)
@@ -508,7 +508,7 @@ pub fn get_last_vote_from_masternode(
             }.unique_id().unwrap(),
         };
 
-        match ResourceVote::fetch_many_with_settings(&sdk, query.clone(), settings).await {
+        match ResourceVote::fetch_many(&sdk, query.clone()).await {
             Ok(votes) => Ok(votes),
             Err(e) => Err(e.to_string())
         }

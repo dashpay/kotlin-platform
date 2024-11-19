@@ -2,7 +2,7 @@ package org.dashj.platform.dpp.voting
 
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identifier.RustIdentifier
-import org.dashj.platform.dpp.util.convertPlatformValue
+import org.dashj.platform.sdk.PlatformValue
 import org.dashj.platform.sdk.TupleContestedDocumentVotePollWinnerInfoBlockInfo
 import java.util.*
 
@@ -82,16 +82,11 @@ class Contenders(val winner: Optional<Pair<ContestedDocumentVotePollWinnerInfo, 
     fun size() = map.size
 }
 
-private fun convertContestedResource(contestedResource: RustContestedResource): Any? {
-    return when (contestedResource.tag) {
-        org.dashj.platform.sdk.ContestedResource.Tag.Value -> {
-            convertPlatformValue(contestedResource.value)
-        }
-        else -> error("${contestedResource.tag} not supported")
-    }
+private fun convertContestedResource(contestedResource: RustContestedResource): PlatformValue {
+    return contestedResource.value
 }
 
-class ContestedResource(val value: Any?) {
+class ContestedResource(val value: PlatformValue) {
     constructor(contestedResource: RustContestedResource) : this(
         convertContestedResource(contestedResource)
     )

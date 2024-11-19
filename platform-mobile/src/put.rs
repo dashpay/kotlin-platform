@@ -16,7 +16,6 @@ use dashcore::key::Secp256k1;
 use dashcore::secp256k1::{Message, SecretKey};
 use dashcore::signer::sign;
 use dpp::bincode::{Decode, Encode};
-use dashcore::blockdata::transaction::OutPoint;
 use dpp::dashcore::{InstantLock, Network, PrivateKey, Transaction, Txid};
 use dpp::dashcore::bls_sig_utils::BLSSignature;
 use dpp::dashcore::consensus::Decodable;
@@ -55,6 +54,7 @@ use crate::logs::setup_logs;
 use crate::provider::Cache;
 use dapi_grpc::platform::v0::{StateTransitionBroadcastError, WaitForStateTransitionResultResponse};
 use dapi_grpc::platform::v0::wait_for_state_transition_result_response::{Version, wait_for_state_transition_result_response_v0};
+use dashcore::blockdata::transaction::outpoint::OutPoint;
 use dash_sdk::platform::transition::top_up_identity::TopUpIdentity;
 use dpp::data_contract::document_type::accessors::DocumentTypeV0Getters;
 use dpp::state_transition::StateTransition;
@@ -238,6 +238,11 @@ impl Signer for CallbackSigner {
             Err(ProtocolError::InvalidSigningKeyTypeError("something is wrong.  signer callback returned 0".to_string())) // Assuming there is a way to convert to ProtocolError
         }
     }
+
+    // todo: add a new call back to the client?
+    fn can_sign_with(&self, identity_public_key: &IdentityPublicKey) -> bool {
+        true
+    }
 }
 
 #[derive(Copy, Clone, Debug, Eq, Hash, PartialEq, PartialOrd, Ord)]
@@ -287,7 +292,7 @@ pub struct ChainAssetLockProofFFI {
     /// Core height on which the asset lock transaction was chain locked or higher
     pub core_chain_locked_height: u32,
     /// A reference to Asset Lock Special Transaction ID and output index in the payload
-    pub out_point: OutPoint,
+    pub out_point: dashcore::blockdata::transaction::outpoint::OutPoint,
 }
 
 #[allow(non_snake_case)]
@@ -296,11 +301,16 @@ pub fn ChainAssetLockProofFFI_clone(a: ChainAssetLockProofFFI) -> ChainAssetLock
     a.clone()
 }
 
+use dashcore_hashes::Hash as dashcore_hashes_hash;
 impl From<ChainAssetLockProofFFI> for ChainAssetLockProof {
     fn from(value: ChainAssetLockProofFFI) -> Self {
+        let outpoint = dpp::dashcore::OutPoint {
+            txid: Txid::from_hex(value.out_point.txid.to_hex().as_str()).unwrap(),
+            vout: value.out_point.vout,
+        };
         ChainAssetLockProof {
             core_chain_locked_height: value.core_chain_locked_height,
-            out_point: value.out_point.into(),
+            out_point: outpoint
         }
     }
 }

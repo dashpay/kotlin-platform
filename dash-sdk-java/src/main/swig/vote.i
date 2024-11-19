@@ -114,7 +114,7 @@ END_CLASS();
 %ignore drive_proof_verifier_types_ContestedResource::value;
 START_CLASS(ContestedResource, drive_proof_verifier_types_ContestedResource);
     platform_value_Value * getValue() {
-        return $self->value._0;
+        return $self->_0;
     }
 END_CLASS();
 

@@ -10,6 +10,8 @@ use drive_proof_verifier::ContextProvider;
 use drive_proof_verifier::error::ContextProviderError;
 use serde::Deserialize;
 use std::collections::BTreeMap;
+use std::time::Duration;
+use rs_dapi_client::Address;
 
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
@@ -17,7 +19,7 @@ use dash_sdk::mock::provider::GrpcContextProvider;
 use dash_sdk::{RequestSettings, Sdk};
 use dpp::data_contract::accessors::v0::DataContractV0Getters;
 use ferment_interfaces::{boxed, unbox_any};
-use http::Uri;
+use dash_sdk::sdk::Uri;
 use tokio::runtime::{Builder, Runtime};
 use crate::logs::setup_logs;
 use crate::provider::{Cache, CallbackContextProvider};
@@ -225,28 +227,35 @@ impl Config {
         } else {
             MAINNET_ADDRESS_LIST.as_slice()
         };
+        tracing::info!("white_list {:?}", white_list);
 
-        let uris: Result<Vec<http::Uri>, http::uri::InvalidUri> = if white_list.is_empty() {
-            tracing::info!("default address list is empty");
-            let address = format!("{}://{}:{}", scheme, self.platform_host, self.platform_port);
-            vec![http::Uri::from_str(&address)].into_iter().collect()
-        } else {
-            white_list.iter().map(|host| {
-                let uri = format!("{}://{}:{}", scheme, host, self.platform_port);
-                http::Uri::from_str(&uri)
-            }).collect()
-        };
+        // Step 1: Create an iterator of formatted URI strings
+        let uris_as_strings = white_list.iter().map(|host| {
+            format!("{}://{}:{}", scheme, host, self.platform_port)
+        });
+        tracing::info!("uris_as_strings {:?}", uris_as_strings);
 
-        uris.map(AddressList::from_iter).expect("valid address list")
+        let mut uris: Vec<Address> = Vec::new();
+        for uri_str in uris_as_strings {
+            match Uri::from_str(&uri_str) {
+                Ok(uri) => {
+                    uris.push(uri.try_into().unwrap());
+                },
+                Err(e) => tracing::warn!("error parsing address: {}", e),  // Return early if any URI fails to parse
+            }
+        }
+
+        let address_list = AddressList::from_iter(uris);
+        tracing::info!("address_list: {:?}", address_list);
+        address_list
     }
 
     pub fn new_address_list(&self, address_list: Vec<String>) -> AddressList {
         tracing::info!("new_address_list: {}", address_list.len());
         let scheme = if self.platform_ssl { "https" } else { "http" };
-        let uris: Vec<Uri> = address_list.into_iter().map(|host| {
+        let uris: Vec<Address> = address_list.into_iter().map(|host| {
             let uri = format!("{}://{}:{}", scheme, host, self.platform_port);
-            tracing::info!("new_address: {}", host);
-            Uri::from_str(&uri).expect("valid address list")
+            Uri::from_str(&uri).expect("valid address list").try_into().unwrap()
         }).collect();
 
         AddressList::from_iter(uris)
@@ -320,8 +329,20 @@ impl Config {
         q: u64,
         d: u64,
         data_contract_cache: Arc<Cache<Identifier, DataContract>>,
+        connect_timeout: usize,
+        timeout: usize,
+        retries: usize
     ) -> Arc<Sdk> {
         let mut context_provider = CallbackContextProvider::new(
+            context_provider_context,
+            q,
+            d,
+            None,
+            data_contract_cache.clone(),
+            NonZeroUsize::new(100).expect("Non Zero")
+        ).expect("context provider");
+
+        let context_provider_clone = CallbackContextProvider::new(
             context_provider_context,
             q,
             d,
@@ -329,9 +350,19 @@ impl Config {
             data_contract_cache,
             NonZeroUsize::new(100).expect("Non Zero")
         ).expect("context provider");
+
         let mut sdk = {
             // Dump all traffic to disk
-            let builder = dash_sdk::SdkBuilder::new(self.address_list());
+            let builder = dash_sdk::SdkBuilder::new(self.address_list())
+                .with_settings(
+                    RequestSettings {
+                        connect_timeout: Some(Duration::from_secs(connect_timeout as u64)),
+                        timeout: Some(Duration::from_secs(timeout as u64)),
+                        retries: Some(retries),
+                        ban_failed_address: Some(true),
+                    }
+                )
+                .with_context_provider(context_provider_clone);
             builder.build().expect("cannot initialize api")
         };
         // not ideal because context provider has a clone of the sdk

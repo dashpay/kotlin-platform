@@ -19,9 +19,11 @@ import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.identity.IdentityPublicKey
 import org.dashj.platform.dpp.util.Entropy
 import org.dashj.platform.dpp.voting.Contenders
+import org.dashj.platform.dpp.voting.ContestedDocumentResourceVotePoll
 import org.dashj.platform.dpp.voting.ResourceVoteChoice
 import org.dashj.platform.dpp.voting.Vote
 import org.dashj.platform.dpp.voting.VotePoll
+import org.dashj.platform.sdk.PlatformValue
 import org.dashj.platform.sdk.callbacks.Signer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

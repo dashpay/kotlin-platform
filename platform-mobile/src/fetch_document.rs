@@ -22,7 +22,7 @@ use dpp::version::LATEST_PLATFORM_VERSION;
 use dpp::data_contract::accessors::v0::DataContractV0Getters;
 use dpp::document::serialization_traits::DocumentPlatformConversionMethodsV0;
 use crate::provider::Cache;
-
+use dash_sdk::query_types::IndexMap;
 #[ferment_macro::export]
 pub fn document_to_string(document: Document)-> String {
     document.to_string()
@@ -52,7 +52,7 @@ fn fetch_documents_with_retry(
 ) -> BoxFuture<'static, Result<Documents, Error>> {
     // Clone the Arc<Sdk> here to ensure it's owned by the future
     Box::pin(async move {
-        match Document::fetch_many_with_settings(&sdk, query.clone(), request_settings).await {
+        match Document::fetch_many(&sdk, query.clone()).await {
             Ok(documents) => Ok(documents),
             Err(error) => {
                 if retries_left > 1 {
@@ -125,7 +125,7 @@ pub fn fetch_documents_with_query_and_sdk(
         let data_contract_cache = unsafe { (*rust_sdk).data_contract_cache.clone() };
         match fetch_documents_with_retry(sdk.clone(), data_contract_cache, all_docs_query, settings, extra_retries).await {
             Ok(docs) => {
-                let into_vec = |map: BTreeMap<Identifier, Option<Document>>| {
+                let into_vec = |map: IndexMap<Identifier, Option<Document>>| {
                     map.into_iter()
                         .filter_map(|(_key, value)| value)
                         .collect::<Vec<Document>>()

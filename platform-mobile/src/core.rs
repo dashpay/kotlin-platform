@@ -29,7 +29,7 @@ pub fn get_transaction(txid: [u8; 32], quorum_public_key_callback: u64, data_con
             )
             .await;
         match tx_info_result {
-            Ok(tx_info) => Ok(tx_info.transaction),
+            Ok(tx_info) => Ok(tx_info.inner.transaction),
             Err(error) => return Err(error.to_string())
         }
     })
@@ -53,7 +53,7 @@ pub fn get_transaction_sdk(rust_sdk: * mut DashSdk, txid: [u8; 32]) -> Result<Ve
         )
             .await;
         match tx_info_result {
-            Ok(tx_info) => Ok(tx_info.transaction),
+            Ok(tx_info) => Ok(tx_info.inner.transaction),
             Err(error) => return Err(error.to_string())
         }
     })
