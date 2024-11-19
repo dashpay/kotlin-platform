@@ -114,7 +114,10 @@ public class VoteTest extends SdkBaseTest {
         Result<ContestedResources, String> result = dashsdk.platformMobileVotingGetContestedResources(
                 sdk,
                 "domain",
-                new Identifier(dpnsContractId)
+                new Identifier(dpnsContractId),
+                100,
+                null,
+                false
         );
         ContestedResources contestedResources = result.unwrap();
         assertNotNull(contestedResources);

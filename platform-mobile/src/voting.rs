@@ -249,7 +249,10 @@ pub fn get_vote_contenders(
 pub fn get_contested_resources(
     rust_sdk: * mut DashSdk,
     document_type_name: String,
-    data_contract_id: Identifier
+    data_contract_id: Identifier,
+    limit: u16,
+    start_at: Option<Value>,
+    start_at_include: bool
 ) -> Result<ContestedResources, String>{
 
     let rt = unsafe { (*rust_sdk).get_runtime() };
@@ -288,16 +291,20 @@ pub fn get_contested_resources(
             Ok(dt) => dt,
             Err(e) => return Err(e.to_string())
         };
+        let start_at_value = match start_at {
+            Some(start_at) => Some((start_at, start_at_include)),
+            None => None
+        };
 
         if let Some(contested_index) = document_type.find_contested_index() {
             let query = VotePollsByDocumentTypeQuery {
                 contract_id: data_contract.id(),
                 document_type_name: document_type.name().to_string(),
                 index_name: contested_index.name.clone(),
-                start_at_value: None,
+                start_at_value: start_at_value,
                 start_index_values: vec!["dash".into()], // hardcoded for dpns
                 end_index_values: vec![],
-                limit: None,
+                limit: Some(limit),
                 order_ascending: true,
             };
 

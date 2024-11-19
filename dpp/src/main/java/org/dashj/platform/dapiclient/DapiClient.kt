@@ -1076,11 +1076,20 @@ class DapiClient(
         return Contenders(result.unwrap())
     }
 
-    fun getContestedResources(dataContractId: Identifier, documentType: String): ContestedResources {
+    fun getContestedResources(
+        dataContractId: Identifier,
+        documentType: String,
+        limit: Int = 100,
+        startAt: PlatformValue? = null,
+        startAtInclude: Boolean = false
+    ): ContestedResources {
         val result = dashsdk.platformMobileVotingGetContestedResources(
             rustSdk,
             documentType,
-            dataContractId.toNative()
+            dataContractId.toNative(),
+            limit,
+            startAt,
+            startAtInclude
         )
         return ContestedResources(result.unwrap())
     }

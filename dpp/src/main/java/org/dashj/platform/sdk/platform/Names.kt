@@ -42,6 +42,7 @@ class Names(val platform: Platform) {
         const val DPNS_PREORDER_DOCUMENT = "dpns.preorder"
         const val CONTESTED_INDEX = "parentNameAndLabel"
         const val SALTEDDOMAINHASH_KEY = "saltedDomainHash"
+        const val MAX_LIMIT = 100
 
         fun isUniqueIdentity(domainDocument: Document): Boolean {
             val records = domainDocument.data["records"] as Map<*, *>
@@ -385,15 +386,70 @@ class Names(val platform: Platform) {
         )
         return if (resources.list.isNotEmpty()) {
             resources.list.map {
-                if (it.value is String) {
-                    it.value
-                } else {
-                    error("${it.value} is not a String")
+                when (it.value.tag) {
+                    PlatformValue.Tag.Text -> it.value.text
+                    else -> error("${it.value} is not a PlatformValue.Text")
                 }
             }
         } else {
             listOf()
         }
+    }
+
+    fun getAllContestedNames(): List<String> {
+        var count = 0
+        var startAt: PlatformValue? = null
+        val startAtInclude = false
+        val results = arrayListOf<String>()
+        do {
+            val resources = platform.client.getContestedResources(
+                platform.apps[DPNS_DATA_CONTRACT]!!.contractId,
+                DOMAIN_DOCUMENT,
+                MAX_LIMIT,
+                startAt,
+                startAtInclude
+            )
+            val nextList = if (resources.list.isNotEmpty()) {
+                resources.list.map {
+                    when (it.value.tag) {
+                        PlatformValue.Tag.Text -> it.value.text
+                        else -> error("${it.value} is not a PlatformValue.Text")
+                    }
+                }
+            } else {
+                listOf()
+            }
+            count = nextList.size
+            results.addAll(nextList)
+            startAt = resources.list.lastOrNull()?.value
+        } while(count != 100)
+
+        return results
+    }
+
+    fun getCurrentlyContestedNames(): List<String> {
+        val resources = arrayListOf<String>()
+        getCurrentVotePolls().forEach {
+            when (it) {
+                is ContestedDocumentResourceVotePoll -> {
+                    if (it.dataContractId == SystemIds.dpnsDataContractId &&
+                            it.indexName == CONTESTED_INDEX &&
+                            it.indexValues.get(0) == DEFAULT_PARENT_DOMAIN) {
+                        when (val normalizedLabelValue = it.indexValues[1]) {
+                            is PlatformValue -> {
+                                if (normalizedLabelValue.tag == PlatformValue.Tag.Text) {
+                                    resources.add(normalizedLabelValue.text)
+                                }
+                            }
+                            is String -> resources.add(normalizedLabelValue)
+                            else -> error("invalid type")
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+        return resources
     }
 
     fun deserialize(bytes: ByteArray): Document {

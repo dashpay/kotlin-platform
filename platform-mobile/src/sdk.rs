@@ -149,7 +149,10 @@ pub fn create_dash_sdk_with_context(
                 context_provider_context.clone(),
                 quorum_public_key_callback,
                 data_contract_callback,
-                data_contract_cache.clone()
+                data_contract_cache.clone(),
+                connect_timeout,
+                timeout,
+                retries
             ).await
         } else {
             // use Dash Core for quorum public keys
