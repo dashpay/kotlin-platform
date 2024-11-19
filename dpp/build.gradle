@@ -92,11 +92,6 @@ artifacts {
     archives javadocJar
 }
 
-signing {
-    required { gradle.taskGraph.hasTask("publish") }
-    sign configurations.archives
-}
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -145,8 +140,15 @@ publishing {
     }
 }
 
+signing {
+    required { gradle.taskGraph.hasTask("publish") }
+    sign publishing.publications.mavenJava
+}
+
 tasks.withType(Copy) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
+assemble.dependsOn(publishToMavenLocal)
+assemble.dependsOn(sourcesJar)
 // apply from: 'ktlint.gradle'
