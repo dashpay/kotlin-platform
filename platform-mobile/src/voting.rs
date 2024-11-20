@@ -233,7 +233,7 @@ pub fn get_vote_contenders(
             ContestedDocumentVotePollDriveQueryResultType::DocumentsAndVoteTally,
         };
         let settings = unsafe { (*rust_sdk).get_request_settings() };
-        match ContenderWithSerializedDocument::fetch_many_with_settings(&sdk, query.clone(), settings).await {
+        match ContenderWithSerializedDocument::fetch_many(&sdk, query.clone()).await {
                 Ok(contenders) => Ok(contenders),
                 Err(e) => Err(e.to_string())
         }
@@ -249,7 +249,10 @@ pub fn get_vote_contenders(
 pub fn get_contested_resources(
     rust_sdk: * mut DashSdk,
     document_type_name: String,
-    data_contract_id: Identifier
+    data_contract_id: Identifier,
+    limit: u16,
+    start_at: Option<Value>,
+    start_at_include: bool
 ) -> Result<ContestedResources, String>{
 
     let rt = unsafe { (*rust_sdk).get_runtime() };
@@ -288,22 +291,26 @@ pub fn get_contested_resources(
             Ok(dt) => dt,
             Err(e) => return Err(e.to_string())
         };
+        let start_at_value = match start_at {
+            Some(start_at) => Some((start_at, start_at_include)),
+            None => None
+        };
 
         if let Some(contested_index) = document_type.find_contested_index() {
             let query = VotePollsByDocumentTypeQuery {
                 contract_id: data_contract.id(),
                 document_type_name: document_type.name().to_string(),
                 index_name: contested_index.name.clone(),
-                start_at_value: None,
+                start_at_value: start_at_value,
                 start_index_values: vec!["dash".into()], // hardcoded for dpns
                 end_index_values: vec![],
-                limit: None,
+                limit: Some(limit),
                 order_ascending: true,
             };
 
             tracing::info!("get_contested_resources: query ContestedResources for {:?}", query);
             let settings = unsafe { (*rust_sdk).get_request_settings() };
-            let contested_resources = ContestedResource::fetch_many_with_settings(&sdk, query, settings).await;
+            let contested_resources = ContestedResource::fetch_many(&sdk, query).await;
 
             match contested_resources {
                 Ok(resources) => Ok(resources),
@@ -422,7 +429,7 @@ pub fn get_votepolls(
             order_ascending: true,
         };
 
-        match VotePoll::fetch_many_with_settings(&sdk, query.clone(), settings).await {
+        match VotePoll::fetch_many(&sdk, query.clone()).await {
             Ok(votes) => {
                 tracing::info!("get_vote_polls: {}", votes.0.len());
                 Ok(votes)
@@ -508,7 +515,7 @@ pub fn get_last_vote_from_masternode(
             }.unique_id().unwrap(),
         };
 
-        match ResourceVote::fetch_many_with_settings(&sdk, query.clone(), settings).await {
+        match ResourceVote::fetch_many(&sdk, query.clone()).await {
             Ok(votes) => Ok(votes),
             Err(e) => Err(e.to_string())
         }

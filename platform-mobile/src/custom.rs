@@ -3,7 +3,7 @@ use dashcore::secp256k1::ThirtyTwoByteHash;
 
 #[allow(non_camel_case_types)]
 #[repr(C)]
-#[ferment_macro::register(dashcore::blockdata::transaction::OutPoint)]
+#[ferment_macro::register(dashcore::blockdata::transaction::outpoint::OutPoint)]
 #[derive(Clone)]
 pub struct OutPoint {
     pub txid: *mut [u8; 32],
