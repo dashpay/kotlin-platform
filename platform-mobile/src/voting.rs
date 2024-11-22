@@ -330,7 +330,10 @@ fn get_contested_resources_test() {
     let resources_result = get_contested_resources(
             &mut sdk,
             "domain".to_string(),
-            contract_id
+            contract_id,
+            100,
+            None,
+            false
         );
     match resources_result {
         Ok(resources) => println!("contested resources = {:?}", resources),
@@ -405,28 +408,30 @@ fn get_votes_test() {
 /// `normalizedLabel` of the `domain` document of the DPNS contract.  [start_time] should be set to
 /// the current time and the [end_time] should be set to 14 days from the [start_time].
 #[ferment_macro::export]
-pub fn get_votepolls(
+pub fn get_vote_polls(
     rust_sdk: * mut DashSdk,
     start_time: TimestampMillis,
     start_time_included: bool,
     end_time: TimestampMillis,
-    end_time_included: bool
+    end_time_included: bool,
+    limit: u16,
+    offset: u16,
+    order_ascending: bool
 ) -> Result<VotePollsGroupedByTimestamp, String>{
 
     let rt = unsafe { (*rust_sdk).get_runtime() }.clone();
 
     rt.block_on(async {
         let sdk = unsafe { (*rust_sdk).get_sdk() };
-        let settings = unsafe { (*rust_sdk).get_request_settings() };
 
         tracing::info!("get_vote_polls({}, {})", start_time, end_time);
 
         let query = VotePollsByEndDateDriveQuery {
             start_time: Some((start_time, start_time_included)),
             end_time: Some((end_time, end_time_included)),
-            limit: None,
+            limit: Some(limit),
             offset: None,
-            order_ascending: true,
+            order_ascending,
         };
 
         match VotePoll::fetch_many(&sdk, query.clone()).await {
@@ -454,6 +459,9 @@ fn get_votepolls_test() {
         start_mills,
         true,
         start_mills + 14 * 24 * 3600 * 1000,
+        true,
+        100,
+        0,
         true
     );
     match resources_result {
@@ -477,6 +485,9 @@ fn get_votepolls_mainnet_test() {
         start_mills,
         true,
         start_mills + 14 * 24 * 3600 * 1000,
+        true,
+        100,
+        0,
         true
     );
     match resources_result {

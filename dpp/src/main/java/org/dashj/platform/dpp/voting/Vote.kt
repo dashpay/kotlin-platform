@@ -1,6 +1,7 @@
 package org.dashj.platform.dpp.voting
 
 import org.dashj.platform.dpp.identifier.Identifier
+import org.dashj.platform.dpp.util.convertPlatformValue
 import org.dashj.platform.dpp.util.convertToPlatformValue
 import org.dashj.platform.sdk.ResourceVoteV0
 
@@ -101,17 +102,17 @@ abstract class VotePoll {
 
 typealias RustContestedDocumentResourceVotePoll = org.dashj.platform.sdk.ContestedDocumentResourceVotePoll
 
-class ContestedDocumentResourceVotePoll(
+data class ContestedDocumentResourceVotePoll(
     val dataContractId: Identifier,
     val documentTypeName: String,
     val indexName: String,
-    val indexValues: List<Any>
+    val indexValues: List<String>
 ): VotePoll() {
     constructor(votePoll: RustContestedDocumentResourceVotePoll) : this(
         Identifier.from(votePoll.contract_id.bytes),
         votePoll.document_type_name,
         votePoll.index_name,
-        votePoll.index_values
+        votePoll.index_values.map { convertPlatformValue(it).toString() }
     )
 
     override fun toNative(): RustVotePoll {

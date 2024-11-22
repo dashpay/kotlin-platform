@@ -99,6 +99,7 @@ class DapiClient(
         const val DEFAULT_WAIT_FOR_NODES = 5
         const val DEFAULT_HTTP_TIMEOUT = 10L
         const val REQUIRED_SUCCESS_RATE = 0.50 // 50%
+        const val DEFAULT_LIMIT = 100
     }
     var contextProvider = object : ContextProvider() {
         override fun getQuorumPublicKey(
@@ -1125,13 +1126,34 @@ class DapiClient(
         return Vote(result.unwrap())
     }
 
-    fun getVotePolls(startTime: Long, startTimeIncluded: Boolean = true, endTime:Long, endTimeIncluded: Boolean = true): VotePollsGroupedByTimestamp {
-        val result = dashsdk.platformMobileVotingGetVotepolls(
+    /**
+     * Get vote polls within a specific time frame
+     *
+     * @param startTime
+     * @param startTimeIncluded
+     * @param endTime
+     * @param endTimeIncluded
+     * @param limit Number of records to return (default = 100)
+     * @param orderAscending
+     * @return [VotePollsGroupedByTimestamp]
+     */
+    fun getVotePolls(
+        startTime: Long,
+        startTimeIncluded: Boolean = true,
+        endTime:Long,
+        endTimeIncluded: Boolean = true,
+        limit: Int = DEFAULT_LIMIT,
+        orderAscending: Boolean = true
+    ): VotePollsGroupedByTimestamp {
+        val result = dashsdk.platformMobileVotingGetVotePolls(
             rustSdk,
             startTime.toTimestampMillis(),
             startTimeIncluded,
             endTime.toTimestampMillis(),
-            endTimeIncluded
+            endTimeIncluded,
+            limit,
+            0,
+            orderAscending
         )
         return VotePollsGroupedByTimestamp(result.unwrap());
     }
