@@ -454,7 +454,7 @@ fn get_votepolls_test() {
         .expect("Time went backwards");
     let start_mills = since_the_epoch.as_millis() as u64;
 
-    let resources_result = get_votepolls(
+    let resources_result = get_vote_polls(
         &mut sdk,
         start_mills,
         true,
@@ -480,7 +480,7 @@ fn get_votepolls_mainnet_test() {
         .expect("Time went backwards");
     let start_mills = since_the_epoch.as_millis() as u64;
 
-    let resources_result = get_votepolls(
+    let resources_result = get_vote_polls(
         &mut sdk,
         start_mills,
         true,
