@@ -13,6 +13,7 @@ import org.dashj.platform.dpp.util.convertToPlatformValue
 import org.dashj.platform.sdk.OrderClause
 import org.dashj.platform.sdk.WhereClause
 import org.dashj.platform.sdk.WhereOperator
+import org.dashj.platform.sdk.platform.Documents
 import org.json.JSONArray
 
 /**
@@ -26,7 +27,7 @@ import org.json.JSONArray
 class DocumentQuery private constructor(
     var where: List<Any>? = null,
     var orderBy: List<List<String>>? = null,
-    var limit: Int = -1,
+    var limit: Int = Documents.DOCUMENT_LIMIT,
     var startAt: Identifier? = null,
     var startAfter: Identifier? = null
 ) : BaseObject() {
