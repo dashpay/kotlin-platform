@@ -176,12 +176,12 @@ class Documents(val platform: Platform) {
         } catch (e: StatusRuntimeException) {
             log.error(
                 "Document query: unable to get documents of $dataContractId: " +
-                    "${DriveErrorMetadata(e.trailers.toString())}",
+                    "${DriveErrorMetadata(e.trailers.toString())}  with $opts",
                 e
             )
             throw e
         } catch (e: Exception) {
-            log.error("Document query: unable to get documents of $dataContractId", e)
+            log.error("Document query: unable to get documents of $dataContractId with $opts", e)
             throw e
         }
     }
