@@ -23,7 +23,9 @@ import kotlin.collections.HashMap
 typealias RustDocument = org.dashj.platform.sdk.Document
 
 class Document : BaseObject {
-
+    companion object {
+        const val FIELD_ID = "\$id"
+    }
     var dataContract: DataContract? = null
     var id: Identifier
     var type: String? = null
