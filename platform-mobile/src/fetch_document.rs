@@ -338,13 +338,15 @@ fn docs_get_all_query_sdk_test() {
                     contract_id,
                     "domain".to_string(),
                     vec![],
-                    vec![],
+                    vec![OrderClause { field: "normalizedLabel".into(), ascending: true }],
                     100,
-                    Some(StartPoint::StartAt(docs.last().unwrap().id().to_vec()))
+                    Some(StartPoint::StartAfter(docs.last().unwrap().id().to_vec()))
                 )
             };
             match docs_result2 {
-                Ok(docuemnts) => { },
+                Ok(documents) => {
+                    println!("query results: {}", documents.len());
+                },
                 Err(e) => { panic!("error: {}", e)}
             }
             for document in docs {

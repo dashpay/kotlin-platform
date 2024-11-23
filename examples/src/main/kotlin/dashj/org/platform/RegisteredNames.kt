@@ -12,6 +12,7 @@ import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.sdk.Client
 import org.dashj.platform.sdk.client.ClientOptions
+import org.dashj.platform.sdk.platform.Documents
 
 class RegisteredNames {
     companion object {
@@ -30,8 +31,8 @@ class RegisteredNames {
             var lastItem = Identifier.from(Sha256Hash.ZERO_HASH)
             var documents: List<Document>? = null
             var requests = 0
-            val limit = 100
-            var queryOpts = DocumentQuery.Builder().limit(limit).build()
+            val limit = Documents.DOCUMENT_LIMIT
+            var queryOpts = DocumentQuery.Builder().limit(limit).orderBy("normalizedLabel").build()
 
             do {
                 println(queryOpts.toJSON())
@@ -51,7 +52,11 @@ class RegisteredNames {
 
                     lastItem = documents.last().id
                     if (documents.size == 100) {
-                        queryOpts = DocumentQuery.Builder().startAfter(lastItem).limit(100).build()
+                        queryOpts = DocumentQuery.Builder()
+                            .startAfter(lastItem)
+                            .orderBy("normalizedLabel")
+                            .limit(100)
+                            .build()
                     }
                 } catch (e: Exception) {
                     println("\nError retrieving results (startAt =  $lastItem)")
