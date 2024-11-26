@@ -129,15 +129,14 @@ public class VoteTest extends SdkBaseTest {
 
     @Test
     public void getVotePoolsTest() throws Exception {
-        Identifier dpnsContractid = new Identifier(dpnsContractId);
-
-        //SWIGTYPE_p_DashSdk mainnetSdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, false);
-
-        Result<VotePollsGroupedByTimeStamp, String> result = dashsdk.platformMobileVotingGetVotepolls(
+        Result<VotePollsGroupedByTimeStamp, String> result = dashsdk.platformMobileVotingGetVotePolls(
                 sdk,
                 new TimestampMillis(System.currentTimeMillis()),
                 true,
                 new TimestampMillis(System.currentTimeMillis() + 14 * 24 * 3600 * 1000),
+                true,
+                100,
+                0,
                 true
         );
 

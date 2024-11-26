@@ -84,12 +84,12 @@ class NetworkActivity {
         }
 
         // TODO: This could use Documents.getAll
-        private fun getAllDocuments(contractDocument: String): List<Document> {
+        private fun getAllDocuments(contractDocument: String, orderBy: String): List<Document> {
             var startAfter: Identifier? = null
             var documents: List<Document>? = null
             val allDocuments = arrayListOf<Document>()
             var requests = 0
-            var queryOpts = DocumentQuery.Builder().build()
+            var queryOpts = DocumentQuery.Builder().orderBy(orderBy).build()
             do {
                 try {
                     documents = platform.documents.get(contractDocument, queryOpts)
@@ -99,7 +99,9 @@ class NetworkActivity {
 
                     startAfter = documents.last().id
                     queryOpts = DocumentQuery.Builder()
-                        .startAfter(startAfter)
+                        .startAt(startAfter)
+                        .limit(100)
+                        .orderBy(orderBy)
                         .build()
                 } catch (e: Exception) {
                     println("\nError retrieving results (startAfter =  $startAfter)")
@@ -111,7 +113,7 @@ class NetworkActivity {
         }
 
         private fun getNameDocuments(): List<DomainDocument> {
-            val allNameDocuments = getAllDocuments(Names.DPNS_DOMAIN_DOCUMENT)
+            val allNameDocuments = getAllDocuments(Names.DPNS_DOMAIN_DOCUMENT, "normalizedLabel")
             val nameDocuments = arrayListOf<DomainDocument>()
 
             allNameDocuments.forEach {
@@ -124,7 +126,7 @@ class NetworkActivity {
         }
 
         private fun getContactRequests(): List<ContactRequest> {
-            val allDocuments = getAllDocuments(ContactRequests.CONTACTREQUEST_DOCUMENT)
+            val allDocuments = getAllDocuments(ContactRequests.CONTACTREQUEST_DOCUMENT, Document.FIELD_ID)
             return allDocuments.map { ContactRequest(it) }
         }
 
@@ -147,7 +149,7 @@ class NetworkActivity {
         }
 
         fun getProfileDocuments(): List<Profile> {
-            val allDocuments = getAllDocuments(Profiles.DOCUMENT)
+            val allDocuments = getAllDocuments(Profiles.DOCUMENT, Document.FIELD_ID)
             return allDocuments.map { Profile(it) }
         }
 

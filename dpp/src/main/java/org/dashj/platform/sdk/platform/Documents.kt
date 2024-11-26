@@ -6,15 +6,19 @@
  */
 package org.dashj.platform.sdk.platform
 
+import com.google.common.base.Preconditions
 import io.grpc.StatusRuntimeException
 import org.bitcoinj.core.ECKey
+import org.bitcoinj.core.NetworkParameters
 import org.bitcoinj.core.Sha256Hash
+import org.dashj.platform.dapiclient.DapiClient
 import org.dashj.platform.dapiclient.model.DocumentQuery
 import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.errors.DriveErrorMetadata
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.identity.IdentityPublicKey
+import org.dashj.platform.dpp.voting.Contenders
 import org.dashj.platform.dpp.voting.ContestedDocumentResourceVotePoll
 import org.dashj.platform.dpp.voting.ResourceVote
 import org.dashj.platform.dpp.voting.ResourceVoteChoice
@@ -23,12 +27,16 @@ import org.dashj.platform.dpp.voting.VotePoll
 import org.dashj.platform.sdk.callbacks.Signer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.TimeUnit
 
 class Documents(val platform: Platform) {
 
     companion object {
-        const val DOCUMENT_LIMIT = 100
+        const val DOCUMENT_LIMIT = DapiClient.DEFAULT_LIMIT
         private val log: Logger = LoggerFactory.getLogger(Documents::class.java)
+
+        fun votingPeriod(params: NetworkParameters): Long = if (params.id == NetworkParameters.ID_MAINNET) TimeUnit.DAYS.toMillis(14) else TimeUnit.MINUTES.toMillis(90)
+
     }
 
     fun broadcast(identity: Identity, privateKey: ECKey, create: List<Document>?, replace: List<Document>? = null, delete: List<Document>? = null) {
@@ -168,12 +176,12 @@ class Documents(val platform: Platform) {
         } catch (e: StatusRuntimeException) {
             log.error(
                 "Document query: unable to get documents of $dataContractId: " +
-                    "${DriveErrorMetadata(e.trailers.toString())}",
+                    "${DriveErrorMetadata(e.trailers.toString())}  with $opts",
                 e
             )
             throw e
         } catch (e: Exception) {
-            log.error("Document query: unable to get documents of $dataContractId", e)
+            log.error("Document query: unable to get documents of $dataContractId with $opts", e)
             throw e
         }
     }
@@ -186,12 +194,29 @@ class Documents(val platform: Platform) {
         )
     }
 
+    fun getVoteContenders(
+        dataContractId: Identifier,
+        documentType: String,
+        indexName: String,
+        indexes: List<String>,
+    ): Contenders {
+        Preconditions.checkArgument(documentType.isNotEmpty())
+        Preconditions.checkArgument(indexName.isNotEmpty())
+        Preconditions.checkArgument(indexes.isNotEmpty())
+        return platform.client.getVoteContenders(
+            dataContractId,
+            documentType,
+            indexName,
+            indexes
+        )
+    }
+
     fun broadcastVote(
         resourceVoteChoice: ResourceVoteChoice,
         dataContractId: Identifier,
         documentType: String,
         indexName: String,
-        indexValues: List<Any>,
+        indexValues: List<String>,
         voterProTxHash: Sha256Hash,
         identityPublicKey: IdentityPublicKey,
         signerCallback: Signer
@@ -208,8 +233,21 @@ class Documents(val platform: Platform) {
     fun getVotePolls(
         dataContractId: Identifier,
         documentType: String,
-        startTime: Long, startTimeIncluded: Boolean = true, endTime:Long, endTimeIncluded: Boolean = true): List<VotePoll> {
-        val votePollsGroupedByTimestamp = platform.client.getVotePolls(startTime, startTimeIncluded, endTime, endTimeIncluded)
+        startTime: Long,
+        startTimeIncluded: Boolean = true,
+        endTime:Long,
+        endTimeIncluded: Boolean = true,
+        limit: Int = DOCUMENT_LIMIT,
+        orderAscending: Boolean = true
+    ): List<VotePoll> {
+        val votePollsGroupedByTimestamp = platform.client.getVotePolls(
+            startTime,
+            startTimeIncluded,
+            endTime,
+            endTimeIncluded,
+            limit,
+            orderAscending
+        )
 
         val result = arrayListOf<VotePoll>()
         votePollsGroupedByTimestamp.list.forEach { votePollGroup ->
@@ -225,6 +263,64 @@ class Documents(val platform: Platform) {
             }
         }
         return result
+    }
+
+    fun getAllVotePolls(
+        dataContractId: Identifier,
+        documentType: String,
+        startTime: Long,
+        startTimeIncluded: Boolean = true,
+        endTime:Long,
+        endTimeIncluded: Boolean = true,
+        orderAscending: Boolean = true
+    ): List<VotePoll> {
+        var count = 0
+        var currentStartTime = startTime
+        var currentStartTimeIncluded = startTimeIncluded
+        val results = arrayListOf<VotePoll>()
+        do {
+            val batch = getVotePolls(
+                dataContractId,
+                documentType,
+                currentStartTime,
+                currentStartTimeIncluded,
+                endTime,
+                endTimeIncluded, DOCUMENT_LIMIT, orderAscending)
+            count = batch.size
+            val lastVotePoll = batch.last()
+            currentStartTime = when (lastVotePoll) {
+                is ContestedDocumentResourceVotePoll -> {
+                    val voteContenders = getVoteContenders(
+                        lastVotePoll.dataContractId,
+                        lastVotePoll.documentTypeName,
+                        lastVotePoll.indexName,
+                        lastVotePoll.indexValues
+                    )
+                    val createdAt = voteContenders.map.minOf { contenders ->
+                        val document = deserialize(
+                            contenders.value.serializedDocument!!,
+                            lastVotePoll.dataContractId,
+                            lastVotePoll.documentTypeName
+                        )
+                        document.createdAt ?: 0
+                    }
+                    createdAt + votingPeriod(platform.params)
+                }
+                else -> -1L
+            }
+            currentStartTimeIncluded = true
+            results.addAll(
+                batch.filter {
+                    when (it) {
+                        is ContestedDocumentResourceVotePoll -> {
+                            it.dataContractId == dataContractId && it.documentTypeName == documentType
+                        }
+                        else -> false
+                    }
+                }
+            )
+        } while (count == 100 && currentStartTime != -1L)
+        return results
     }
 
     fun getVoteFromMasternode(proTxHash: Sha256Hash, dataContractId: Identifier, documentType: String, indexName: String, indexes: List<String>) {

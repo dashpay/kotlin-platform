@@ -12,7 +12,7 @@ typealias RustContestedResources = org.dashj.platform.sdk.ContestedResources
 typealias RustContestedResource = org.dashj.platform.sdk.ContestedResource
 
 
-data class ContenderWithSerializedDocument(val identityId: Identifier, val seralizedDocument: ByteArray?, val votes: Int) {
+data class ContenderWithSerializedDocument(val identityId: Identifier, val serializedDocument: ByteArray?, val votes: Int) {
     constructor(contenderWithSerializedDocument: RustContenderWithSerializedDocument) : this(
         Identifier.from(contenderWithSerializedDocument.v0._0.identity_id.bytes),
         contenderWithSerializedDocument.v0._0.serialized_document,

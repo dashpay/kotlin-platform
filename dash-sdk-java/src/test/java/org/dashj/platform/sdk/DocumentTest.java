@@ -1,11 +1,9 @@
 package org.dashj.platform.sdk;
 
+import org.bitcoinj.core.Base58;
 import org.dashj.platform.sdk.base.Result;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +12,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 public class DocumentTest extends SdkBaseTest {
 
@@ -256,6 +255,50 @@ public class DocumentTest extends SdkBaseTest {
             });
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void queryAllTest() {
+        try {
+            Identifier dpnsId = new Identifier(dpnsContractId);
+            ArrayList<WhereClause> where = new ArrayList<>();
+            ArrayList<OrderClause> orderBy = new ArrayList<>();
+            // where.add(new WhereClause("normalizedLabel", WhereOperator.StartsWith, new PlatformValue("test")));
+            where.add(new WhereClause("normalizedParentDomainName", WhereOperator.Equal, new PlatformValue("dash")));
+            orderBy.add(new OrderClause("normalizedLabel"));
+            int count = 0;
+            Start startAfter = null;
+            do {
+
+                Result<List<Document>, String> result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                        sdk,
+                        dpnsId,
+                        "domain",
+                        where,
+                        orderBy,
+                        100,
+                        startAfter
+                );
+                List<Document> docs = result.unwrap();
+                System.out.println("------ query ------");
+                System.out.println("items: " + docs.size());
+                docs.forEach(document -> {
+                    Map<String, PlatformValue> props = document.getV0().get_0().getProperties();
+                    System.out.println(props.get("label").getText());
+                    System.out.println("  id:     :  " + Base58.encode(document.getV0().get_0().getId().getBytes()));
+                    System.out.println("  identity:  " + Base58.encode(props.get("records").getMap().get_0().get(new PlatformValue("identity")).getIdentifier().getBytes()));
+
+                });
+                count = docs.size();
+                if (count > 0) {
+                    startAfter = new Start(docs.get(docs.size() -1).getV0().get_0().getId().getBytes(), true);
+                    System.out.println("start after: " + Base58.encode(startAfter.getStart_after().get_0()));
+                }
+            } while (count == 100);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
         }
     }
 

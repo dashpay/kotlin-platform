@@ -102,8 +102,6 @@ class Names(val platform: Platform) {
             val regex = Regex("^[a-zA-Z01-]{3,19}$")
             return regex.matches(username)
         }
-
-        fun votingPeriod(params: NetworkParameters): Long = if (params.id == NetworkParameters.ID_MAINNET) TimeUnit.DAYS.toMillis(14) else TimeUnit.MINUTES.toMillis(90)
     }
 
     fun register(
@@ -435,18 +433,12 @@ class Names(val platform: Platform) {
                     if (it.dataContractId == SystemIds.dpnsDataContractId &&
                             it.indexName == CONTESTED_INDEX &&
                             it.indexValues.get(0) == DEFAULT_PARENT_DOMAIN) {
-                        when (val normalizedLabelValue = it.indexValues[1]) {
-                            is PlatformValue -> {
-                                if (normalizedLabelValue.tag == PlatformValue.Tag.Text) {
-                                    resources.add(normalizedLabelValue.text)
-                                }
-                            }
-                            is String -> resources.add(normalizedLabelValue)
-                            else -> error("invalid type")
-                        }
-                    }
+                        val normalizedLabelValue = it.indexValues[1]
+                        resources.add(normalizedLabelValue) }
                 }
-                else -> {}
+                else -> {
+                    // ignore unknown Vote Poll type
+                }
             }
         }
         return resources
@@ -489,14 +481,19 @@ class Names(val platform: Platform) {
         return if (documents.isNotEmpty()) documents[0] else null
     }
 
+    /**
+     * Get current vote polls for contested names
+     *
+     * @return list of active vote polls for contested names
+     */
     fun getCurrentVotePolls() : List<VotePoll> {
         val currentTime = System.currentTimeMillis()
-        return platform.documents.getVotePolls(
+        return platform.documents.getAllVotePolls(
             SystemIds.dpnsDataContractId,
             DOMAIN_DOCUMENT,
             currentTime,
             true,
-            currentTime + votingPeriod(platform.params)
+            currentTime + Documents.votingPeriod(platform.params)
         )
     }
 

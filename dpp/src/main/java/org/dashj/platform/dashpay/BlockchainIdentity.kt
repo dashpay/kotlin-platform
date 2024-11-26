@@ -839,7 +839,7 @@ class BlockchainIdentity {
                             val documentWithVotes = contenders.map[uniqueIdentifier]
                                 ?: error("$username does not have $uniqueIdentifier as a contender")
 
-                            val recoveredDocument = documentWithVotes.seralizedDocument?.let {
+                            val recoveredDocument = documentWithVotes.serializedDocument?.let {
                                 platform.names.deserialize(it)
                             }
 
