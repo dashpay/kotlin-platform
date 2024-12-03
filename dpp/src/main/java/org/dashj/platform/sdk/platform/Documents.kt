@@ -287,7 +287,7 @@ class Documents(val platform: Platform) {
                 endTime,
                 endTimeIncluded, DOCUMENT_LIMIT, orderAscending)
             count = batch.size
-            val lastVotePoll = batch.last()
+            val lastVotePoll = batch.lastOrNull()
             currentStartTime = when (lastVotePoll) {
                 is ContestedDocumentResourceVotePoll -> {
                     val voteContenders = getVoteContenders(
