@@ -349,7 +349,25 @@ fn get_vote_contenders_test() {
     let resources_result = get_vote_contenders(
         &mut sdk,
         "parentNameAndLabel".to_string(),
-        vec![Value::Text("dash".to_string()), Value::Text("test110".to_string())],
+        vec![Value::Text("dash".to_string()), Value::Text("fuzzyduck".to_string())],
+        "domain".to_string(),
+        contract_id
+    );
+    match resources_result {
+        Ok(resources) => println!("contested resources = {:?}", resources),
+        Err(e) => panic!("error: {}", e)
+    }
+}
+
+#[test]
+fn get_vote_contenders_main_test() {
+    let mut sdk = create_dash_sdk_using_core_mainnet();
+    tracing::warn!("sdk: {:?}", sdk.get_sdk());
+    let contract_id = Identifier::from(dpns_contract::ID_BYTES);
+    let resources_result = get_vote_contenders(
+        &mut sdk,
+        "parentNameAndLabel".to_string(),
+        vec![Value::Text("dash".to_string()), Value::Text("fuzzyduck".to_string())],
         "domain".to_string(),
         contract_id
     );

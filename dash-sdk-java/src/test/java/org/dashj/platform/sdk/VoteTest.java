@@ -86,6 +86,53 @@ public class VoteTest extends SdkBaseTest {
     }
 
     @Test
+    public void getVoteContendorsMainNetTest() throws Exception {
+        String name = "fuzzyduck";
+        ArrayList<PlatformValue> indexes = new ArrayList<>();
+        indexes.add(new PlatformValue("dash"));
+        indexes.add(new PlatformValue(name));
+        SWIGTYPE_p_DashSdk mainnetSdk = dashsdk.platformMobileSdkCreateDashSdk(BigInteger.ZERO, BigInteger.ZERO, false);
+        Result<Contenders, String> result = dashsdk.platformMobileVotingGetVoteContenders(
+                mainnetSdk,
+                "parentNameAndLabel",
+                indexes,
+                "domain",
+                new Identifier(dpnsContractId)
+        );
+        Contenders contenders = result.unwrap();
+        assertNotNull(contenders);
+        System.out.println("Username: " + name);
+        System.out.println("Contenders: " + contenders.getContenders().size());
+        TupleContestedDocumentVotePollWinnerInfoBlockInfo winner = contenders.getWinner();
+        System.out.println("  Winner:" + (winner != null ? "" : "none"));
+        if (winner != null) {
+            System.out.print("  " + winner.getO_0().getTag());
+            if (winner.getO_0().getTag() == ContestedDocumentVotePollWinnerInfo.Tag.WonByIdentity) {
+                System.out.print(" " + Base58.encode(winner.getO_0().getWon_by_identity().get_0().get_0().get_0()));
+            }
+            System.out.println();
+        }
+        System.out.println("  Abstain: " + contenders.getAbstainVoteTally());
+        System.out.println("  Lock: " + contenders.getLockVoteTally());
+        System.out.println("  ---------------");
+        for (Map.Entry<Identifier, ContenderWithSerializedDocument> entry : contenders.getContenders().entrySet()) {
+            System.out.println("    Identifier: " + Base58.encode(entry.getKey().get_0().get_0()));
+            byte [] serializedDocument = entry.getValue().getV0().get_0().getSerialized_document();
+            System.out.println("    Serialized: " + (serializedDocument != null ? Base64.getEncoder().encodeToString(serializedDocument) : "null"));
+            if (serializedDocument != null) {
+                Result<Document, String> result2 = dashsdk.platformMobileFetchDocumentDeserializeDocumentSdk(
+                        sdk, serializedDocument, new Identifier(dpnsContractId), "domain");
+                Document document = result2.unwrap();
+                long createdAt = document.getV0().get_0().getCreated_at().toLong();
+                System.out.println("    createdAt: " + DateFormat.getDateInstance(DateFormat.LONG).format(createdAt));
+            }
+            System.out.println("    Votes: " + entry.getValue().getV0().get_0().getVoteTally());
+            System.out.println("    ---------------");
+        }
+        dashsdk.platformMobileSdkDestroyDashSdk(mainnetSdk);
+    }
+
+    @Test
     public void getVoteContendorsForNonExistantTest() throws Exception {
         ArrayList<PlatformValue> indexes = new ArrayList<>();
         indexes.add(new PlatformValue("dash"));
