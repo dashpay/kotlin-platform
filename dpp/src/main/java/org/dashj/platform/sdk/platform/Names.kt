@@ -420,7 +420,7 @@ class Names(val platform: Platform) {
             count = nextList.size
             results.addAll(nextList)
             startAt = resources.list.lastOrNull()?.value
-        } while(count != 100)
+        } while(count == 100)
 
         return results
     }
