@@ -6,4 +6,8 @@
  */
 package org.dashj.platform.dapiclient
 
-class MaxRetriesReachedException(e: Exception) : Exception(e)
+class MaxRetriesReachedException(exceptions: List<Exception>) : Exception(exceptions.first()) {
+    constructor(e: Exception) : this(listOf(e))
+}
+
+
