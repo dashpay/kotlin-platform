@@ -340,7 +340,8 @@ fn docs_get_all_query_sdk_test() {
                     vec![],
                     vec![OrderClause { field: "normalizedLabel".into(), ascending: true }],
                     100,
-                    Some(StartPoint::StartAfter(docs.last().unwrap().id().to_vec()))
+                    // TODO - use StartAfter instead
+                    Some(StartPoint::StartAt(docs.last().unwrap().id().to_vec()))
                 )
             };
             match docs_result2 {

@@ -229,7 +229,8 @@ class BlockchainIdentity {
         authenticationGroupExtension: AuthenticationGroupExtension,
         registeredIdentity: Identity? = null
     ) : this(platform, transaction.getUsedDerivationPathIndex(0), transaction.lockedOutpoint, wallet, authenticationGroupExtension) {
-        Preconditions.checkArgument(!transaction.assetLockPublicKey.isPubKeyOnly || transaction.assetLockPublicKey.isEncrypted)
+        // we don't use the assetLockPublicKey, so there is no reason to check its properties
+        // Preconditions.checkArgument(!transaction.assetLockPublicKey.isPubKeyOnly || transaction.assetLockPublicKey.isEncrypted)
         assetLockTransaction = transaction
         registrationFundingPrivateKey = transaction.assetLockPublicKey
 

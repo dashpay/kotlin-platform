@@ -31,7 +31,7 @@ class ShowContactRequests {
                 scanner.next()
             }
 
-            sdk = Client(ClientOptions(network = args[0]))
+            sdk = Client(ClientOptions(network))
             sdk.platform.useValidNodes()
             if (!sdk.platform.hasApp("dashpay")) {
                 println("$network does not support dashpay")
@@ -76,6 +76,49 @@ class ShowContactRequests {
                             }
                         }
                         ContactRequests(platform).get(identityId, false, 0L, false)
+                    }
+
+                    requests += 1
+
+                    for (doc in documents) {
+                        val toUserId = doc.data["toUserId"] as Identifier
+                        println("===================================================")
+                        println("from: ${doc.ownerId} -> to: $toUserId")
+                        println()
+                        println("contactRequest: ${JSONObject(doc.toJSON())}")
+                    }
+
+                    if (documents.isEmpty()) {
+                        println("No identities found matching $id")
+                    }
+
+                    startAt += Documents.DOCUMENT_LIMIT
+                    if (documents.isNotEmpty()) {
+                        queryOpts = DocumentQuery.Builder().startAfter(documents.last().id).build()
+                    }
+                } catch (e: Exception) {
+                    println("\nError retrieving results (startAt =  $startAt)")
+                    println(e.message)
+                }
+            } while (requests == 0 || documents!!.size >= Documents.DOCUMENT_LIMIT)
+
+            do {
+                println("query: ${queryOpts.toJSON()}")
+                var identityId = id
+
+                try {
+                    documents = if (id == "all") {
+                        platform.documents.get(ContactRequests.CONTACTREQUEST_DOCUMENT, queryOpts)
+                    } else {
+                        // resolve name if possible
+                        if (identityId.length != 44 && identityId.length != 43) {
+                            val nameDocument = platform.names.resolve(id)
+                            if (nameDocument != null) {
+                                val records = nameDocument.data["records"] as MutableMap<String, Any?>
+                                identityId = Identifier.from(records["identity"]).toString()
+                            }
+                        }
+                        ContactRequests(platform).get(identityId, true, 0L, false)
                     }
 
                     requests += 1

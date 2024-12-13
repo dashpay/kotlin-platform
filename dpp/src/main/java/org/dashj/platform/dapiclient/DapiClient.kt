@@ -449,15 +449,29 @@ class DapiClient(
     ): Identity? {
         logger.info("getIdentity(${id.toBase58()}, $prove)")
         val identityId = Identifier.from(id)
-        val result = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(
-            rustSdk,
-            identityId.toNative()
-        )
-        return try {
-            Identity(result.unwrap().get())
-        } catch (e: Exception) {
-            null
-        }
+        val exceptionList = arrayListOf<Exception>()
+        var retriesLeft = retries
+        do {
+            val result = dashsdk.platformMobileFetchIdentityFetchIdentityWithSdk(
+                rustSdk,
+                identityId.toNative()
+            )
+            try {
+                return try {
+                    Identity(result.unwrap().get())
+                } catch (e: Exception) {
+                    null
+                }
+            } catch (e: Exception) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                    exceptionList.add(e)
+                    retriesLeft--
+                } else {
+                    throw e
+                }
+            }
+        } while(retriesLeft > 0)
+        throw MaxRetriesReachedException(exceptionList)
     }
 
     /**
@@ -467,15 +481,29 @@ class DapiClient(
      */
     fun getIdentityByFirstPublicKey(pubKeyHash: ByteArray, prove: Boolean = false): Identity? {
         logger.info("getIdentityByFirstPublicKey(${pubKeyHash.toHex()})")
-        val result = dashsdk.platformMobileFetchIdentityFetchIdentityWithKeyhashSdk(
-            rustSdk,
-            pubKeyHash
-        )
-        return try {
-            Identity(result.unwrap())
-        } catch (e: Exception) {
-            null
-        }
+        val exceptionList = arrayListOf<Exception>()
+        var retriesLeft = retries
+        do {
+            val result = dashsdk.platformMobileFetchIdentityFetchIdentityWithKeyhashSdk(
+                rustSdk,
+                pubKeyHash
+            )
+            try {
+                return try {
+                    Identity(result.unwrap())
+                } catch (e: Exception) {
+                    null
+                }
+            } catch (e: Exception) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                    exceptionList.add(e)
+                    retriesLeft--
+                } else {
+                    throw e
+                }
+            }
+        } while(retriesLeft > 0)
+        throw MaxRetriesReachedException(exceptionList)
     }
 
     /**
@@ -535,16 +563,31 @@ class DapiClient(
         logger.info("getDataContract(${contractIdByteArray.toBase58()})")
         val contractId = Identifier.from(contractIdByteArray)
 
-        val dataContract = dashsdk.platformMobileDataContractsFetchDataContract(
-            rustSdk,
-            contractId.toNative()
-        )
-        return try {
-            DataContract.from(dataContract.unwrap().get())
-        } catch (e: Exception) {
-            logger.error("get data contract error", e)
-            throw NotFoundException("DataContract ${contractIdByteArray.toBase58()} not found")
-        }
+        val exceptionList = arrayListOf<Exception>()
+        var retriesLeft = retries
+        do {
+            val dataContractResult = dashsdk.platformMobileDataContractsFetchDataContract(
+                rustSdk,
+                contractId.toNative()
+            )
+            try {
+                return try {
+                    DataContract.from(dataContractResult.unwrap().get())
+                } catch (e: Exception) {
+                    null
+                }
+            } catch (e: Exception) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                    exceptionList.add(e)
+                    retriesLeft--
+                } else {
+                    logger.error("get data contract error", e)
+                    throw NotFoundException("DataContract ${contractIdByteArray.toBase58()} not found")
+                }
+                logger.error("get data contract error", e)
+            }
+        } while(retriesLeft > 0)
+        throw MaxRetriesReachedException(exceptionList)
     }
 
     /**
@@ -572,19 +615,32 @@ class DapiClient(
             documentQuery.startAfter != null -> Start(documentQuery.startAfter!!.toBuffer(), false)
             else -> null
         }
-        val result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
-            rustSdk,
-            rustContractIdentifier,
-            type,
-            documentQuery.encodeWhere(),
-            documentQuery.encodeOrderBy(),
-            if (documentQuery.limit == -1) 100 else documentQuery.limit.toLong(),
-            start
-        )
-        logger.info("getDocuments(...) result = {}", result)
-        return result.unwrap().map {
-            Document(it, contractIdentifier)
-        }
+        var retriesLeft = DEFAULT_RETRY_COUNT
+        val exceptionList = arrayListOf<Exception>()
+        do {
+            val result = dashsdk.platformMobileFetchDocumentFetchDocumentsWithQueryAndSdk(
+                rustSdk,
+                rustContractIdentifier,
+                type,
+                documentQuery.encodeWhere(),
+                documentQuery.encodeOrderBy(),
+                if (documentQuery.limit == -1) 100 else documentQuery.limit.toLong(),
+                start
+            )
+            try {
+                return result.unwrap().map {
+                    Document(it, contractIdentifier)
+                }
+            } catch (e: Exception) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                    exceptionList.add(e)
+                    retriesLeft--
+                } else {
+                    throw e
+                }
+            }
+        } while (retriesLeft > 0)
+        throw MaxRetriesReachedException(exceptionList)
     }
 
     /* Core */
@@ -1062,19 +1118,48 @@ class DapiClient(
 
     fun getIdentityBalance(identifier: Identifier) : Long {
         logger.info("getIdentityBalance({})", identifier)
-        val result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(rustSdk, identifier.toNative())
-        return result.unwrap()
+        val exceptionList = arrayListOf<Exception>()
+        var retriesLeft = retries
+        do {
+            val result = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(rustSdk, identifier.toNative())
+            try {
+                return result.unwrap()
+            } catch (e: Exception) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                    exceptionList.add(e)
+                    retriesLeft--
+                } else {
+                    throw e
+                }
+            }
+        } while(retriesLeft > 0)
+        throw MaxRetriesReachedException(exceptionList)
     }
 
     fun getVoteContenders(dataContractId: Identifier, documentType: String, indexName: String, indexes: List<String>): Contenders {
-        val result = dashsdk.platformMobileVotingGetVoteContenders(
-            rustSdk,
-            indexName,
-            indexes.map { PlatformValue(it) },
-            documentType,
-            dataContractId.toNative()
-        )
-        return Contenders(result.unwrap())
+        logger.info("getVoteContenders({}, {}, {}, {})", dataContractId, documentType, indexName, indexes)
+        val exceptionList = arrayListOf<Exception>()
+        var retriesLeft = retries
+        do {
+            val result = dashsdk.platformMobileVotingGetVoteContenders(
+                rustSdk,
+                indexName,
+                indexes.map { PlatformValue(it) },
+                documentType,
+                dataContractId.toNative()
+            )
+            try {
+                return Contenders(result.unwrap())
+            } catch (e: Exception) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                    exceptionList.add(e)
+                    retriesLeft--
+                } else {
+                    throw e
+                }
+            }
+        } while(retriesLeft > 0)
+        throw MaxRetriesReachedException(exceptionList)
     }
 
     fun getContestedResources(
@@ -1084,15 +1169,30 @@ class DapiClient(
         startAt: PlatformValue? = null,
         startAtInclude: Boolean = false
     ): ContestedResources {
-        val result = dashsdk.platformMobileVotingGetContestedResources(
-            rustSdk,
-            documentType,
-            dataContractId.toNative(),
-            limit,
-            startAt,
-            startAtInclude
-        )
-        return ContestedResources(result.unwrap())
+        logger.info("getContestedResources({}, {}, {}, ...)", dataContractId, documentType, limit)
+        val exceptionList = arrayListOf<Exception>()
+        var retriesLeft = retries
+        do {
+            val result = dashsdk.platformMobileVotingGetContestedResources(
+                rustSdk,
+                documentType,
+                dataContractId.toNative(),
+                limit,
+                startAt,
+                startAtInclude
+            )
+            try {
+                return ContestedResources(result.unwrap())
+            } catch (e: Exception) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                    exceptionList.add(e)
+                    retriesLeft--
+                } else {
+                    throw e
+                }
+            }
+        } while(retriesLeft > 0)
+        throw MaxRetriesReachedException(exceptionList)
     }
 
     fun deserializeDocument(serializedDocument: ByteArray, dataContractId: Identifier, documentType: String): Document {
@@ -1145,28 +1245,58 @@ class DapiClient(
         limit: Int = DEFAULT_LIMIT,
         orderAscending: Boolean = true
     ): VotePollsGroupedByTimestamp {
-        val result = dashsdk.platformMobileVotingGetVotePolls(
-            rustSdk,
-            startTime.toTimestampMillis(),
-            startTimeIncluded,
-            endTime.toTimestampMillis(),
-            endTimeIncluded,
-            limit,
-            0,
-            orderAscending
-        )
-        return VotePollsGroupedByTimestamp(result.unwrap());
+        logger.info("getVotePolls($startTime, $endTime, $limit, $orderAscending)")
+        val exceptionList = arrayListOf<Exception>()
+        var retriesLeft = retries
+        do {
+            val result = dashsdk.platformMobileVotingGetVotePolls(
+                rustSdk,
+                startTime.toTimestampMillis(),
+                startTimeIncluded,
+                endTime.toTimestampMillis(),
+                endTimeIncluded,
+                limit,
+                0,
+                orderAscending
+            )
+            try {
+                return VotePollsGroupedByTimestamp(result.unwrap())
+            } catch (e: Exception) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                    exceptionList.add(e)
+                    retriesLeft--
+                } else {
+                    throw e
+                }
+            }
+        } while(retriesLeft > 0)
+        throw MaxRetriesReachedException(exceptionList)
     }
 
     fun getLastVoteFromMasternode(protxHash: Sha256Hash, dataContractId: Identifier, documentType: String, indexName: String, indexes: List<String>): ResourceVotesByIdentity {
-        val result = dashsdk.platformMobileVotingGetLastVoteFromMasternode(
-            rustSdk,
-            Identifier.from(protxHash).toNative(),
-            indexName,
-            indexes.map { PlatformValue(it) },
-            documentType,
-            dataContractId.toNative()
-        )
-        return ResourceVotesByIdentity(result.unwrap())
+        logger.info("getLastVoteFromMasternode({}, {}, {}, {}, {})", protxHash, dataContractId, documentType, indexName, indexes)
+        val exceptionList = arrayListOf<Exception>()
+        var retriesLeft = retries
+        do {
+            val result = dashsdk.platformMobileVotingGetLastVoteFromMasternode(
+                rustSdk,
+                Identifier.from(protxHash).toNative(),
+                indexName,
+                indexes.map { PlatformValue(it) },
+                documentType,
+                dataContractId.toNative()
+            )
+            try {
+                return ResourceVotesByIdentity(result.unwrap())
+            } catch (e: Exception) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                    exceptionList.add(e)
+                    retriesLeft--
+                } else {
+                    throw e
+                }
+            }
+        } while(retriesLeft > 0)
+        throw MaxRetriesReachedException(exceptionList)
     }
 }

@@ -53,7 +53,7 @@ class RegisteredNames {
                     lastItem = documents.last().id
                     if (documents.size == 100) {
                         queryOpts = DocumentQuery.Builder()
-                            .startAfter(lastItem)
+                            .startAt(lastItem)
                             .orderBy("normalizedLabel")
                             .limit(100)
                             .build()
