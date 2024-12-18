@@ -61,6 +61,7 @@ pub fn put_vote_to_platform(
             request_settings,
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
+            wait_timeout: None,
         };
 
         tracing::info!("Call Vote::put_to_platform");
@@ -344,6 +345,24 @@ fn get_contested_resources_test() {
 #[test]
 fn get_vote_contenders_test() {
     let mut sdk = create_dash_sdk_using_core_testnet();
+    tracing::warn!("sdk: {:?}", sdk.get_sdk());
+    let contract_id = Identifier::from(dpns_contract::ID_BYTES);
+    let resources_result = get_vote_contenders(
+        &mut sdk,
+        "parentNameAndLabel".to_string(),
+        vec![Value::Text("dash".to_string()), Value::Text("fuzzyduck".to_string())],
+        "domain".to_string(),
+        contract_id
+    );
+    match resources_result {
+        Ok(resources) => println!("contested resources = {:?}", resources),
+        Err(e) => panic!("error: {}", e)
+    }
+}
+
+#[test]
+fn get_vote_contenders_main_test() {
+    let mut sdk = create_dash_sdk_using_core_mainnet();
     tracing::warn!("sdk: {:?}", sdk.get_sdk());
     let contract_id = Identifier::from(dpns_contract::ID_BYTES);
     let resources_result = get_vote_contenders(

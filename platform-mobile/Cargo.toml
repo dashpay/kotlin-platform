@@ -11,6 +11,7 @@ platform-value = { path = "../../platform/packages/rs-platform-value" }
 data-contracts = { path = "../../platform/packages/data-contracts" }
 dpns-contract = { path = "../../platform/packages/dpns-contract" }
 dashpay-contract = { path = "../../platform/packages/dashpay-contract" }
+wallet-utils-contract = { path = "../../platform/packages/wallet-utils-contract" }
 dpp = { path = "../../platform/packages/rs-dpp" }
 dash-sdk = { path = "../../platform/packages/rs-sdk" }
 rs-dapi-client = { path = "../../platform/packages/rs-dapi-client" }

@@ -589,6 +589,7 @@ pub fn put_document_sdk(
             request_settings,
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
+            wait_timeout: None,
         };
 
         trace!("call Document::put_to_platform & wait_for_response");
@@ -713,6 +714,7 @@ pub fn replace_document_sdk(
             request_settings,
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
+            wait_timeout: None,
         };
 
         trace!("call Document::replace_on_platform & wait_for_response");

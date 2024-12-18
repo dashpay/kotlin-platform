@@ -128,6 +128,16 @@ fn get_data_contract_test() {
 }
 
 #[test]
+fn get_wallet_utils_data_contract_test() {
+    let mut sdk = create_dash_sdk_using_core_testnet();
+    let data_contract = fetch_data_contract(
+        & mut sdk,
+        Identifier::from(wallet_utils_contract::ID_BYTES)
+    ).unwrap();
+    tracing::info!("wallet-utils: {:?}", data_contract);
+}
+
+#[test]
 fn get_missing_data_contract_test() {
     let mut sdk = create_dash_sdk_using_core_testnet();
     let data_contract_result = fetch_data_contract(

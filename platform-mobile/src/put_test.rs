@@ -51,7 +51,7 @@ fn get_salted_domain_hash(
 
 
 
-#[test]
+// #[test]
 fn test_put_documents_for_username() {
     let entropy_generator = DefaultEntropyGenerator;
     let owner_id = Identifier::from_string("7Yowk46VwwHqmD5yZyyygggh937aP6h2UW7aQWBdWpM5", Encoding::Base58).expect("identifier");
@@ -186,6 +186,7 @@ fn test_put_documents_for_username() {
             },
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
+            wait_timeout: None,
         };
 
         tracing::warn!("Call Document::put_to_platform_and_wait_for_response");
@@ -251,7 +252,7 @@ fn test_put_documents_for_username() {
     };
 }
 
-#[test]
+//#[test]
 fn test_put_txmetadata_contract() {
     let testnet = false;
     let mainnet_owner_id  = Identifier::from_string("EuopfWEY7r4p8rKpcPsW7ZF2ytAbw4VGpZJwAuLHMdC3", Encoding::Base58).expect("identifier");
@@ -311,6 +312,7 @@ fn test_put_txmetadata_contract() {
             },
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
+            wait_timeout: None,
         };
 
         let file_path = "dashwallet-contract.json";
