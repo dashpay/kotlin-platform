@@ -1,13 +1,14 @@
 extern crate cbindgen;
 extern crate ferment;
-
+use std::env;
 use std::process::Command;
 use ferment::{Builder, Crate};
 
 pub const SELF_NAME: &str = "rs_sdk_bindings";
 fn main() {
 
-   let c_header = format!("target/{}.h", SELF_NAME);
+   let target_triple = env::var("TARGET").expect("TARGET environment variable is not set");
+   let c_header = format!("target/{}/{}.h", target_triple, SELF_NAME);
    match Builder::new(Crate::current_with_name(SELF_NAME))
        .with_mod_name("fermented")
        .with_crates(

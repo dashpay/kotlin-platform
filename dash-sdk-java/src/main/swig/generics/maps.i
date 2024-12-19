@@ -19,9 +19,9 @@
     jmethodID valueConstructor = jenv->GetMethodID(valueClass, "<init>", "(JZ)V");
 
     for (uintptr_t i = 0; i < $1->count; ++i) {
-        jobject key = jenv->NewObject(keyClass, keyConstructor, (jlong) $1->keys[i], false);
+        jobject key = jenv->NewObject(keyClass, keyConstructor, (jlong)$1->keys[i], static_cast<jboolean>(false));
         jobject value = jenv->NewObject(valueClass, valueConstructor,
-                                        (jlong) $1->values[i], false);
+                                        (jlong)$1->values[i], static_cast<jboolean>(false));
         jenv->CallObjectMethod(hashMapInstance, putMethod, key, value);
         jenv->DeleteLocalRef(key);
         jenv->DeleteLocalRef(value);

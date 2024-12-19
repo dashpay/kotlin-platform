@@ -12,6 +12,7 @@
 #include "clone.h"
 #include <vector>
 #include <iosfwd>
+#include "utils.h"
 MemoryFactory * MemoryFactory::instance = new MemoryFactory();
 MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %}

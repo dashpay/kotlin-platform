@@ -46,3 +46,21 @@ JniHelper::~JniHelper() {
 JNIEnv* JniHelper::getEnv() {
     return env;
 }
+
+char* getHex(const unsigned char* arr, size_t length) {
+    // Each byte takes 2 hex characters + space + null terminator
+    char* result = (char*)malloc((length * 3) * sizeof(char));
+    if (result == NULL) {
+        return NULL; // Allocation failed
+    }
+
+    char* ptr = result;
+    for (int i = 0; i < length; i++) {
+        ptr += sprintf(ptr, "%02x ", arr[i]);
+    }
+
+    // Remove trailing space and null-terminate the string
+    result[length * 3 - 1] = '\0';
+
+    return result;
+}

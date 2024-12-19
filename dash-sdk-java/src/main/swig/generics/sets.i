@@ -69,7 +69,7 @@
         return $null;
     }
     for (uintptr_t i = 0; i < $1->count; ++i) {
-        jobject elementObj = jenv->NewObject(valueClass, valueConstructor, (jlong) $1->values[i], false);
+        jobject elementObj = jenv->NewObject(valueClass, valueConstructor, (jlong)$1->values[i], static_cast<jboolean>(false));
         jenv->CallBooleanMethod(setObj, addMethod, elementObj);
         jenv->DeleteLocalRef(elementObj);
     }

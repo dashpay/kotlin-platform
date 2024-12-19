@@ -3,7 +3,7 @@
 
 #if UINTPTR_MAX == 0xFFFFFFFF
 #define SYNTHETIC_INT128
-struct uint128_t {
+struct __attribute__((aligned(16))) uint128_t {
     uint64_t low;
     uint64_t high;
 
@@ -90,7 +90,7 @@ struct uint128_t {
 
 };
 
-struct int128_t {
+struct __attribute__((aligned(16))) int128_t {
     uint64_t low;
     int64_t high;
 

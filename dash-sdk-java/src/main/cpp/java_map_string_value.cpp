@@ -3,6 +3,9 @@
 //
 #include <jni.h>
 #include "conversions.h"
+#include <cstring>
+#include "clone.h"
+#include "utils.h"
 
 // TODO: This function needs to handle all of the variants
 FermentMapStringPlatformValue * java_map_String_Value_to_fermented_ValueMap(JNIEnv * jenv, jobject input) {
@@ -67,9 +70,42 @@ jobject fermented_tree_to_java_map_String_Value(JNIEnv * jenv, FermentMapStringP
     jclass valueClass = jenv->FindClass("org/dashj/platform/sdk/PlatformValue");
     jmethodID valueConstructor = jenv->GetMethodID(valueClass, "<init>", "(JZ)V");
 
+    LOGI("platform_value_Value size: %d, alignment %d", sizeof(platform_value_Value), alignof(platform_value_Value));
+
     for (uintptr_t i = 0; i < input->count; ++i) {
         jobject key = jenv->NewStringUTF(input->keys[i]);
-        jobject value = jenv->NewObject(valueClass, valueConstructor, (jlong) input->values[i], false);
+        auto * valueClone = clone(input->values[i]);
+        LOGI("converting value %d: \'%x\'[tag=%d]\n", i, input->values[i], input->values[i]->tag);
+        LOGI("Value::? = %s", getHex((unsigned char *)input->values[i], sizeof(platform_value_Value)));
+//        LOGI("Value::? + 4: %s", (long)(
+//            ((platform_value_Value*)((uint8_t*)input->values[i]+4))->text._0)
+//
+//            );
+        if (input->values[i]->tag == platform_value_Value::Tag::Text) {
+            LOGI("  converting value[text]: %lx", (long)input->values[i]->text._0);
+            if ((uint64_t)input->values[i]->text._0 > 100)
+                LOGI("  converting value[text]: %s", (long)input->values[i]->text._0);
+        } else if (input->values[i]->tag == platform_value_Value::Tag::Identifier) {
+            LOGI("  converting value[identifier]: %lx", (long)input->values[i]->identifier._0);
+        } else if (input->values[i]->tag == platform_value_Value::Tag::Map) {
+            LOGI("  converting value[map]: %lx", (long)input->values[i]->map._0);
+        }
+        LOGI("cloned value %d: \'%x\'[tag=%d]\n", i, valueClone, valueClone->tag);
+        LOGI("Value::? = %s", getHex((unsigned char *)valueClone, sizeof(platform_value_Value)));
+//                LOGI("Value::? + 4: %s", (long)(
+//                    ((platform_value_Value*)((uint8_t*)valueClone+4))->text._0)
+//
+//                    );
+        if (input->values[i]->tag == platform_value_Value::Tag::Text) {
+            LOGI("  cloned value[text]: %lx", (long)valueClone->text._0);
+            if ((uint64_t)valueClone->text._0 > 100)
+                LOGI("  cloned value[text]: %s", (long)valueClone->text._0);
+        } else if (input->values[i]->tag == platform_value_Value::Tag::Identifier) {
+            LOGI("  cloned value[identifier]: %lx", (long)valueClone->identifier._0);
+        } else if (input->values[i]->tag == platform_value_Value::Tag::Map) {
+            LOGI("  cloned value[map]: %lx", (long)valueClone->map._0);
+        }
+        jobject value = jenv->NewObject(valueClass, valueConstructor, (jlong) valueClone, static_cast<jboolean>(true));
         jenv->CallObjectMethod(hashMapInstance, putMethod, key, value);
     }
 
