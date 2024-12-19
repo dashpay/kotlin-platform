@@ -113,7 +113,6 @@ impl ContextProvider for CallbackContextProvider {
         quorum_hash: [u8; 32], // quorum hash is 32 bytes
         core_chain_locked_height: u32,
     ) -> Result<[u8; 48], ContextProviderError> {
-        tracing::info!("get_quorum_public_key: executing");
         if let Some(key) = self
             .quorum_public_keys_cache
             .get(&(quorum_hash, quorum_type))
