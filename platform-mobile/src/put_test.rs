@@ -240,7 +240,6 @@ fn test_put_documents_for_username() {
             domain_document_type.to_owned_document_type(),
             entropy2,
             identity_public_key,
-            Arc::new(data_contract),
             &signer,
             Some(settings)
         ).await.or_else(|err|Err(ProtocolError::Generic(err.to_string())))?;
@@ -339,7 +338,8 @@ fn test_put_txmetadata_contract() {
         let data_contract_result = data_contract.put_to_platform_and_wait_for_response(
             &sdk,
             identity_public_key,
-            &signer
+            &signer,
+            Some(settings)
         ).await.or_else(|e| Err(ProtocolError::Generic(e.to_string())));
 
         Ok::<DataContract, ProtocolError>(data_contract_result.unwrap())
