@@ -64,7 +64,6 @@
     for (uintptr_t i = 0; i < $1->count; ++i) {
         jobject elementObj = nullptr;
         if (strcmp(#SHORT_TYPE, "String") == 0) {
-            // printf("list item: %s\n", $1->values[i]);
             elementObj = jenv->NewStringUTF((const char *)$1->values[i]);
         } else if (strcmp(#SHORT_TYPE, "Integer") == 0) {
             jclass integerClass = (jenv)->FindClass("java/lang/Integer");

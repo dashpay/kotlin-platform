@@ -17,45 +17,6 @@ JniClassManager::JniClassManager(JNIEnv * jenv) {
     resultClass = jenv->FindClass("org/dashj/platform/sdk/base/Result");
 }
 
-/// @brief 
-/// @param jenv 
-/// @return 
-bool attachThread(JNIEnv * jenv) {
-#ifdef __ANDROID__
-//    JavaVM* jvm;
-//    jenv->GetJavaVM(&jvm);
-
-    int getEnvStat = javaVM->GetEnv(reinterpret_cast<void**>(&jenv), JNI_VERSION_1_6);
-//#else
-//    int getEnvStat = jvm->GetEnv(&jenv, JNI_VERSION_1_6);
-//#endif
-    //bool needsDetach = false;
-    if (getEnvStat == JNI_EDETACHED) {
-
-        if (javaVM->AttachCurrentThread(&jenv, nullptr) != 0) {
-            //SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "Failed to attach current thread");
-            return false;
-        }
-        return true;
-    } else if (getEnvStat != JNI_OK) {
-        //SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "Failed to get the environment");
-        return false;
-    }
-    return false;
-#endif
-}
-
-void detachThread(JNIEnv * jenv, bool needsDetach) {
-    #ifndef __ANDROID__
-    if (needsDetach) {
-        JavaVM* jvm;
-        jenv->GetJavaVM(&jvm);
-
-        jvm->DetachCurrentThread();
-    }
-    #endif
-}
-
 JniHelper::JniHelper() : env(nullptr), needsDetach(false) {
     int getEnvStat = javaVM->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
 

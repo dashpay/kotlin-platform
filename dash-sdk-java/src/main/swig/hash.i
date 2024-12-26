@@ -8,7 +8,6 @@
         return platform_value_Hash256_ctor(copy);
     }
     ~platform_value_Hash256() {
-        printf("~platform_value_Hash256(0x%ld)\n", $self);
         platform_value_Hash256_destroy($self);
     }
     bool objectEquals(platform_value_Hash256* other) {

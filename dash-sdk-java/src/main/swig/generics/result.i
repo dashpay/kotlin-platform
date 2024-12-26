@@ -231,7 +231,6 @@
         jclass resultClass = jenv->FindClass("org/dashj/platform/sdk/base/Result");
 
         if ($1->ok != NULL) {
-            printf("ok is non-null: %lx\n", $1->ok);
             jobject elementObj = nullptr;
             if (strcmp(#RETURN_TYPE, "String") == 0) {
                 // printf("string item\n");
