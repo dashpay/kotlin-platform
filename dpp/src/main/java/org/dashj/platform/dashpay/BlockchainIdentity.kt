@@ -397,7 +397,8 @@ class BlockchainIdentity {
                 registerIdentityWithISLock(keyParameter)
             } catch (e: Exception) {
 
-                if (e.message?.contains("Instant lock proof signature is invalid or wasn't created recently. Pleases try chain asset lock proof instead.") == true ||
+                if (e is InvalidInstantAssetLockProofException ||
+                    e.message?.contains("Instant lock proof signature is invalid or wasn't created recently. Pleases try chain asset lock proof instead.") == true ||
                     e.message?.contains(Regex("Asset Lock proof core chain height \\d+ is higher than the current consensus core height \\d+")) == true) {
                     registerIdentityWithChainLock(keyParameter, waitForChainlock)
                 } else {
