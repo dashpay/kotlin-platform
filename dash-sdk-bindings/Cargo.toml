@@ -4,9 +4,8 @@ version = "1.0.0"
 edition = "2021"
 
 [dependencies]
-ferment-interfaces = { path = "../../ferment/ferment-interfaces" }
-ferment-macro = { path = "../../ferment/ferment-macro" }
-
+ferment-interfaces = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-interfaces" }
+ferment-macro = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-macro" }
 platform-mobile = { path = "../platform-mobile"}
 # dependencies required by ferment
 platform-value = { path = "../../platform/packages/rs-platform-value" }

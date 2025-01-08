@@ -6,12 +6,8 @@ edition = "2021"
 [dependencies]
 dash-sdk = { path = "../../../../../platform/packages/rs-sdk" }
 #dash-sdk = { git = "https://github.com/dashpay/platform.git", branch="v1.0-dev" }
-#dash-sdk = { path = "../../../../../platform-upstream/packages/rs-sdk" }
-# bls-signatures = { path = "../../../../../bls-signatures/rust-bindings/bls-signatures"}
-
-
-ferment-interfaces = { path = "../../../../../ferment/ferment-interfaces" }
-ferment-macro = { path = "../../../../../ferment/ferment-macro" }
+ferment-macro = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-macro" }
+ferment-interfaces = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-interfaces" }
 
 platform-mobile = { path = "../../../../platform-mobile"}
 
