@@ -31,7 +31,7 @@ toml = "0.8.8"
 tower-service = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
 tower-layer = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
 tower = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
-rs-x11-hash = { path = "../../rs-x11-hash" }
+rs-x11-hash = { git = "https://github.com/hashengineering/rs-x11-hash", branch = "feat/add-android-support" }
 
 [lib]
 crate-type = ["staticlib"]
