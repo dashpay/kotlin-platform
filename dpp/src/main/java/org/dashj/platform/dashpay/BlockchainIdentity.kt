@@ -528,6 +528,139 @@ class BlockchainIdentity {
         finalizeIdentityRegistration(assetLockTransaction!!)
     }
 
+    /**
+     * Topup identity with the given assetLockTransaction
+     *
+     * @param keyParameter
+     * @param useISLock - false will only use chainlocks
+     * @param waitForChainlock - if a chainlock asset proof results in a failure, wait until the next block is mined
+     */
+    fun topUp(topupAssetLockTransaction: AssetLockTransaction?, keyParameter: KeyParameter?, useISLock: Boolean = true, waitForChainlock: Boolean) {
+        if (useISLock) {
+            try {
+                topUpWithISLock(topupAssetLockTransaction, keyParameter)
+            } catch (e: Exception) {
+
+                if (e is InvalidInstantAssetLockProofException ||
+                    e.message?.contains("Instant lock proof signature is invalid or wasn't created recently. Pleases try chain asset lock proof instead.") == true ||
+                    e.message?.contains(Regex("Asset Lock proof core chain height \\d+ is higher than the current consensus core height \\d+")) == true) {
+                    topUpWithChainLock(topupAssetLockTransaction, keyParameter, waitForChainlock)
+                } else {
+                    throw e
+                }
+            }
+        } else {
+            topUpWithChainLock(topupAssetLockTransaction, keyParameter, waitForChainlock)
+        }
+    }
+
+    private fun topUpWithChainLock(topUpAssetLockTransaction: AssetLockTransaction?, keyParameter: KeyParameter?, waitForChainlock: Boolean) {
+        checkState(
+            registrationStatus == IdentityStatus.REGISTERED && identity != null,
+            "The identity must be registered"
+        )
+        checkState(topUpAssetLockTransaction != null, "The credit funding transaction must exist")
+
+        val signingKey = maybeDecryptKey(topUpAssetLockTransaction!!.assetLockPublicKey, keyParameter)
+        var registeredOrError = false
+        var count = 1
+        while (!registeredOrError) {
+            log.info("topUp identity attempt: $count")
+            val coreHeight = if (topUpAssetLockTransaction.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
+                topUpAssetLockTransaction.confidence.appearedAtChainHeight
+            } else {
+                wallet!!.context.blockChain.bestChainHeight
+                // this is not supported, how can we get the height?
+                //            val txInfo = platform.client.getTransaction(assetLockTransaction!!.txId.toString())
+                //            txInfo?.height ?: -1
+            }.toLong()
+
+
+            try {
+                creditBalance = Coin.valueOf(
+                    platform.identities.topUp(
+                        identity!!,
+                        0,
+                        topUpAssetLockTransaction,
+                        coreHeight,
+                        signingKey!!,
+                    ) / 1000
+                )
+                registeredOrError = true
+            } catch (e: Exception) {
+                // wait for another block
+                if (!waitForChainlock || !waitForNextBlock()) {
+                    throw e
+                }
+                count++
+            }
+        }
+
+        finalizeTopUp(topUpAssetLockTransaction)
+    }
+
+    /**
+     * TopUp the identity with an InstantSendLock
+     *
+     * @param topUpAssetLockTransaction the assetlock transaction
+     * @param keyParameter aes key for the wallet
+     * @return
+     */
+    private fun topUpWithISLock(topUpAssetLockTransaction: AssetLockTransaction?, keyParameter: KeyParameter?) {
+        checkState(
+            registrationStatus == IdentityStatus.REGISTERED && identity != null,
+            "The identity must be registered"
+        )
+        checkState(topUpAssetLockTransaction != null, "The credit funding transaction must exist")
+
+        val signingKey = maybeDecryptKey(topUpAssetLockTransaction!!.assetLockPublicKey, keyParameter)
+        checkNotNull(signingKey) { "The assetlock key cannot be decrypted" }
+        var instantLock: InstantSendLock? =
+            wallet!!.context.instantSendManager?.getInstantSendLockByTxId(topUpAssetLockTransaction.txId)
+
+        val newBalance = if (instantLock == null) {
+            instantLock = topUpAssetLockTransaction.confidence?.instantSendlock
+
+            val coreHeight = if (topUpAssetLockTransaction.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
+                topUpAssetLockTransaction.confidence.appearedAtChainHeight.toLong()
+            } else {
+                -1L
+            }
+
+            if (instantLock == null && coreHeight > 0) {
+                platform.identities.topUp(
+                    identity!!,
+                    0,
+                    topUpAssetLockTransaction,
+                    coreHeight,
+                    signingKey
+                )
+            } else if (instantLock != null) {
+                platform.identities.topUp(
+                    identity!!,
+                    0,
+                    topUpAssetLockTransaction,
+                    instantLock,
+                    signingKey
+                )
+            } else throw InvalidInstantAssetLockProofException("instantLock == null")
+        } else {
+            platform.identities.topUp(
+                identity!!,
+                0,
+                topUpAssetLockTransaction,
+                instantLock,
+                signingKey
+            )
+        }
+        finalizeTopUp(topUpAssetLockTransaction)
+        creditBalance = Coin.valueOf(newBalance / 1000)
+    }
+
+    private fun finalizeTopUp(topUpAssetLockTransaction: AssetLockTransaction) {
+
+    }
+
     private fun createIdentityPublicKeys(keyParameter: KeyParameter?): Pair<List<ECKey>, List<IdentityPublicKey>> {
         val masterPrivateKey = checkNotNull(
             privateKeyAtIndex(0, KeyType.ECDSA_SECP256K1, keyParameter)

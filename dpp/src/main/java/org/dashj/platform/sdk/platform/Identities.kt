@@ -128,37 +128,65 @@ class Identities(val platform: Platform) {
         return platform.stateRepository.fetchIdentityFromPubKeyHash(pubKeyHash)
     }
 
-    fun topUp(
-        identityId: Identifier,
-        signedLockTransaction: AssetLockTransaction,
-        instantLock: InstantSendLock
-    ): Boolean {
-        return topUp(
-            identityId,
-            0,
-            signedLockTransaction,
-            instantLock,
-            signedLockTransaction.assetLockPublicKey
-        )
-    }
+//    fun topUp(
+//        identity: Identity,
+//        signedLockTransaction: AssetLockTransaction,
+//        instantLock: InstantSendLock,
+//        signer: Signer
+//    ): Boolean {
+//        return topUp(
+//            identity,
+//            0,
+//            signedLockTransaction,
+//            instantLock,
+//            signer
+//        )
+//    }
 
     fun topUp(
-        identityId: Identifier,
+        identity: Identity,
         outputIndex: Long,
         transaction: Transaction,
         instantLock: InstantSendLock,
         assetLockPrivateKey: ECKey
-    ): Boolean {
+    ): Long {
         try {
             val assetLock = InstantAssetLockProof(outputIndex, transaction, instantLock)
 
-            val identityTopupTransition = platform.dpp.identity.createIdentityTopUpTransition(identityId, assetLock)
+            val topupResult = dashsdk.platformMobilePutTopupIdentitySdk(
+                platform.rustSdk,
+                identity.toNative(),
+                AssetLockProof(assetLock.toNative()),
+                assetLockPrivateKey.privKeyBytes,
+                platform.isTestNet()
+            )
 
-            identityTopupTransition.signByPrivateKey(assetLockPrivateKey)
+            return topupResult.unwrap()
+        } catch (e: Exception) {
+            log.info("topup failure: ", e)
+            throw e
+        }
+    }
 
-            platform.broadcastStateTransition(identityTopupTransition)
+    fun topUp(
+        identity: Identity,
+        outputIndex: Long,
+        transaction: Transaction,
+        coreHeight: Long,
+        assetLockPrivateKey: ECKey
+    ): Long {
+        try {
+            val assetLock = ChainAssetLockProof(platform.params, coreHeight, transaction.getOutput(outputIndex).outPointFor.bitcoinSerialize())
 
-            return true
+            val topupResult = dashsdk.platformMobilePutTopupIdentitySdk(
+                platform.rustSdk,
+                identity.toNative(),
+                AssetLockProof(assetLock.toNative()),
+                assetLockPrivateKey.privKeyBytes,
+                platform.isTestNet()
+            )
+
+            return topupResult.unwrap()
         } catch (e: Exception) {
             log.info("topup failure: ", e)
             throw e
