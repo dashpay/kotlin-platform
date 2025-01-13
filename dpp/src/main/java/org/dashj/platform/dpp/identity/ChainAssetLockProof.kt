@@ -1,7 +1,6 @@
 package org.dashj.platform.dpp.identity
 
 import org.bitcoinj.core.NetworkParameters
-import org.bitcoinj.core.Sha256Hash
 import org.bitcoinj.core.TransactionOutPoint
 import org.dashj.platform.dpp.toBase64
 import org.dashj.platform.dpp.util.Converters
@@ -48,7 +47,6 @@ class ChainAssetLockProof(
         val outPoint = TransactionOutPoint(
             outPoint.params,
             outPoint.index,
-//            Sha256Hash.wrap(outPoint.hash.reversedBytes)
             outPoint.hash
 
         )
@@ -72,6 +70,6 @@ class ChainAssetLockProof(
     }
 
     fun toNative(): NativeChainAssetLockProof {
-        return NativeChainAssetLockProof(coreChainLockedHeight, OutPoint(outPoint.hash.bytes.reversedArray(), outPoint.index))
+        return NativeChainAssetLockProof(coreChainLockedHeight, OutPoint(outPoint.hash.bytes, outPoint.index))
     }
 }
