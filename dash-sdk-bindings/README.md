@@ -10,8 +10,7 @@ cd dashpay
 
 git clone https://github.com/dashpay/kotlin-platform.git
 git clone --branch feat/add-android-support https://github.com/hashengineering/rs-x11-hash.git # the android PR is not yet merged
-git clone --branch ferment1 https://github.com/hashengineering/platform.git 
-git clone --branch feat/opaque-default https://github.com/dashpay/ferment.git 
+git clone --branch ferment-1.7.1 https://github.com/hashengineering/platform.git 
 ```
 
 ### Build
