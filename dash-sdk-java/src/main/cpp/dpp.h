@@ -176,6 +176,8 @@ dpp_identity_identity_public_key_key_type_KeyType * intToKeyType(dpp_identity_id
         ENUM_CASE(dpp_identity_identity_public_key_key_type, KeyType, ECDSA_HASH160)
         ENUM_CASE(dpp_identity_identity_public_key_key_type, KeyType, BIP13_SCRIPT_HASH)
         ENUM_CASE(dpp_identity_identity_public_key_key_type, KeyType, EDDSA_25519_HASH160)
+        default:
+            return nullptr;
     }
 }
 
@@ -185,6 +187,8 @@ dpp_identity_identity_public_key_security_level_SecurityLevel * intToSecurityLev
         ENUM_CASE(dpp_identity_identity_public_key_security_level, SecurityLevel, CRITICAL)
         ENUM_CASE(dpp_identity_identity_public_key_security_level, SecurityLevel, HIGH)
         ENUM_CASE(dpp_identity_identity_public_key_security_level, SecurityLevel, MEDIUM)
+        default:
+            return nullptr;
     }
 }
 dpp_identity_identity_public_key_purpose_Purpose * intToPurpose(dpp_identity_identity_public_key_purpose_Purpose value) {
@@ -195,14 +199,10 @@ dpp_identity_identity_public_key_purpose_Purpose * intToPurpose(dpp_identity_ide
         ENUM_CASE(dpp_identity_identity_public_key_purpose, Purpose, TRANSFER)
         ENUM_CASE(dpp_identity_identity_public_key_purpose, Purpose, SYSTEM)
         ENUM_CASE(dpp_identity_identity_public_key_purpose, Purpose, VOTING)
+        default:
+            return nullptr;
      }
 }
-
-//platform_value_types_identifier_Identifier * Identifier_clone(platform_value_types_identifier_Identifier * id) {
-//     uint8_t * bytesCopy = (uint8_t*)memoryFactory.alloc(32);
-//     memcpy(bytesCopy, id->_0->_0, 32);
-//     return platform_value_types_identifier_Identifier_ctor(platform_value_types_identifier_IdentifierBytes32_ctor((uint8_t (*)[32])bytesCopy));
-//}
 
 dpp_identity_identity_public_key_contract_bounds_ContractBounds * singleContract(platform_value_types_identifier_Identifier * id) {
     platform_value_types_identifier_Identifier * idCopy = platform_mobile_identity_Identifier_clone(id);

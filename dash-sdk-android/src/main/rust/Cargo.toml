@@ -6,12 +6,8 @@ edition = "2021"
 [dependencies]
 dash-sdk = { path = "../../../../../platform/packages/rs-sdk" }
 #dash-sdk = { git = "https://github.com/dashpay/platform.git", branch="v1.0-dev" }
-#dash-sdk = { path = "../../../../../platform-upstream/packages/rs-sdk" }
-# bls-signatures = { path = "../../../../../bls-signatures/rust-bindings/bls-signatures"}
-
-
-ferment-interfaces = { path = "../../../../../ferment/ferment-interfaces" }
-ferment-macro = { path = "../../../../../ferment/ferment-macro" }
+ferment-macro = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-macro" }
+ferment-interfaces = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-interfaces" }
 
 platform-mobile = { path = "../../../../platform-mobile"}
 
@@ -35,14 +31,14 @@ drive-proof-verifier = { path = "../../../../../platform/packages/rs-drive-proof
 
 [build-dependencies]
 cbindgen = "0.26.0"
-ferment = { path = "../../../../../ferment/ferment" }
-#toml = "0.8.8"
+ferment = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment" }
 
 [patch.crates-io]
 tower-service = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
 tower-layer = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
 tower = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
-rs-x11-hash = { path = "../../../../../rs-x11-hash" }
+# this is required until this PR is merged
+rs-x11-hash = { git = "https://github.com/hashengineering/rs-x11-hash", branch = "feat/add-android-support" }
 
 [lib]
 crate-type = ["staticlib"]

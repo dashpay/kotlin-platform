@@ -49,7 +49,15 @@ fn get_salted_domain_hash(
 }
 
 
-
+fn vec_to_array(vec: Vec<u8>) -> Result<[u8; 32], &'static str> {
+    if vec.len() == 32 {
+        let mut array = [0u8; 32];
+        array.copy_from_slice(&vec);
+        Ok(array)
+    } else {
+        Err("Vector must have exactly 32 elements")
+    }
+}
 
 // #[test]
 fn test_put_documents_for_username() {
@@ -163,7 +171,7 @@ fn test_put_documents_for_username() {
         let hex_private_key = "a7285a6108fcd2a7b64060cbec68dddaf70c2d0514d8e0a447c8c933aef11b81";
         let private_key = hex::decode(hex_private_key).expect("Decoding failed");
         let mut signer = SimpleSigner::default();
-        signer.add_key(identity_public_key.clone(), Vec::from(private_key.as_slice()));
+        signer.add_key(identity_public_key.clone(), vec_to_array(private_key).expect("reason"));
         let entropy = entropy_generator.generate().unwrap();
         trace!("document_entropy: {:?}", entropy);
 
@@ -298,7 +306,7 @@ fn test_put_txmetadata_contract() {
         let hex_private_key = if testnet { testnet_private_key } else { mainnet_private_key };
         let private_key = hex::decode(hex_private_key).expect("Decoding failed");
         let mut signer = SimpleSigner::default();
-        signer.add_key(identity_public_key.clone(), Vec::from(private_key.as_slice()));
+        signer.add_key(identity_public_key.clone(), vec_to_array(private_key).expect("reason"));
         let entropy = entropy_generator.generate().unwrap();
         trace!("document_entropy: {:?}", entropy);
 

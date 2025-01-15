@@ -4,9 +4,8 @@ version = "1.0.0"
 edition = "2021"
 
 [dependencies]
-ferment-interfaces = { path = "../../ferment/ferment-interfaces" }
-ferment-macro = { path = "../../ferment/ferment-macro" }
-
+ferment-interfaces = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-interfaces" }
+ferment-macro = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-macro" }
 platform-mobile = { path = "../platform-mobile"}
 # dependencies required by ferment
 platform-value = { path = "../../platform/packages/rs-platform-value" }
@@ -32,7 +31,7 @@ toml = "0.8.8"
 tower-service = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
 tower-layer = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
 tower = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
-rs-x11-hash = { path = "../../rs-x11-hash" }
+rs-x11-hash = { git = "https://github.com/hashengineering/rs-x11-hash", branch = "feat/add-android-support" }
 
 [lib]
 crate-type = ["staticlib"]

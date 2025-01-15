@@ -25,7 +25,7 @@ supports the current environment
 
 ### Java Bindings for Android
 
-Build the android libraries for the local machine
+Build the android libraries for the local machine (only works on Mac)
 ```bash
 ./gradlew publishToMavenLocal
 ```
@@ -36,11 +36,21 @@ Build the android libraries to publish to Maven Central
 
 ### Use in other projects
 ```groovy
-dppVersion = "1.3-SNAPSHOT"
+dppVersion = "1.7.1-SNAPSHOT"
 dependencies {
     implementation "org.dashj.platform:dash-sdk-java:$dppVersion"
     implementation "org.dashj.platform:dash-sdk-kotlin:$dppVersion" // dpp
-    implementation "org.dashj.platform:dash-sdk-android:$dppVersion"
+    implementation "org.dashj.platform:dash-sdk-android:$dppVersion" // for android only
 }
 ```
 
+### Operating Systems
+Currently only building for Android on a Mac is supported.
+
+| **build system**     | **Android (arm32)**       | **Android (arm64)** | **Android (x86)**         | **Android (x86_64)** | **Windows (x86_64)** | **Mac (arm64)** | **Mac (x86_64)** | **Linux (arm64)** | **Linux (x86_64)** |
+|----------------------|---------------------------|---------------------|---------------------------|----------------------|----------------------|-----------------|------------------|-------------------|--------------------|
+| **Mac (arm64)**      | No 32-bit support Crashes |                     | No 32-bit support Crashes | Yes                  | N/A                  | Yes             | N/A              | N/A               | N/A                |
+| **Mac (x86_64)**     | N/A                       | N/A                 | N/A                       | N/A                  | N/A                  | N/A             | N/A              | N/A               | N/A                |
+| **Linux (arm64)**    | N/A                       | N/A                 | N/A                       | N/A                  | N/A                  | N/A             | N/A              | N/A               | N/A                |
+| **Linux (x86_64)**   | No 32-bit support Crashes | No Crashes          | No 32-bit support Crashes | No Crashes           | N/A                  | N/A             | N/A              | N/A               | N/A                |
+| **Windows (x86_64)** | Not supported             | Not supported       | Not supported             | Not supported        | Not Tested           | N/A             | N/A              | N/A               | N/A                |

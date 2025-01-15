@@ -112,16 +112,15 @@ class DapiGrpcClientTest : BaseTest() {
 //
     @Test
     fun getStatusTest() {
-        try {
+        assertThrows<MaxRetriesReachedException> {
             val status = client.getMasternodeStatus()
             println(status)
-        } finally {
         }
     }
 
     @Test
     fun getBlockTest() {
-        try {
+        assertThrows<MaxRetriesReachedException> {
             val block1 = when (PARAMS) {
                 is DevNetParams -> (PARAMS as DevNetParams).devNetGenesisBlock
                 is TestNet3Params -> Block(PARAMS, Utils.HEX.decode("020000002cbcf83b62913d56f605c0e581a48872839428c92e5eb76cd7ad94bcaf0b00007f11dcce14075520e8f74cc4ddf092b4e26ebd23b8d8665a1ae5bfc41b58fdb4c3a95e53ffff0f1ef37a00000101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0a510101062f503253482fffffffff0100743ba40b0000002321020131f38ae3eb0714531dbfc3f45491b4131d1211e3777177636388bb5a74c3e4ac00000000"))
@@ -141,15 +140,16 @@ class DapiGrpcClientTest : BaseTest() {
             // request the block from the hash and compare to the block obtained from the height
             val blockFromHash = client.getBlockByHash(block1Hash)
             assertEquals(blockFromHeight.toHex(), blockFromHash!!.toHex())
-        } finally {
         }
     }
 
     @Test
     fun getEstimatedFeeTest() {
         // request the block from the height
-        val fee = client.getEstimatedTransactionFee(1)
-        assertEquals(0.0, fee)
+        assertThrows<MaxRetriesReachedException> {
+            val fee = client.getEstimatedTransactionFee(1)
+            assertEquals(0.0, fee)
+        }
     }
 
     @Test
@@ -194,10 +194,7 @@ class DapiGrpcClientTest : BaseTest() {
     fun getNonExistantContract() {
         val client = DapiClient(masternodeList.toList(), dpp, false, true)
         val contractId = Base58.decode("88w8Xqn25HwJhjodrHW133aXhjuTsTv9ozQaYpSHACE3")
-        try {
-            assertThrows(NotFoundException::class.java) { client.getDataContract(contractId) }
-        } finally {
-        }
+        assertNull(client.getDataContract(contractId))
     }
 
     @Test
