@@ -65,6 +65,7 @@ use drive_proof_verifier::types::Documents;
 use rs_dapi_client::transport::BoxFuture;
 use dash_sdk::platform::transition::replace_document::ReplaceDocument;
 use dpp::util::hash::hash_double_to_vec;
+use dash_sdk::platform::transition::waitable::Waitable;
 
 pub fn get_wait_result_error(response: &WaitForStateTransitionResultResponse) -> Option<&StateTransitionBroadcastError> {
     match &response.version {
@@ -97,11 +98,9 @@ pub async fn wait_for_response_concurrent(
 
         tracing::info!("spawning thread {} of 5", i + 1);
         let handle = tokio::spawn(async move {
-            <dpp::document::Document as PutDocument<SimpleSigner>>::wait_for_response::<'_, '_, '_>(
-                &new_preorder_document,
+            Document::wait_for_response(
                 &sdk,
                 preorder_transition,
-                data_contract,
                 settings
             ).await
         });
@@ -142,6 +141,7 @@ pub async fn wait_for_response_concurrent_identity(
     identity: &Identity,
     sdk: &Sdk,
     state_transition: &StateTransition,
+    put_settings: Option<PutSettings>
 ) -> Result<Identity, dash_sdk::Error> {
     let mut handles = vec![];
 
@@ -152,10 +152,10 @@ pub async fn wait_for_response_concurrent_identity(
         let state_transition = state_transition.clone();
         tracing::info!("spawning thread {} of 5", i + 1);
         let handle = tokio::spawn(async move {
-            <Identity as PutIdentity<SimpleSigner>>::wait_for_response::<'_, '_, '_, '_>(
-                &identity,
+            Identity::wait_for_response(
                 &sdk,
-                &state_transition
+                state_transition,
+                put_settings
             ).await
         });
 
@@ -403,13 +403,20 @@ pub fn put_identity_sdk(
         //     }
         // }
 
+        let put_settings = PutSettings {
+            request_settings,
+            identity_nonce_stale_time_s: None,
+            user_fee_increase: None,
+            wait_timeout: None,
+        };
+
         let state_transition_result = Identity::put_to_platform(
             &identity,
             &sdk,
             asset_lock_proof.into(),
             &private_key,
             &signer,
-            request_settings
+            Some(put_settings)
         ).await;
 
         let state_transition = match state_transition_result {
@@ -427,7 +434,8 @@ pub fn put_identity_sdk(
         let identity_result = wait_for_response_concurrent_identity(
             &identity,
             &sdk,
-            &state_transition
+            &state_transition,
+            Some(put_settings)
         ).await;
 
         return match identity_result {
@@ -466,12 +474,18 @@ pub fn topup_identity_sdk(
         let request_settings = unsafe { (*rust_sdk).get_request_settings() };
 
         trace!("call Identity::top_up_identity");
+        let put_settings = PutSettings {
+            request_settings,
+            identity_nonce_stale_time_s: None,
+            user_fee_increase: Some(user_fee_increase),
+            wait_timeout: None,
+        };
         let identity_result = identity.top_up_identity(
             &sdk,
             asset_lock_proof.into(),
             &private_key,
             Some(user_fee_increase),
-            request_settings
+            Some(put_settings)
         ).await;
 
         match identity_result {
@@ -589,6 +603,7 @@ pub fn put_document_sdk(
             request_settings,
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
+            wait_timeout: None,
         };
 
         trace!("call Document::put_to_platform & wait_for_response");
@@ -713,6 +728,7 @@ pub fn replace_document_sdk(
             request_settings,
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
+            wait_timeout: None,
         };
 
         trace!("call Document::replace_on_platform & wait_for_response");

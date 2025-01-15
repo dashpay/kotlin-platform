@@ -827,7 +827,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "dapi-grpc-macros",
  "futures-core",
@@ -843,7 +843,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc-macros"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "heck 0.5.0",
  "quote",
@@ -887,7 +887,7 @@ dependencies = [
 
 [[package]]
 name = "dash-sdk"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "arc-swap",
  "async-trait",
@@ -1081,7 +1081,7 @@ dependencies = [
 
 [[package]]
 name = "dashpay-contract"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1091,7 +1091,7 @@ dependencies = [
 
 [[package]]
 name = "data-contracts"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "dashpay-contract",
  "dpns-contract",
@@ -1101,6 +1101,7 @@ dependencies = [
  "platform-version",
  "serde_json",
  "thiserror",
+ "wallet-utils-contract",
  "withdrawals-contract",
 ]
 
@@ -1198,7 +1199,7 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "dpns-contract"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1208,7 +1209,7 @@ dependencies = [
 
 [[package]]
 name = "dpp"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1255,7 +1256,7 @@ dependencies = [
 
 [[package]]
 name = "drive"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "bincode",
  "byteorder",
@@ -1283,7 +1284,7 @@ dependencies = [
 
 [[package]]
 name = "drive-proof-verifier"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "bincode",
  "dapi-grpc",
@@ -1465,7 +1466,7 @@ checksum = "e8c02a5121d4ea3eb16a80748c74f5549a5665e4c21333c6098f283870fbdea6"
 
 [[package]]
 name = "feature-flags-contract"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2270,7 +2271,7 @@ dependencies = [
 
 [[package]]
 name = "json-schema-compatibility-validator"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "json-patch",
  "once_cell",
@@ -2389,7 +2390,7 @@ dependencies = [
 
 [[package]]
 name = "masternode-reward-shares-contract"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2881,11 +2882,12 @@ dependencies = [
  "tracing",
  "tracing-logcat",
  "tracing-subscriber",
+ "wallet-utils-contract",
 ]
 
 [[package]]
 name = "platform-serialization"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "bincode",
  "platform-version",
@@ -2893,7 +2895,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization-derive"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2903,7 +2905,7 @@ dependencies = [
 
 [[package]]
 name = "platform-value"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -2928,7 +2930,7 @@ dependencies = [
 
 [[package]]
 name = "platform-version"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "bincode",
  "ferment-interfaces",
@@ -2941,7 +2943,7 @@ dependencies = [
 
 [[package]]
 name = "platform-versioning"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3318,12 +3320,11 @@ dependencies = [
 
 [[package]]
 name = "rs-dapi-client"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "backon",
  "chrono",
  "dapi-grpc",
- "ferment-interfaces",
  "ferment-macro",
  "futures",
  "hex",
@@ -3719,7 +3720,7 @@ checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
 
 [[package]]
 name = "simple-signer"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -4483,6 +4484,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "wallet-utils-contract"
+version = "1.7.0"
+dependencies = [
+ "platform-value",
+ "platform-version",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "want"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4767,7 +4778,7 @@ dependencies = [
 
 [[package]]
 name = "withdrawals-contract"
-version = "1.5.1"
+version = "1.7.0"
 dependencies = [
  "num_enum 0.5.11",
  "platform-value",

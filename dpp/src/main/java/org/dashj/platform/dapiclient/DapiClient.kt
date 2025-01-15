@@ -7,19 +7,37 @@
 
 package org.dashj.platform.dapiclient
 
-//import org.dashj.platform.dapiclient.grpc.GrpcMethod
+import com.google.common.base.Preconditions
 import com.google.common.base.Stopwatch
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.bitcoinj.core.BloomFilter
 import org.bitcoinj.core.Sha256Hash
 import org.bitcoinj.evolution.SimplifiedMasternodeListManager
+import org.bitcoinj.params.DevNetParams
 import org.bitcoinj.quorums.LLMQParameters
+import org.dash.platform.dapi.v0.CoreOuterClass
 import org.dashj.platform.dapiclient.errors.NotFoundException
 import org.dashj.platform.dapiclient.errors.ResponseException
+import org.dashj.platform.dapiclient.grpc.BroadcastTransactionMethod
+import org.dashj.platform.dapiclient.grpc.DefaultShouldRetryCallback
+import org.dashj.platform.dapiclient.grpc.GetBlockMethod
+import org.dashj.platform.dapiclient.grpc.GetEstimatedTransactionFeeMethod
+import org.dashj.platform.dapiclient.grpc.GetMasternodeStatusMethod
+import org.dashj.platform.dapiclient.grpc.GetTransactionMethod
+import org.dashj.platform.dapiclient.grpc.GrpcMethod
+import org.dashj.platform.dapiclient.grpc.GrpcMethodShouldRetryCallback
+import org.dashj.platform.dapiclient.grpc.SubscribeToTransactionsWithProofs
+import org.dashj.platform.dapiclient.grpc.SubscribeToTransactionsWithProofsMethod
 import org.dashj.platform.dapiclient.model.DocumentQuery
+import org.dashj.platform.dapiclient.model.GetTransactionResponse
 import org.dashj.platform.dapiclient.model.JsonRPCRequest
+import org.dashj.platform.dapiclient.model.MasternodeStatus
 import org.dashj.platform.dapiclient.provider.DAPIAddress
 import org.dashj.platform.dapiclient.provider.DAPIAddressListProvider
+import org.dashj.platform.dapiclient.provider.DAPIGrpcMasternode
 import org.dashj.platform.dapiclient.provider.ListDAPIAddressProvider
 import org.dashj.platform.dapiclient.provider.SimplifiedMasternodeListDAPIAddressProvider
 import org.dashj.platform.dapiclient.rest.DapiService
@@ -71,7 +89,7 @@ class DapiClient(
     private val debugOkHttpClient: OkHttpClient
     private val debugJrpc = true
     private var initializedJRPC = false
-    //private val defaultShouldRetryCallback = DefaultShouldRetryCallback()
+    private val defaultShouldRetryCallback = DefaultShouldRetryCallback()
 
     // used for reporting
     private var successfulCalls: Long = 0
@@ -101,6 +119,7 @@ class DapiClient(
         const val REQUIRED_SUCCESS_RATE = 0.50 // 50%
         const val DEFAULT_LIMIT = 100
     }
+
     var contextProvider = object : ContextProvider() {
         override fun getQuorumPublicKey(
             quorumType: Int,
@@ -178,7 +197,16 @@ class DapiClient(
         banBaseTime: Int = DEFAULT_BASE_BAN_TIME,
         waitForNodes: Int = DEFAULT_WAIT_FOR_NODES
     ) :
-        this(listOf(masternodeAddress), dpp, useContextProvider, isTestnet, timeOut, retries, banBaseTime, waitForNodes)
+            this(
+                listOf(masternodeAddress),
+                dpp,
+                useContextProvider,
+                isTestnet,
+                timeOut,
+                retries,
+                banBaseTime,
+                waitForNodes
+            )
 
     constructor(
         addresses: List<String>,
@@ -190,7 +218,16 @@ class DapiClient(
         banBaseTime: Int = DEFAULT_BASE_BAN_TIME,
         waitForNodes: Int = DEFAULT_WAIT_FOR_NODES
     ) :
-        this(ListDAPIAddressProvider.fromList(addresses, banBaseTime), dpp, useContextProvider, isTestnet, timeOut, retries, banBaseTime, waitForNodes)
+            this(
+                ListDAPIAddressProvider.fromList(addresses, banBaseTime),
+                dpp,
+                useContextProvider,
+                isTestnet,
+                timeOut,
+                retries,
+                banBaseTime,
+                waitForNodes
+            )
 
     /* Platform gRPC methods */
 
@@ -470,7 +507,7 @@ class DapiClient(
                     throw e
                 }
             }
-        } while(retriesLeft > 0)
+        } while (retriesLeft > 0)
         throw MaxRetriesReachedException(exceptionList)
     }
 
@@ -502,51 +539,9 @@ class DapiClient(
                     throw e
                 }
             }
-        } while(retriesLeft > 0)
+        } while (retriesLeft > 0)
         throw MaxRetriesReachedException(exceptionList)
     }
-
-    /**
-     * Fetch the identity ids by the public key hashes
-     * @param pubKeyHashes List<ByteArray>
-     * @param prove Whether to return the proof
-     * @return GetIdentitiesByPublicKeyHashesResponse
-     */
-//    fun getIdentitiesByPublicKeyHashes(pubKeyHashes: List<ByteArray>, prove: Boolean = false):
-//        GetIdentitiesByPublicKeyHashesResponse {
-//        logger.info("getIdentitiesByPublicKeyHashes(${pubKeyHashes.map { it.toHex() }}, $prove")
-//        val method = GetIdentitiesByPublicKeyHashes(pubKeyHashes, prove)
-//        val response = grpcRequest(method) as PlatformOuterClass.GetIdentitiesByPublicKeyHashesResponse
-//
-//        return when {
-//            prove && response.hasProof() -> {
-//                val proof = Proof(response.proof)
-//                logger.info("proof = $proof")
-//                val (inclusion, noninclusion) = verifyProof(proof, ResponseMetadata(response.metadata), method)
-//
-//                if (inclusion.isNotEmpty()) {
-//                    // determine the pubKeyHashes not found
-//                    GetIdentitiesByPublicKeyHashesResponse(
-//                        inclusion.values.toList(),
-//                        proof,
-//                        ResponseMetadata(response.metadata)
-//                    )
-//                } else {
-//                    GetIdentitiesByPublicKeyHashesResponse(listOf(), proof, ResponseMetadata(response.metadata))
-//                }
-//            }
-//            else -> {
-//                val identityList = response.identitiesList.map {
-//                    it.toByteArray()
-//                }
-//                GetIdentitiesByPublicKeyHashesResponse(
-//                    identityList,
-//                    Proof(response.proof),
-//                    ResponseMetadata(response.metadata)
-//                )
-//            }
-//        }
-//    }
 
     /**
      * Fetch Data Contract by id
@@ -586,7 +581,7 @@ class DapiClient(
                 }
                 logger.error("get data contract error", e)
             }
-        } while(retriesLeft > 0)
+        } while (retriesLeft > 0)
         throw MaxRetriesReachedException(exceptionList)
     }
 
@@ -645,68 +640,44 @@ class DapiClient(
 
     /* Core */
     /** get status of platform node  */
-//    fun getStatus(address: DAPIAddress? = null, retries: Int = USE_DEFAULT_RETRY_COUNT): GetStatusResponse? {
-//        val method = GetStatusMethod()
-//        val watch = Stopwatch.createStarted()
-//        val response = grpcRequest(method, retries, address) as CoreOuterClass.GetStatusResponse?
-//        watch.stop()
-//
-//        return response?.let {
-//            val result = GetStatusResponse(
-//                Version(it.version.protocol, it.version.software, it.version.agent),
-//                Time(it.time.now, it.time.offset, it.time.median),
-//                org.dashj.platform.dapiclient.model.Status.getByCode(it.status.number),
-//                it.syncProgress,
-//                Chain(
-//                    it.chain.name,
-//                    it.chain.headersCount,
-//                    it.chain.blocksCount,
-//                    Sha256Hash.wrap(it.chain.bestBlockHash.toByteArray()),
-//                    it.chain.difficulty,
-//                    it.chain.chainWork.toByteArray(),
-//                    it.chain.isSynced,
-//                    it.chain.syncProgress
-//                ),
-//                Masternode(
-//                    Masternode.Status.getByCode(it.masternode.status.number),
-//                    Sha256Hash.wrap(it.masternode.proTxHash.toByteArray()),
-//                    it.masternode.posePenalty,
-//                    it.masternode.isSynced,
-//                    it.masternode.syncProgress
-//                ),
-//                Network(it.network.peersCount, NetworkFee(it.network.fee.relay, it.network.fee.incremental)),
-//                Date().time,
-//                address,
-//                watch.elapsed(TimeUnit.MILLISECONDS)
-//            )
-//
-//            if (address != null) {
-//                address.lastStatus = result
-//            }
-//
-//            logger.info("$result")
-//            result
-//        }
-//    }
+    fun getMasternodeStatus(address: DAPIAddress? = null, retries: Int = USE_DEFAULT_RETRY_COUNT): MasternodeStatus? {
+        val method = GetMasternodeStatusMethod()
+        val watch = Stopwatch.createStarted()
+        val response = grpcRequest(method, retries, address) as CoreOuterClass.GetMasternodeStatusResponse?
+        watch.stop()
 
-//    private fun logException(e: StatusRuntimeException, masternode: DAPIGrpcMasternode, method: GrpcMethod) {
-//        if (e.status.code == Status.CANCELLED.code) {
-//            logger.warn("RPC failed with ${masternode.address.host}: CANCELLED: ${e.trailers}")
-//        } else {
-//            logger.warn("RPC failed with ${masternode.address.host}: ${e.status}: ${e.trailers}")
-//            logger.warn("  method error: ${method.getErrorInfo(e)}")
-//        }
-//        logger.warn("  for $method")
-//    }
-//
-//    fun getBlockByHeight(height: Int): ByteArray? {
-//        logger.info("getBlockByHeight($height)")
-//        Preconditions.checkArgument(height > 0)
-//        val request = CoreOuterClass.GetBlockRequest.newBuilder()
-//            .setHeight(height)
-//            .build()
-//        return getBlock(request)
-//    }
+        return response?.let {
+            val result = MasternodeStatus(
+                MasternodeStatus.Status.getByCode(it.status.number),
+                Sha256Hash.wrap(it.proTxHash.toByteArray()),
+                it.posePenalty,
+                it.isSynced,
+                it.syncProgress
+            )
+
+            logger.info("$result")
+            result
+        }
+    }
+
+    private fun logException(e: StatusRuntimeException, masternode: DAPIGrpcMasternode, method: GrpcMethod) {
+        if (e.status.code == Status.CANCELLED.code) {
+            logger.warn("RPC failed with ${masternode.address.host}: CANCELLED: ${e.trailers}")
+        } else {
+            logger.warn("RPC failed with ${masternode.address.host}: ${e.status}: ${e.trailers}")
+            logger.warn("  method error: ${method.getErrorInfo(e)}")
+        }
+        logger.warn("  for $method")
+    }
+
+    fun getBlockByHeight(height: Int): ByteArray? {
+        logger.info("getBlockByHeight($height)")
+        Preconditions.checkArgument(height > 0)
+        val request = CoreOuterClass.GetBlockRequest.newBuilder()
+            .setHeight(height)
+            .build()
+        return getBlock(request)
+    }
 
     /**
      *
@@ -718,107 +689,107 @@ class DapiClient(
         return ByteArray(80)
     }
 
-//    private fun getBlock(request: CoreOuterClass.GetBlockRequest?): ByteArray? {
-//        val getBlock = GetBlockMethod(request!!)
-//        val response = grpcRequest(getBlock) as CoreOuterClass.GetBlockResponse?
-//        return response?.block!!.toByteArray()
-//    }
+    private fun getBlock(request: CoreOuterClass.GetBlockRequest?): ByteArray? {
+        val getBlock = GetBlockMethod(request!!)
+        val response = grpcRequest(getBlock) as CoreOuterClass.GetBlockResponse?
+        return response?.block!!.toByteArray()
+    }
 
-//    fun getEstimatedTransactionFee(blocks: Int): Double {
-//        logger.info("getEstimatedTransactionFee($blocks)")
-//        val method = GetEstimatedTransactionFeeMethod(blocks)
-//        val response = grpcRequest(method) as CoreOuterClass.GetEstimatedTransactionFeeResponse?
-//        return response?.fee!!
-//    }
+    fun getEstimatedTransactionFee(blocks: Int): Double {
+        logger.info("getEstimatedTransactionFee($blocks)")
+        val method = GetEstimatedTransactionFeeMethod(blocks)
+        val response = grpcRequest(method) as CoreOuterClass.GetEstimatedTransactionFeeResponse?
+        return response?.fee!!
+    }
 
-//    fun subscribeToTransactionsWithProofs(
-//        bloomFilter: BloomFilter,
-//        fromBlockHash: Sha256Hash,
-//        count: Int,
-//        sendTransactionHashes: Boolean,
-//        subscribeToTransactionsWithProofs: SubscribeToTransactionsWithProofs
-//    ) {
-//        subscribeToTransactionsWithProofs(
-//            bloomFilter,
-//            fromBlockHash,
-//            -1,
-//            count,
-//            sendTransactionHashes,
-//            subscribeToTransactionsWithProofs
-//        )
-//    }
-//
-//    fun subscribeToTransactionsWithProofs(
-//        bloomFilter: BloomFilter,
-//        fromBlockHeight: Int,
-//        count: Int,
-//        sendTransactionHashes: Boolean,
-//        subscribeToTransactionsWithProofs: SubscribeToTransactionsWithProofs
-//    ) {
-//        subscribeToTransactionsWithProofs(
-//            bloomFilter,
-//            Sha256Hash.ZERO_HASH,
-//            fromBlockHeight,
-//            count,
-//            sendTransactionHashes,
-//            subscribeToTransactionsWithProofs
-//        )
-//    }
-//
-//    private fun subscribeToTransactionsWithProofs(
-//        bloomFilter: BloomFilter,
-//        fromBlockHash: Sha256Hash,
-//        fromBlockHeight: Int,
-//        count: Int,
-//        sendTransactionHashes: Boolean,
-//        subscribeToTransactionsWithProofs: SubscribeToTransactionsWithProofs
-//    ) {
-//        val subscribe = SubscribeToTransactionsWithProofsMethod(
-//            bloomFilter,
-//            fromBlockHash,
-//            fromBlockHeight,
-//            count,
-//            sendTransactionHashes,
-//            subscribeToTransactionsWithProofs
-//        )
-//        grpcRequest(subscribe)
-//    }
-//
-//    /**
-//     * Make a DAPI call with retry support
-//     *
-//     * @param grpcMethod GrpcMethod
-//     * @param retriesLeft Int The number of times to retry the DAPI call.  (Default = -1, use this.retries)
-//     * @param dapiAddress DAPIAddress? The node that should used (default = null, choose randomly)
-//     * @param statusCheck Boolean Should call getStatus on a node before making the DAPI call (default = false)
-//     * @param retryCallback GrpcMethodShouldRetryCallback Is used upon failure to determine if the DAPI should
-//     *                      be attempted again after failure
-//     * @return Any? The result of the call, which must be cast to the correct type by the caller
-//     */
-//    private fun grpcRequest(
-//        grpcMethod: GrpcMethod,
-//        retriesLeft: Int = USE_DEFAULT_RETRY_COUNT,
-//        dapiAddress: DAPIAddress? = null,
-//        statusCheck: Boolean = false,
-//        retryCallback: GrpcMethodShouldRetryCallback = defaultShouldRetryCallback
-//    ): Any? {
-//        totalCalls++
-//        val retryAttemptsLeft = if (retriesLeft == USE_DEFAULT_RETRY_COUNT) {
-//            retries // set in constructor
-//        } else {
-//            retriesLeft // if called recursively
-//        }
-//        val address = dapiAddress ?: dapiAddressListProvider.getLiveAddress()
-//        val allowSelfSignedCertificate = dpp.params is DevNetParams
-//        val grpcMasternode = DAPIGrpcMasternode(address, timeOut, allowSelfSignedCertificate)
-//        lastUsedAddress = address
-//
-//        logger.info(
-//            "grpcRequest(${grpcMethod.javaClass.simpleName}, $retriesLeft, $dapiAddress, $statusCheck) with" +
-//                " ${address.host} for $grpcMethod"
-//        )
-//
-//        val response: Any = try {
+    fun subscribeToTransactionsWithProofs(
+        bloomFilter: BloomFilter,
+        fromBlockHash: Sha256Hash,
+        count: Int,
+        sendTransactionHashes: Boolean,
+        subscribeToTransactionsWithProofs: SubscribeToTransactionsWithProofs
+    ) {
+        subscribeToTransactionsWithProofs(
+            bloomFilter,
+            fromBlockHash,
+            -1,
+            count,
+            sendTransactionHashes,
+            subscribeToTransactionsWithProofs
+        )
+    }
+
+    fun subscribeToTransactionsWithProofs(
+        bloomFilter: BloomFilter,
+        fromBlockHeight: Int,
+        count: Int,
+        sendTransactionHashes: Boolean,
+        subscribeToTransactionsWithProofs: SubscribeToTransactionsWithProofs
+    ) {
+        subscribeToTransactionsWithProofs(
+            bloomFilter,
+            Sha256Hash.ZERO_HASH,
+            fromBlockHeight,
+            count,
+            sendTransactionHashes,
+            subscribeToTransactionsWithProofs
+        )
+    }
+
+    private fun subscribeToTransactionsWithProofs(
+        bloomFilter: BloomFilter,
+        fromBlockHash: Sha256Hash,
+        fromBlockHeight: Int,
+        count: Int,
+        sendTransactionHashes: Boolean,
+        subscribeToTransactionsWithProofs: SubscribeToTransactionsWithProofs
+    ) {
+        val subscribe = SubscribeToTransactionsWithProofsMethod(
+            bloomFilter,
+            fromBlockHash,
+            fromBlockHeight,
+            count,
+            sendTransactionHashes,
+            subscribeToTransactionsWithProofs
+        )
+        grpcRequest(subscribe)
+    }
+
+    /**
+     * Make a DAPI call with retry support
+     *
+     * @param grpcMethod GrpcMethod
+     * @param retriesLeft Int The number of times to retry the DAPI call.  (Default = -1, use this.retries)
+     * @param dapiAddress DAPIAddress? The node that should used (default = null, choose randomly)
+     * @param statusCheck Boolean Should call getStatus on a node before making the DAPI call (default = false)
+     * @param retryCallback GrpcMethodShouldRetryCallback Is used upon failure to determine if the DAPI should
+     *                      be attempted again after failure
+     * @return Any? The result of the call, which must be cast to the correct type by the caller
+     */
+    private fun grpcRequest(
+        grpcMethod: GrpcMethod,
+        retriesLeft: Int = USE_DEFAULT_RETRY_COUNT,
+        dapiAddress: DAPIAddress? = null,
+        statusCheck: Boolean = false,
+        retryCallback: GrpcMethodShouldRetryCallback = defaultShouldRetryCallback
+    ): Any? {
+        totalCalls++
+        val retryAttemptsLeft = if (retriesLeft == USE_DEFAULT_RETRY_COUNT) {
+            retries // set in constructor
+        } else {
+            retriesLeft // if called recursively
+        }
+        val address = dapiAddress ?: dapiAddressListProvider.getLiveAddress()
+        val allowSelfSignedCertificate = dpp.params is DevNetParams
+        val grpcMasternode = DAPIGrpcMasternode(address, timeOut, allowSelfSignedCertificate)
+        lastUsedAddress = address
+
+        logger.info(
+            "grpcRequest(${grpcMethod.javaClass.simpleName}, $retriesLeft, $dapiAddress, $statusCheck) with" +
+                    " ${address.host} for $grpcMethod"
+        )
+
+        val response: Any = try {
 //            if (statusCheck) {
 //                try {
 //                    val status = getStatus(grpcMasternode.address, 0)
@@ -851,87 +822,91 @@ class DapiClient(
 //                    return grpcRequest(grpcMethod, retriesLeft, null, statusCheck, retryCallback)
 //                }
 //            }
-//            logger.debug("grpcMethod: executing method after statuscheck($statusCheck) for $grpcMethod")
-//            val response = grpcMethod.execute(grpcMasternode)
-//            successfulCalls++
-//            response
-//        } catch (e: StatusRuntimeException) {
-//            logException(e, grpcMasternode, grpcMethod)
-//            return when (e.status.code) {
-//                Status.NOT_FOUND.code -> {
-//                    if (!retryCallback.shouldRetry(grpcMethod, e)) {
-//                        return null
-//                    }
-//
-//                    // only ban the node if the retry == true, meaning that the node
-//                    // returned an untrustworthy NOT_FOUND result
-//                    banMasternode(address, retryAttemptsLeft, e)
-//                    retriedCalls++
-//                    grpcRequest(grpcMethod, retryAttemptsLeft - 1, dapiAddress, statusCheck, retryCallback)
-//                }
-//                Status.CANCELLED.code -> {
-//                    return null
-//                }
-//                else -> {
-//                    throwExceptionOnError(e, retryCallback)
-//
-//                    banMasternode(address, retryAttemptsLeft, e)
-//                    if (!retryCallback.shouldRetry(grpcMethod, e)) {
-//                        return null
-//                    }
-//                    retriedCalls++
-//                    grpcRequest(grpcMethod, retryAttemptsLeft - 1, dapiAddress, statusCheck, retryCallback)
-//                }
-//            }
-//        } finally {
-//            grpcMasternode.shutdown()
-//        }
-//
-//        address.markAsLive()
-//        return response
-//    }
-//
-//    private fun banMasternode(
-//        address: DAPIAddress,
-//        retryAttemptsLeft: Int,
-//        e: StatusRuntimeException
-//    ) {
-//        if (e.status.code != Status.CANCELLED.code) {
-//            logger.info("banning masternode $address")
-//            failedCalls++
-//            address.markAsBanned()
-//            address.addException(e.status.code)
-//            if (retryAttemptsLeft == 0) {
-//                throw MaxRetriesReachedException(e)
-//            }
-//            if (!dapiAddressListProvider.hasLiveAddresses()) {
-//                throw NoAvailableAddressesForRetryException(e)
-//            }
-//        }
-//    }
-//
-//    private fun throwExceptionOnError(e: StatusRuntimeException, retryCallback: GrpcMethodShouldRetryCallback? = null) {
-//        if (retryCallback != null) {
-//            if (retryCallback.shouldThrowException(e)) {
-//                throw e
-//            }
-//        } else {
-//            if (e.status.code != Status.DEADLINE_EXCEEDED.code &&
-//                e.status.code != Status.UNAVAILABLE.code &&
-//                e.status.code != Status.INTERNAL.code &&
-//                e.status.code != Status.CANCELLED.code &&
-//                e.status.code != Status.UNKNOWN.code &&
-//                e.status.code != Status.ALREADY_EXISTS.code && // ST was already submitted
-//                e.status.code != Status.UNIMPLEMENTED.code // perhaps we contacted an old node
-//            ) {
-//                throw e
-//            }
-//        }
-//    }
+            logger.debug("grpcMethod: executing method after statuscheck($statusCheck) for $grpcMethod")
+            val response = grpcMethod.execute(grpcMasternode)
+            successfulCalls++
+            response
+        } catch (e: StatusRuntimeException) {
+            logException(e, grpcMasternode, grpcMethod)
+            return when (e.status.code) {
+                Status.NOT_FOUND.code -> {
+                    if (!retryCallback.shouldRetry(grpcMethod, e)) {
+                        return null
+                    }
+
+                    // only ban the node if the retry == true, meaning that the node
+                    // returned an untrustworthy NOT_FOUND result
+                    banMasternode(address, retryAttemptsLeft, e)
+                    retriedCalls++
+                    grpcRequest(grpcMethod, retryAttemptsLeft - 1, dapiAddress, statusCheck, retryCallback)
+                }
+
+                Status.CANCELLED.code -> {
+                    return null
+                }
+
+                else -> {
+                    throwExceptionOnError(e, retryCallback)
+
+                    banMasternode(address, retryAttemptsLeft, e)
+                    if (!retryCallback.shouldRetry(grpcMethod, e)) {
+                        return null
+                    }
+                    retriedCalls++
+                    grpcRequest(grpcMethod, retryAttemptsLeft - 1, dapiAddress, statusCheck, retryCallback)
+                }
+            }
+        } finally {
+            grpcMasternode.shutdown()
+        }
+
+        address.markAsLive()
+        return response
+    }
+
+    private fun banMasternode(
+        address: DAPIAddress,
+        retryAttemptsLeft: Int,
+        e: StatusRuntimeException
+    ) {
+        if (e.status.code != Status.CANCELLED.code) {
+            logger.info("banning masternode $address")
+            failedCalls++
+            address.markAsBanned()
+            address.addException(e.status.code)
+            if (retryAttemptsLeft == 0) {
+                throw MaxRetriesReachedException(e)
+            }
+            if (!dapiAddressListProvider.hasLiveAddresses()) {
+                throw NoAvailableAddressesForRetryException(e)
+            }
+        }
+    }
+
+    private fun throwExceptionOnError(e: StatusRuntimeException, retryCallback: GrpcMethodShouldRetryCallback? = null) {
+        if (retryCallback != null) {
+            if (retryCallback.shouldThrowException(e)) {
+                throw e
+            }
+        } else {
+            if (e.status.code != Status.DEADLINE_EXCEEDED.code &&
+                e.status.code != Status.UNAVAILABLE.code &&
+                e.status.code != Status.INTERNAL.code &&
+                e.status.code != Status.CANCELLED.code &&
+                e.status.code != Status.UNKNOWN.code &&
+                e.status.code != Status.ALREADY_EXISTS.code && // ST was already submitted
+                e.status.code != Status.UNIMPLEMENTED.code // perhaps we contacted an old node
+            ) {
+                throw e
+            }
+        }
+    }
 
     fun broadcastTransaction(txBytes: ByteArray, allowHighFees: Boolean = false, bypassLimits: Boolean = false):
-        String {
-        return ""
+            String {
+        val method = BroadcastTransactionMethod(txBytes, allowHighFees, bypassLimits)
+        val response = grpcRequest(method) as CoreOuterClass.BroadcastTransactionResponse?
+        return response?.transactionId!!
     }
 
     /**
@@ -964,27 +939,41 @@ class DapiClient(
         logger.info("getTransaction($txIdHex)")
         return getTransactionBytes(txIdHex)
     }
-//    fun getTransaction(txHex: String): GetTransactionResponse? {
-//        logger.info("getTransaction($txHex)")
-//        val method = GetTransactionMethod(txHex)
-//        val response = grpcRequest(method) as CoreOuterClass.GetTransactionResponse?
-//        return if (response != null) {
-//            GetTransactionResponse(
-//                response.transaction.toByteArray(),
-//                if (response.blockHash.size() != 0) {
-//                    Sha256Hash.wrap(response.blockHash.toByteArray())
-//                } else {
-//                    Sha256Hash.ZERO_HASH
-//                },
-//                response.height,
-//                response.confirmations,
-//                response.isInstantLocked,
-//                response.isChainLocked
-//            )
-//        } else {
-//            null
-//        }
-//    }
+
+    /**
+     *
+     * @param txHex String
+     * @return ByteString?
+     */
+    fun getTransactionBytesKotlin(txHex: String): ByteArray? {
+        logger.info("getTransactionBytesKotlin($txHex)")
+        val method = GetTransactionMethod(txHex)
+        val response = grpcRequest(method) as CoreOuterClass.GetTransactionResponse?
+        return response?.transaction?.toByteArray()
+    }
+
+    fun getTransactionKotlin(txHex: String): GetTransactionResponse? {
+        logger.info("getTransactionKotlin($txHex)")
+        val method = GetTransactionMethod(txHex)
+        val response = grpcRequest(method) as CoreOuterClass.GetTransactionResponse?
+        return if (response != null) {
+            GetTransactionResponse(
+                response.transaction.toByteArray(),
+                if (response.blockHash.size() != 0) {
+                    Sha256Hash.wrap(response.blockHash.toByteArray())
+                } else {
+                    Sha256Hash.ZERO_HASH
+                },
+                response.height,
+                response.confirmations,
+                response.isInstantLocked,
+                response.isChainLocked
+            )
+        } else {
+            null
+        }
+    }
+
     // jRPC methods
     /**
      * Get the best block hash (tip of blockchain)
@@ -1101,22 +1090,24 @@ class DapiClient(
 
     fun reportNetworkStatus(): String {
         return "DapiClient Network Status\n" +
-            "---DAPI Call Statistics ($stopWatch)\n" +
-            "   successful: $successfulCalls\n" +
-            "   retried   : $retriedCalls\n" +
-            "   failure   : $failedCalls\n" +
-            "   total     : $totalCalls (calls per minute: ${totalCalls.toDouble() /
-                stopWatch.elapsed(TimeUnit.MINUTES).toDouble()}\n" +
-            "   retried % : ${retriedCalls.toDouble() / successfulCalls.toDouble() * 100}%\n" +
-            "   success % : ${successfulCalls.toDouble() / totalCalls.toDouble() * 100}%\n" +
-            "---Masternode Information\n" + dapiAddressListProvider.getStatistics()
+                "---DAPI Call Statistics ($stopWatch)\n" +
+                "   successful: $successfulCalls\n" +
+                "   retried   : $retriedCalls\n" +
+                "   failure   : $failedCalls\n" +
+                "   total     : $totalCalls (calls per minute: ${
+                    totalCalls.toDouble() /
+                            stopWatch.elapsed(TimeUnit.MINUTES).toDouble()
+                }\n" +
+                "   retried % : ${retriedCalls.toDouble() / successfulCalls.toDouble() * 100}%\n" +
+                "   success % : ${successfulCalls.toDouble() / totalCalls.toDouble() * 100}%\n" +
+                "---Masternode Information\n" + dapiAddressListProvider.getStatistics()
     }
 
     fun reportErrorStatus(): String {
         return dapiAddressListProvider.getErrorStatistics()
     }
 
-    fun getIdentityBalance(identifier: Identifier) : Long {
+    fun getIdentityBalance(identifier: Identifier): Long {
         logger.info("getIdentityBalance({})", identifier)
         val exceptionList = arrayListOf<Exception>()
         var retriesLeft = retries
@@ -1132,11 +1123,16 @@ class DapiClient(
                     throw e
                 }
             }
-        } while(retriesLeft > 0)
+        } while (retriesLeft > 0)
         throw MaxRetriesReachedException(exceptionList)
     }
 
-    fun getVoteContenders(dataContractId: Identifier, documentType: String, indexName: String, indexes: List<String>): Contenders {
+    fun getVoteContenders(
+        dataContractId: Identifier,
+        documentType: String,
+        indexName: String,
+        indexes: List<String>
+    ): Contenders {
         logger.info("getVoteContenders({}, {}, {}, {})", dataContractId, documentType, indexName, indexes)
         val exceptionList = arrayListOf<Exception>()
         var retriesLeft = retries
@@ -1158,7 +1154,7 @@ class DapiClient(
                     throw e
                 }
             }
-        } while(retriesLeft > 0)
+        } while (retriesLeft > 0)
         throw MaxRetriesReachedException(exceptionList)
     }
 
@@ -1191,7 +1187,7 @@ class DapiClient(
                     throw e
                 }
             }
-        } while(retriesLeft > 0)
+        } while (retriesLeft > 0)
         throw MaxRetriesReachedException(exceptionList)
     }
 
@@ -1240,7 +1236,7 @@ class DapiClient(
     fun getVotePolls(
         startTime: Long,
         startTimeIncluded: Boolean = true,
-        endTime:Long,
+        endTime: Long,
         endTimeIncluded: Boolean = true,
         limit: Int = DEFAULT_LIMIT,
         orderAscending: Boolean = true
@@ -1269,12 +1265,25 @@ class DapiClient(
                     throw e
                 }
             }
-        } while(retriesLeft > 0)
+        } while (retriesLeft > 0)
         throw MaxRetriesReachedException(exceptionList)
     }
 
-    fun getLastVoteFromMasternode(protxHash: Sha256Hash, dataContractId: Identifier, documentType: String, indexName: String, indexes: List<String>): ResourceVotesByIdentity {
-        logger.info("getLastVoteFromMasternode({}, {}, {}, {}, {})", protxHash, dataContractId, documentType, indexName, indexes)
+    fun getLastVoteFromMasternode(
+        protxHash: Sha256Hash,
+        dataContractId: Identifier,
+        documentType: String,
+        indexName: String,
+        indexes: List<String>
+    ): ResourceVotesByIdentity {
+        logger.info(
+            "getLastVoteFromMasternode({}, {}, {}, {}, {})",
+            protxHash,
+            dataContractId,
+            documentType,
+            indexName,
+            indexes
+        )
         val exceptionList = arrayListOf<Exception>()
         var retriesLeft = retries
         do {
@@ -1296,7 +1305,7 @@ class DapiClient(
                     throw e
                 }
             }
-        } while(retriesLeft > 0)
+        } while (retriesLeft > 0)
         throw MaxRetriesReachedException(exceptionList)
     }
 }

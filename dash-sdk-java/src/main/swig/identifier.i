@@ -9,7 +9,6 @@
     }
 
     ~platform_value_types_identifier_Identifier() {
-        printf("~Identifier(%lx)\n", $self);
         platform_value_types_identifier_Identifier_destroy($self);
     }
 
@@ -38,7 +37,6 @@
     }
 
     ~platform_value_types_identifier_IdentifierBytes32() {
-        printf("~IdentityBytes32(%lx)\n", (uint64_t)$self);
         platform_value_types_identifier_IdentifierBytes32_destroy($self);
     }
     bool objectEquals(platform_value_types_identifier_IdentifierBytes32* other) {

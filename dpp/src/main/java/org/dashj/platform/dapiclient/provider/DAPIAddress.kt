@@ -8,7 +8,7 @@ package org.dashj.platform.dapiclient.provider
 
 import io.grpc.Status
 import org.bitcoinj.core.Sha256Hash
-import org.dashj.platform.dapiclient.model.GetStatusResponse
+import org.dashj.platform.dapiclient.model.MasternodeStatus
 import java.util.Date
 
 class DAPIAddress(
@@ -25,7 +25,7 @@ class DAPIAddress(
 
     var banCount: Int = 0
     var banStartTime: Long = -1L
-    var lastStatus: GetStatusResponse? = null
+    var lastStatus: MasternodeStatus? = null
     val exception = hashMapOf<Status.Code, Int>()
 
     constructor(host: String, proRegTxHash: Sha256Hash) : this(host, DEFAULT_JRPC_PORT, DEFAULT_GRPC_PORT, proRegTxHash)

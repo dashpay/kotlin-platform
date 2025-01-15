@@ -38,6 +38,7 @@ use crate::config::{Config, EntryPoint};
 use crate::fetch_document::fetch_documents_with_query_and_sdk;
 use crate::put::{CallbackSigner, SignerCallback, wait_for_response_concurrent};
 use crate::sdk::{create_dash_sdk_using_core_testnet, create_dash_sdk_using_core_mainnet, DashSdk};
+use dash_sdk::platform::transition::waitable::Waitable;
 
 /// push a vote from a single masternode designated by [voter_pro_tx_hash]
 #[ferment_macro::export]
@@ -61,11 +62,12 @@ pub fn put_vote_to_platform(
             request_settings,
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
+            wait_timeout: None,
         };
 
         tracing::info!("Call Vote::put_to_platform");
 
-        let masternode_vote_transition = vote.put_to_platform(
+        let vote = vote.put_to_platform_and_wait_for_response(
             voter_pro_tx_hash,
             &voting_public_key,
             &sdk,
@@ -73,17 +75,17 @@ pub fn put_vote_to_platform(
             Some(settings)
         ).await.or_else(|err|Err(err.to_string()))?;
         tracing::info!("Call Vote::wait_for_response");
-        tracing::info!(
-            "state transition (hash): {}",
-            hex::encode(hash_double_to_vec(masternode_vote_transition.serialize_to_bytes().unwrap()))
-        );
+        // TODO: ideally we would print out the ST hash
+        // tracing::info!(
+        //     "state transition (hash): {}",
+        //     hex::encode(hash_double_to_vec(masternode_vote_transition.serialize_to_bytes().unwrap()))
+        // );
 
-        let vote = <Vote as PutVote<SimpleSigner>>::wait_for_response::<'_, '_, '_>(
-            &vote,
-            masternode_vote_transition,
-            &sdk,
-            Some(settings)
-        ).await.or_else(|err|Err(err.to_string()))?;
+        // let vote = Vote::wait_for_response(
+        //     &sdk,
+        //     masternode_vote_transition,
+        //     Some(settings)
+        // ).await.or_else(|err|Err(err.to_string()))?;
 
         Ok(vote)
     })

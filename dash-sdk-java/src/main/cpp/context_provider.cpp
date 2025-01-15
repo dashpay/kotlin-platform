@@ -15,7 +15,7 @@ uint8_t invalid_key[] = {
 
 uint8_t * get_quorum_public_key_context(void * context, int quorum_type, char * quorum_hash, int core_chain_locked_height, uint8_t * native_array) {
     auto javaContext = reinterpret_cast<JavaContextProvider*>(context);
-    LOGI("get_quorum_public_key_context(0x%08lx, %d, 0x%08lx, %d, 0x%08lx)", context, quorum_type, quorum_hash, core_chain_locked_height, native_array);
+    LOGI("get_quorum_public_key_context(0x%08lx, %d, 0x%08lx, %d, 0x%08lx)", (unsigned long)context, quorum_type, (unsigned long)quorum_hash, core_chain_locked_height, (unsigned long)native_array);
     JniHelper jni;
     JNIEnv * jenv = jni.getEnv();
     if (jenv == nullptr) {
@@ -112,7 +112,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_dashj_platform_sdk_callbacks_ContextP
 }
 
 int sign_data_with_context(JavaSigner * context, uint8_t * key_data, int key_len, uint8_t * data, int size, uint8_t * result) {
-    LOGI("sign_data(0x%lx, %d, 0x%lx, %d, result=0x%lx)\n", key_data, key_len, data, size, result);
+    LOGI("sign_data(0x%lx, %d, 0x%lx, %d, result=0x%lx)\n", (unsigned long)key_data, key_len, (unsigned long)data, size, (unsigned long)result);
     JniHelper jni;
     JNIEnv * jenv = jni.getEnv();
 
@@ -134,7 +134,7 @@ int sign_data_with_context(JavaSigner * context, uint8_t * key_data, int key_len
     jenv->SetByteArrayRegion(dataByteArray, 0, size, reinterpret_cast<jbyte *>(data));
     LOGI("now call the function in the signer class");
     auto binaryDataObject = (jbyteArray) jenv->CallObjectMethod(context->signerObject, signMethod, keyByteArray, dataByteArray);
-    LOGI("sign method called = 0x%lx\n", binaryDataObject);
+    LOGI("sign method called = 0x%lx\n", (unsigned long)binaryDataObject);
 
     // check for pending exceptions
     if (jenv->ExceptionCheck()) {

@@ -12,8 +12,12 @@ import org.dashj.platform.dpp.BaseObject
 import org.dashj.platform.dpp.Metadata
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.sdk.Identity
+import org.dashj.platform.sdk.IdentityV0
+import org.dashj.platform.sdk.KeyID
 import org.dashj.platform.sdk.Purpose
+import org.dashj.platform.sdk.Revision
 import org.dashj.platform.sdk.SecurityLevel
+import java.math.BigInteger
 import kotlin.math.max
 
 typealias RustIdentity = org.dashj.platform.sdk.Identity
@@ -120,5 +124,15 @@ class Identity : BaseObject {
         } catch (e: NoSuchElementException) {
             null
         }
+    }
+
+    fun toNative(): RustIdentity {
+        val identityV0 = IdentityV0(
+            id.toNative(),
+            publicKeys.associateBy({ KeyID(it.id) }, { it.toNative() }),
+            BigInteger.ZERO,
+            Revision(1)
+        )
+        return RustIdentity(identityV0)
     }
 }

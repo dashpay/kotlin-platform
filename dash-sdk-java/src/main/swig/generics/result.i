@@ -168,7 +168,7 @@
             }
             for (uintptr_t i = 0; i < $1->ok->count; ++i) {
                 auto * valueClone = clone((CTYPE_ITEM *)$1->ok->values[i]);
-                jobject elementObj = jenv->NewObject(valueClass, valueConstructor, valueClone, true);
+                jobject elementObj = jenv->NewObject(valueClass, valueConstructor, (jlong) valueClone, true);
                 jenv->CallBooleanMethod(listObj, addMethod, elementObj);
                 jenv->DeleteLocalRef(elementObj);
             }
@@ -231,7 +231,6 @@
         jclass resultClass = jenv->FindClass("org/dashj/platform/sdk/base/Result");
 
         if ($1->ok != NULL) {
-            printf("ok is non-null: %lx\n", $1->ok);
             jobject elementObj = nullptr;
             if (strcmp(#RETURN_TYPE, "String") == 0) {
                 // printf("string item\n");

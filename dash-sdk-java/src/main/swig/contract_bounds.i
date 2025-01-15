@@ -6,14 +6,12 @@
 %extend dpp_identity_identity_public_key_contract_bounds_ContractBounds {
     dpp_identity_identity_public_key_contract_bounds_ContractBounds(platform_value_types_identifier_Identifier * id) {
         dpp_identity_identity_public_key_contract_bounds_ContractBounds * cb = dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContract_ctor(platform_mobile_identity_Identifier_clone(id));
-        printf("ContractBounds: %lx->%lx\n", (unsigned long)cb, cb->single_contract.id);
         return cb;
     }
     dpp_identity_identity_public_key_contract_bounds_ContractBounds(platform_value_types_identifier_Identifier * id, char * document_type) {
         return dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContractDocumentType_ctor(platform_mobile_identity_Identifier_clone(id), memoryFactory.clone(document_type));
     }
     ~dpp_identity_identity_public_key_contract_bounds_ContractBounds() {
-        printf("~ContractBounds: %lx->%lx\n", (unsigned long)$self, $self->single_contract.id);
         dpp_identity_identity_public_key_contract_bounds_ContractBounds_destroy($self);
     }
 };

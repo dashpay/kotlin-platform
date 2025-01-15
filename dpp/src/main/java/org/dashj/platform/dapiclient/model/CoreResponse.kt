@@ -42,7 +42,7 @@ data class Chain(
     val syncProgress: Double
 )
 
-data class Masternode(
+data class MasternodeStatus(
     val status: Status,
     val proTxHash: Sha256Hash,
     val posePenalty: Int,
@@ -71,16 +71,3 @@ data class Masternode(
 data class NetworkFee(val relay: Double, val incremental: Double)
 
 data class Network(val peerCount: Int, val fee: NetworkFee)
-
-data class GetStatusResponse(
-    val version: Version,
-    val time: Time,
-    val status: Status,
-    val syncProgress: Double,
-    val chain: Chain,
-    val masternode: Masternode,
-    val network: Network,
-    val timeStamp: Long,
-    val address: DAPIAddress? = null,
-    val duration: Long
-)

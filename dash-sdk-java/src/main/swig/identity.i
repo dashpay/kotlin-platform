@@ -18,7 +18,6 @@
     }
 
     ~dpp_identity_v0_IdentityV0() {
-        printf("~IdentityV0(%lx)\n", (uint64_t)$self);
         dpp_identity_v0_IdentityV0_destroy($self);
     }
 
@@ -56,13 +55,10 @@
         return dpp_identity_identity_Identity_V0_ctor(platform_mobile_identity_IdentityV0_clone(identityV0));
     }
     ~dpp_identity_identity_Identity() {
-        printf("~Identity(%lx)\n", (uint64_t)$self);
         dpp_identity_identity_Identity_destroy($self);
     }
 }
 %rename(Identity) dpp_identity_identity_Identity;
-//%rename(Identity_Tag) dpp_identity_identity_Identity_Tag;
-//%rename(IdentityV0Type) dpp_identity_identity_Identity_V0;
 
 %newobject platform_mobile_identity_get_identity2(platform_value_types_identifier_Identifier *);
 %newobject platform_mobile_identity_get_an_identity(void);
@@ -81,12 +77,7 @@
 %rename (getIdentityContractBounds) platform_mobile_identity_get_identity_contract_bounds(platform_value_types_identifier_Identifier *identifier, platform_value_types_identifier_Identifier *contract_identifier);
 %rename (getIdentity2) platform_mobile_identity_get_identity2(platform_value_types_identifier_Identifier *);
 %rename (getIdentityByPublicKeyHash) platform_mobile_fetch_identity_fetch_identity_with_keyhash(Arr_u8_20 *key_hash, uint64_t quorum_public_key_callback, uint64_t data_contract_callback);
-// %rename (IdentityResult) Result_ok_dpp_identity_identity_Identity_err_String;
-// %extend Result_ok_dpp_identity_identity_Identity_err_String {
-//     ~Result_ok_dpp_identity_identity_Identity_err_String() {
-//         Result_ok_dpp_identity_identity_Identity_err_String_destroy($self);
-//     }
-// }
+
 %ignore platform_mobile_identity_std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey_clone(std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey *public_keys);
 struct std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey;
 
