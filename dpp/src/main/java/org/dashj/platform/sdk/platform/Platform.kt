@@ -77,16 +77,17 @@ class Platform(val params: NetworkParameters) {
     init {
         apps["dpns"] = ClientAppDefinition(SystemIds.dpnsDataContractId)
         apps["dashpay"] = ClientAppDefinition(SystemIds.dashpayDataContractId)
+        apps["wallet-utils"] = ClientAppDefinition(SystemIds.walletUtilsDataContractId)
         when {
             params.id.contains("test") -> {
                 useWhiteList = true
-                apps["dashwallet"] = ClientAppDefinition("Bhptm3yBDhLkRNt7ofjpwaBHhMUKjDrQoPufKzQaxmpK")
+                apps["identity-verify"] = ClientAppDefinition("Bhptm3yBDhLkRNt7ofjpwaBHhMUKjDrQoPufKzQaxmpK")
             }
             params.id.contains("bintang") -> {
-                apps["dashwallet"] = ClientAppDefinition("Fds5DDfXoLwpUZ71AAVYZP1uod8S7Ze2bR28JExBvZKR")
+                apps["identity-verify"] = ClientAppDefinition("Fds5DDfXoLwpUZ71AAVYZP1uod8S7Ze2bR28JExBvZKR")
             }
             params.id.contains("production") -> {
-                apps["dashwallet"] = ClientAppDefinition("EVKMFboB3QBUa9Jo7PP5bsLyohzUz8zvw5c2gJs1SfcX")
+                apps["identity-verify"] = ClientAppDefinition("EVKMFboB3QBUa9Jo7PP5bsLyohzUz8zvw5c2gJs1SfcX")
             }
         }
         System.loadLibrary("sdklib")
