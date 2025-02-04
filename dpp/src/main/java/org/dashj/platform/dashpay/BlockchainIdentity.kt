@@ -2249,17 +2249,26 @@ class BlockchainIdentity {
         return "assetlocktx=$txid&pk=$wif&du=${currentUsername!!}&islock=${cftx.confidence.instantSendlock.toStringHex()}"
     }
 
-    // Transaction Metadata Methods
     @Throws(KeyCrypterException::class)
-    fun publishTxMetaData(txMetadataItems: List<TxMetadataItem>, keyParameter: KeyParameter?, keyIndex: Int, version: Int) {
+    fun createTxMetadata(txMetadataItems: List<TxMetadataItem>, keyParameter: KeyParameter?, encryptionKeyIndex: Int, version: Int): List<Document> {
         if (!platform.hasApp("wallet-utils")) {
-            return
+            return arrayListOf()
         }
-        val encryptionKeyIndex = 0
-        val encryptionKey = privateKeyAtPath(keyIndex, TxMetadataDocument.childNumber, encryptionKeyIndex, KeyType.ECDSA_SECP256K1, keyParameter)
+        val encryptionIdentityPublicKey = identity!!.getFirstPublicKey(Purpose.ENCRYPTION, SecurityLevel.MEDIUM)
+            ?: identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
+            ?: error("can't find a authentication public key with HIGH security level or encryption key")
+        val keyIndex = encryptionIdentityPublicKey.id
+        val encryptionKey = privateKeyAtPath(
+            keyIndex,
+            TxMetadataDocument.childNumber,
+            encryptionKeyIndex,
+            KeyType.ECDSA_SECP256K1,
+            keyParameter
+        )
 
         var lastItem: TxMetadataItem? = null
         var currentIndex = 0
+        val result = arrayListOf<Document>()
         log.info("publish ${txMetadataItems.size} by breaking it up into pieces")
         while (currentIndex < txMetadataItems.size) {
             var estimatedDocSize = 0
@@ -2291,15 +2300,32 @@ class BlockchainIdentity {
             allEncryptedData[0] = version.toByte()
             encryptedData.initialisationVector.copyInto(allEncryptedData, 1)
             encryptedData.encryptedBytes.copyInto(allEncryptedData, encryptedData.initialisationVector.size + 1)
-            txMetadata.create(
+            val txMetadataDocument = txMetadata.createDocument(
                 keyIndex,
                 encryptionKeyIndex,
                 allEncryptedData,
                 identity!!,
-                KeyIndexPurpose.AUTHENTICATION.ordinal,
+            )
+            result.add(txMetadataDocument)
+            currentMetadataItems.clear()
+        }
+        return result
+    }
+
+    // Transaction Metadata Methods
+    @Throws(KeyCrypterException::class)
+    fun publishTxMetaData(txMetadataItems: List<TxMetadataItem>, keyParameter: KeyParameter?, encryptionKeyIndex: Int, version: Int) {
+        if (!platform.hasApp("wallet-utils")) {
+            return
+        }
+        val documentsToPublish = createTxMetadata(txMetadataItems, keyParameter, encryptionKeyIndex, version)
+        val txMetadata = TxMetadata(platform)
+        documentsToPublish.forEach { txMetadataDocument ->
+            txMetadata.publish(
+                txMetadataDocument,
+                identity!!,
                 WalletSignerCallback(wallet!!, keyParameter)
             )
-            currentMetadataItems.clear()
         }
     }
 
@@ -2319,6 +2345,7 @@ class BlockchainIdentity {
 
     @Throws(KeyCrypterException::class)
     fun decryptTxMetadata(txMetadataDocument: TxMetadataDocument, keyParameter: KeyParameter?): List<TxMetadataItem> {
+        checkArgument(wallet!!.isEncrypted == (keyParameter != null), "isEncrypted must match keyParameter")
         val cipher = KeyCrypterAESCBC()
         val encryptionKey = privateKeyAtPath(
             txMetadataDocument.keyIndex,

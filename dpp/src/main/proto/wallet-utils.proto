@@ -18,7 +18,7 @@ message TxMetadataItem {
   optional string barcodeValue = 13;
   optional string barcodeFormat = 14;
   optional string merchantUrl = 15;
-  map<string, string> otherData = 20;
+  map<string, string> otherData = 16;
 }
 
 message TxMetadataBatch {
