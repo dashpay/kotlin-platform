@@ -233,25 +233,18 @@
         if ($1->ok != NULL) {
             jobject elementObj = nullptr;
             if (strcmp(#RETURN_TYPE, "String") == 0) {
-                // printf("string item\n");
-                // printf("string item: %s\n", $1->ok);
                 elementObj = jenv->NewStringUTF((const char *)$1->ok);
             } else if (strcmp(#RETURN_TYPE, "Integer") == 0) {
-                //printf("int item\n");
-                //printf("int item: %d\n", *$1->ok);
                 jclass integerClass = (jenv)->FindClass("java/lang/Integer");
                 jmethodID constructor = (jenv)->GetMethodID(integerClass, "<init>", "(I)V");
                 elementObj = (jenv)->NewObject(integerClass, constructor, (int)(long)*$1->ok); // ok is a pointer, but acts as a value
             } else if (strcmp(#RETURN_TYPE, "Long") == 0) {
-                //printf("long item\n");
-                //printf("long item: %lld\n", $1->ok);
                 jclass integerClass = (jenv)->FindClass("java/lang/Long");
                 jmethodID constructor = (jenv)->GetMethodID(integerClass, "<init>", "(J)V");
                 elementObj = (jenv)->NewObject(integerClass, constructor, (long)*$1->ok);  // ok is a pointer, but acts as a value
             } else {
                 printf("invalid? item\n");
             }
-            printf("ok value is assigned, now create result\n");
             jmethodID midSuccess = jenv->GetStaticMethodID(resultClass, "Ok", "(Ljava/lang/Object;)Lorg/dashj/platform/sdk/base/Result;");
             $result = jenv->CallStaticObjectMethod(resultClass, midSuccess, elementObj);
         } else {

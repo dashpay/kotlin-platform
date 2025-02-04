@@ -10,6 +10,7 @@ package org.dashj.platform.wallet
 import java.util.Date
 import kotlin.collections.HashMap
 import org.bitcoinj.core.ECKey
+import org.dashj.platform.contracts.wallet.TxMetadataDocument
 import org.dashj.platform.dapiclient.model.DocumentQuery
 import org.dashj.platform.dashpay.callback.SingleKeySignerCallback
 import org.dashj.platform.dpp.document.Document
@@ -17,6 +18,7 @@ import org.dashj.platform.dpp.document.DocumentCreateTransition
 import org.dashj.platform.dpp.document.DocumentsBatchTransition
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
+import org.dashj.platform.dpp.util.Cbor
 import org.dashj.platform.sdk.BlockHeight
 import org.dashj.platform.sdk.CoreBlockHeight
 import org.dashj.platform.sdk.Purpose
@@ -24,6 +26,7 @@ import org.dashj.platform.sdk.SecurityLevel
 import org.dashj.platform.sdk.callbacks.Signer
 import org.dashj.platform.sdk.dashsdk
 import org.dashj.platform.sdk.platform.Platform
+import org.dashj.platform.wallet.WalletUtils.TxMetadataBatch
 import java.math.BigInteger
 
 class TxMetadata(
@@ -31,7 +34,7 @@ class TxMetadata(
 ) {
 
     companion object {
-        const val DOCUMENT: String = "dashwallet.tx_metadata"
+        const val DOCUMENT: String = "wallet-utils.txMetadata"
     }
 
     fun create(
@@ -63,6 +66,30 @@ class TxMetadata(
         return Document(domain, profileDocument.dataContractId!!)
     }
 
+    fun publish(
+        txMetadataDocument: Document,
+        identity: Identity,
+        signer: Signer
+    ): Document {
+        val highIdentityPublicKey = identity.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
+            ?: error("can't find a public key with HIGH security level")
+
+        val documentResult = dashsdk.platformMobilePutPutDocumentSdk(
+            platform.rustSdk,
+            txMetadataDocument.toNative(),
+            txMetadataDocument.dataContractId!!.toNative(),
+            txMetadataDocument.type,
+            highIdentityPublicKey.toNative(),
+            BlockHeight(10000),
+            CoreBlockHeight(platform.coreBlockHeight),
+            signer.nativeContext,
+            BigInteger.valueOf(signer.signerCallback),
+        )
+        val domain = documentResult.unwrap()
+
+        return Document(domain, txMetadataDocument.dataContractId!!)
+    }
+
     fun createDocument(
         keyIndex: Int,
         encryptionKeyIndex: Int,
@@ -83,6 +110,16 @@ class TxMetadata(
         return document
     }
 
+    fun getBuffer(version: Int, metadataItems: List<TxMetadataItem>): ByteArray {
+        return when (version) {
+            TxMetadataDocument.VERSION_CBOR -> Cbor.encode(metadataItems.map { it.toObject() })
+            TxMetadataDocument.VERSION_PROTOBUF -> {
+                TxMetadataBatch.newBuilder().addAllItems(metadataItems.map { it.toProtobuf() }).build().toByteArray()
+            }
+            else -> error("Invalid version txmetadata $version")
+        }
+    }
+
     fun get(userId: String): List<Document> {
         return get(Identifier.from(userId))
     }
@@ -90,10 +127,10 @@ class TxMetadata(
     fun get(userId: Identifier, createdAfter: Long = -1): List<Document> {
         val queryBuilder = DocumentQuery.Builder()
             .where("\$ownerId", "==", userId)
-            .orderBy("\$createdAt")
+            .orderBy("\$updatedAt")
 
         if (createdAfter != -1L) {
-            queryBuilder.where(listOf("\$createdAt", ">=", createdAfter))
+            queryBuilder.where(listOf("\$updatedAt", ">=", createdAfter))
         }
 
         val query = queryBuilder.build()

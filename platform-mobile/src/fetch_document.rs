@@ -103,9 +103,10 @@ pub fn fetch_documents_with_query_and_sdk(
         tracing::warn!("contract_fetch_result: {:?}", contract);
 
         // Fetch multiple documents so that we get document ID
-        let mut all_docs_query =
-            DocumentQuery::new(Arc::clone(&contract), &document_type)
-                .expect("create SdkDocumentQuery");
+        let mut all_docs_query = match DocumentQuery::new(Arc::clone(&contract), &document_type) {
+            Ok(result) => result,
+            Err(e) => return Err(e.to_string())
+        };
         for wc in where_clauses {
             all_docs_query = all_docs_query.with_where(wc);
         }

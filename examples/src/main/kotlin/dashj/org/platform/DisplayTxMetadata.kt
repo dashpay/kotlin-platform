@@ -26,11 +26,16 @@ class DisplayTxMetadata {
                 println("Usage: DisplayTxMetadata network")
                 return
             }
-            println("Enter a recovery phrase: ")
-            val scanner = Scanner(System.`in`)
-            val phrase = scanner.nextLine()
-
-            val recoveryPhrase = if (phrase == "default") { DefaultIdentity(args[0]).seed } else phrase
+            val phrase = if (args.size == 1) {
+                println("Enter a recovery phrase: ")
+                val scanner = Scanner(System.`in`)
+                scanner.nextLine()
+            } else {
+                args[1]
+            }
+            val recoveryPhrase = if (phrase == "default") {
+                DefaultIdentity(args[0]).seed
+            } else phrase
             client = Client(ClientOptions(network = args[0], walletOptions = WalletOptions(recoveryPhrase)))
             client.platform.useValidNodes()
             displayDocuments()
@@ -47,12 +52,11 @@ class DisplayTxMetadata {
 
             println("Tx Metadata for ${identity.id}: -----------------------------------")
             for (doc in documents) {
-                println("new document: ${doc.id}; createdAt ${Date(doc.createdAt!!)}")
+                println("new document: ${doc.id}; updatedAt ${Date(doc.updatedAt!!)}")
                 val txDoc = TxMetadataDocument(doc)
                 try {
                     println("txDoc ${txDoc.encryptedMetadata.toBase64()}")
                     val txList = blockchainIdentity.decryptTxMetadata(txDoc, null)
-                    // println("  $txList")
                     for (txmd in txList) {
                         println("* $txmd")
                     }
