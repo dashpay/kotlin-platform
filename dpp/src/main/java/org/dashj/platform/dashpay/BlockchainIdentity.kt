@@ -36,6 +36,7 @@ import org.bitcoinj.crypto.KeyCrypterECDH
 import org.bitcoinj.crypto.KeyCrypterException
 import org.bitcoinj.evolution.AssetLockTransaction
 import org.bitcoinj.evolution.EvolutionContact
+import org.bitcoinj.manager.DashSystem
 import org.bitcoinj.quorums.InstantSendLock
 import org.bitcoinj.wallet.AuthenticationKeyChain
 import org.bitcoinj.wallet.DerivationPathFactory
@@ -427,7 +428,7 @@ class BlockchainIdentity {
             val coreHeight = if (assetLockTransaction!!.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
                 assetLockTransaction!!.confidence.appearedAtChainHeight
             } else {
-                wallet!!.context.blockChain.bestChainHeight
+                DashSystem.get(wallet!!.params).blockChain.bestChainHeight
                 // this is not supported, how can we get the height?
     //            val txInfo = platform.client.getTransaction(assetLockTransaction!!.txId.toString())
     //            txInfo?.height ?: -1
@@ -459,7 +460,7 @@ class BlockchainIdentity {
 
     private fun waitForNextBlock(): Boolean {
         return try {
-            val blockChain = wallet!!.context.blockChain
+            val blockChain = DashSystem.get(wallet!!.params).blockChain
             val nextBlockFuture = blockChain.getHeightFuture(blockChain.bestChainHeight + 1)
             nextBlockFuture.get()
             true
@@ -482,7 +483,7 @@ class BlockchainIdentity {
         val signingKey = maybeDecryptKey(assetLockTransaction!!.assetLockPublicKey, keyParameter)
 
         var instantLock: InstantSendLock? =
-            wallet!!.context.instantSendManager?.getInstantSendLockByTxId(assetLockTransaction!!.txId)
+            DashSystem.get(wallet!!.params).instantSendManager?.getInstantSendLockByTxId(assetLockTransaction!!.txId)
 
         if (instantLock == null) {
             instantLock = assetLockTransaction!!.confidence?.instantSendlock
@@ -569,7 +570,7 @@ class BlockchainIdentity {
             val coreHeight = if (topUpAssetLockTransaction.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
                 topUpAssetLockTransaction.confidence.appearedAtChainHeight
             } else {
-                wallet!!.context.blockChain.bestChainHeight
+                DashSystem.get(wallet!!.params).blockChain.bestChainHeight
                 // this is not supported, how can we get the height?
                 //            val txInfo = platform.client.getTransaction(assetLockTransaction!!.txId.toString())
                 //            txInfo?.height ?: -1
@@ -616,7 +617,7 @@ class BlockchainIdentity {
         val signingKey = maybeDecryptKey(topUpAssetLockTransaction!!.assetLockPublicKey, keyParameter)
         checkNotNull(signingKey) { "The assetlock key cannot be decrypted" }
         var instantLock: InstantSendLock? =
-            wallet!!.context.instantSendManager?.getInstantSendLockByTxId(topUpAssetLockTransaction.txId)
+            DashSystem.get(wallet!!.params).instantSendManager?.getInstantSendLockByTxId(topUpAssetLockTransaction.txId)
 
         val newBalance = if (instantLock == null) {
             instantLock = topUpAssetLockTransaction.confidence?.instantSendlock
