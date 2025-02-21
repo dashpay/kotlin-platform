@@ -388,6 +388,7 @@ class BlockchainIdentity {
         for (retry in 0 until retries) {
             try {
                 registerIdentityWithISLock(keyParameter)
+                return
             } catch (e: Exception) {
                 if (e is InvalidInstantAssetLockProofException ||
                     e.message?.contains("Instant lock proof signature is invalid or wasn't created recently. Please") == true ||
@@ -396,10 +397,14 @@ class BlockchainIdentity {
                     throw e
                 } else if (e.message?.contains(Regex("Asset Lock transaction ([a-fA-F0-9]{64}) is not found")) == true) {
                     // try again, perhaps this evonode is behind on txes
+                    if (retry + 1 == retries) {
+                        throw e
+                    }
                 } else {
                     throw e
                 }
             }
+            error("Identity creation failed")
         }
     }
 
