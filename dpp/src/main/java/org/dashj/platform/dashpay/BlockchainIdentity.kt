@@ -384,6 +384,29 @@ class BlockchainIdentity {
         registrationStatus = IdentityStatus.NOT_REGISTERED
     }
 
+    private fun registerIdentityWithISLockWithRetry(keyParameter: KeyParameter?, retries: Int = 5) {
+        for (retry in 0 until retries) {
+            try {
+                registerIdentityWithISLock(keyParameter)
+                return
+            } catch (e: Exception) {
+                if (e is InvalidInstantAssetLockProofException ||
+                    e.message?.contains("Instant lock proof signature is invalid or wasn't created recently. Please") == true ||
+                    e.message?.contains(Regex("Asset Lock proof core chain height \\d+ is higher than the current consensus core height \\d+")) == true
+                ) {
+                    throw e
+                } else if (e.message?.contains(Regex("Asset Lock transaction ([a-fA-F0-9]{64}) is not found")) == true) {
+                    // try again, perhaps this evonode is behind on txes
+                    if (retry + 1 == retries) {
+                        throw e
+                    }
+                } else {
+                    throw e
+                }
+            }
+            error("Identity creation failed")
+        }
+    }
 
     /**
      * Register identity
@@ -395,12 +418,12 @@ class BlockchainIdentity {
     fun registerIdentity(keyParameter: KeyParameter?, useISLock: Boolean = true, waitForChainlock: Boolean) {
         if (useISLock) {
             try {
-                registerIdentityWithISLock(keyParameter)
+                registerIdentityWithISLockWithRetry(keyParameter, 5)
             } catch (e: Exception) {
-
                 if (e is InvalidInstantAssetLockProofException ||
-                    e.message?.contains("Instant lock proof signature is invalid or wasn't created recently. Pleases try chain asset lock proof instead.") == true ||
-                    e.message?.contains(Regex("Asset Lock proof core chain height \\d+ is higher than the current consensus core height \\d+")) == true) {
+                    e.message?.contains("Instant lock proof signature is invalid or wasn't created recently. Please") == true ||
+                    e.message?.contains(Regex("Asset Lock proof core chain height \\d+ is higher than the current consensus core height \\d+")) == true ||
+                    e.message?.contains(Regex("Asset Lock transaction ([a-fA-F0-9]{64}) is not found")) == true) {
                     registerIdentityWithChainLock(keyParameter, waitForChainlock)
                 } else {
                     throw e
