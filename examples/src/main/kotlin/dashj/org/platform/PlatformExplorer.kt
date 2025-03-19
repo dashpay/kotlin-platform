@@ -7,6 +7,7 @@ import org.bitcoinj.core.ECKey
 import org.bitcoinj.core.NetworkParameters
 import org.bitcoinj.core.Sha256Hash
 import org.bitcoinj.kits.WalletAppKit
+import org.bitcoinj.manager.DashSystem
 import org.bitcoinj.net.discovery.ThreeMethodPeerDiscovery
 import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.params.OuzoDevNetParams
@@ -170,7 +171,7 @@ object PlatformExplorer {
         kit.setDiscovery(
             ThreeMethodPeerDiscovery(
                 params,
-                Context.get().masternodeListManager
+                DashSystem.get(kit.params()).masternodeListManager
             )
         )
 
@@ -198,7 +199,7 @@ object PlatformExplorer {
         }
 
         kit.peerGroup().addMnListDownloadCompleteListener( {
-            println(Context.get().masternodeListManager)
+            println(DashSystem.get(kit.params()).masternodeListManager)
             run()
         }, Threading.USER_THREAD)
 
@@ -228,7 +229,7 @@ object PlatformExplorer {
                     fileOutputWriter.flush()
                 }
                 println("searching for quorum: $quorumType, $quorumHash, $coreChainLockedHeight")
-                kit.wallet().context.masternodeListManager.getQuorumListAtTip(
+                DashSystem.get(kit.params()).masternodeListManager.getQuorumListAtTip(
                     LLMQParameters.LLMQType.fromValue(
                         quorumType
                     )
@@ -326,8 +327,8 @@ object PlatformExplorer {
                     println("Enter a public key:")
                     val publicKeyString = scanner.nextLine()
                     val publicKey = ECKey.fromPublicOnly(Converters.fromHex(publicKeyString))
-                    println(" > $publicKeyString")
-                    println(" > ${publicKey.pubKeyHash.toHex()}")
+                    println(" > public key: $publicKeyString")
+                    println(" > public key hash:${publicKey.pubKeyHash.toHex()}")
 
                     val value = dashsdk.platformMobileFetchIdentityFetchIdentityWithKeyhashSdk(
                         sdk,
