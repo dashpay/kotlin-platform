@@ -154,10 +154,8 @@ class BlockchainIdentity {
     var accountLabel: String = "Default Account"
     var account: Int = 0
 
-    val registrationFundingAddress: Address
-        get() = Address.fromKey(wallet!!.params, registrationFundingPrivateKey)
-
-    // var dashpayBioString: String
+    val registrationFundingAddress: Address?
+        get() = registrationFundingPrivateKey?.let { Address.fromKey(wallet!!.params, it) }
 
     lateinit var registrationStatus: IdentityStatus
 
@@ -175,13 +173,13 @@ class BlockchainIdentity {
     var currentMainKeyIndex: Int = 0
     var currentMainKeyType: KeyType = KeyType.ECDSA_SECP256K1
     var assetLockTransaction: AssetLockTransaction? = null
-    lateinit var registrationFundingPrivateKey: ECKey
+    var registrationFundingPrivateKey: ECKey? = null
 
     // profile
     var lastProfileDocument: Document? = null
 
     constructor(platform: Platform, uniqueId: Sha256Hash) : this(platform) {
-        Preconditions.checkArgument(uniqueId != Sha256Hash.ZERO_HASH, "uniqueId must not be zero")
+        checkArgument(uniqueId != Sha256Hash.ZERO_HASH, "uniqueId must not be zero")
         this.uniqueId = uniqueId
         this.isLocal = false
         this.keysCreated = 0
