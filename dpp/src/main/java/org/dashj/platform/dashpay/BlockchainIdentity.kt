@@ -446,16 +446,17 @@ class BlockchainIdentity {
         val signingKey = maybeDecryptKey(assetLockTransaction!!.assetLockPublicKey, keyParameter)
         var registeredOrError = false
         var count = 1
+        val coreHeight = if (assetLockTransaction!!.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
+            assetLockTransaction!!.confidence.appearedAtChainHeight
+        } else {
+            DashSystem.get(wallet!!.params).blockChain.bestChainHeight
+            // this is not supported, how can we get the height?
+            // val txInfo = platform.client.getTransaction(assetLockTransaction!!.txId.toString())
+            // txInfo?.height ?: -1
+        }.toLong()
+
         while (!registeredOrError) {
             log.info("register identity attempt: $count")
-            val coreHeight = if (assetLockTransaction!!.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
-                assetLockTransaction!!.confidence.appearedAtChainHeight
-            } else {
-                DashSystem.get(wallet!!.params).blockChain.bestChainHeight
-                // this is not supported, how can we get the height?
-    //            val txInfo = platform.client.getTransaction(assetLockTransaction!!.txId.toString())
-    //            txInfo?.height ?: -1
-            }.toLong()
 
 
             try {
