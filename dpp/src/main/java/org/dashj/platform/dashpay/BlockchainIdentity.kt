@@ -154,10 +154,8 @@ class BlockchainIdentity {
     var accountLabel: String = "Default Account"
     var account: Int = 0
 
-    val registrationFundingAddress: Address
-        get() = Address.fromKey(wallet!!.params, registrationFundingPrivateKey)
-
-    // var dashpayBioString: String
+    val registrationFundingAddress: Address?
+        get() = registrationFundingPrivateKey?.let { Address.fromKey(wallet!!.params, it) }
 
     lateinit var registrationStatus: IdentityStatus
 
@@ -175,13 +173,13 @@ class BlockchainIdentity {
     var currentMainKeyIndex: Int = 0
     var currentMainKeyType: KeyType = KeyType.ECDSA_SECP256K1
     var assetLockTransaction: AssetLockTransaction? = null
-    lateinit var registrationFundingPrivateKey: ECKey
+    var registrationFundingPrivateKey: ECKey? = null
 
     // profile
     var lastProfileDocument: Document? = null
 
     constructor(platform: Platform, uniqueId: Sha256Hash) : this(platform) {
-        Preconditions.checkArgument(uniqueId != Sha256Hash.ZERO_HASH, "uniqueId must not be zero")
+        checkArgument(uniqueId != Sha256Hash.ZERO_HASH, "uniqueId must not be zero")
         this.uniqueId = uniqueId
         this.isLocal = false
         this.keysCreated = 0
@@ -446,16 +444,17 @@ class BlockchainIdentity {
         val signingKey = maybeDecryptKey(assetLockTransaction!!.assetLockPublicKey, keyParameter)
         var registeredOrError = false
         var count = 1
+        val coreHeight = if (assetLockTransaction!!.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
+            assetLockTransaction!!.confidence.appearedAtChainHeight
+        } else {
+            DashSystem.get(wallet!!.params).blockChain.bestChainHeight
+            // this is not supported, how can we get the height?
+            // val txInfo = platform.client.getTransaction(assetLockTransaction!!.txId.toString())
+            // txInfo?.height ?: -1
+        }.toLong()
+
         while (!registeredOrError) {
             log.info("register identity attempt: $count")
-            val coreHeight = if (assetLockTransaction!!.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
-                assetLockTransaction!!.confidence.appearedAtChainHeight
-            } else {
-                DashSystem.get(wallet!!.params).blockChain.bestChainHeight
-                // this is not supported, how can we get the height?
-    //            val txInfo = platform.client.getTransaction(assetLockTransaction!!.txId.toString())
-    //            txInfo?.height ?: -1
-            }.toLong()
 
 
             try {

@@ -42,13 +42,11 @@ class ChainAssetLockProof(
             )
         )
 
-    // the outPoint format required must have the transaction hash in Big Endian Format
     override fun getOutPoint(): ByteArray {
         val outPoint = TransactionOutPoint(
             outPoint.params,
             outPoint.index,
             outPoint.hash
-
         )
         return outPoint.bitcoinSerialize()
     }
@@ -70,6 +68,8 @@ class ChainAssetLockProof(
     }
 
     fun toNative(): NativeChainAssetLockProof {
-        return NativeChainAssetLockProof(coreChainLockedHeight, OutPoint(outPoint.hash.bytes, outPoint.index))
+        // the hash value must be stored in little endian format
+        // TransactionOutpoint stores hash in big endian format in memory
+        return NativeChainAssetLockProof(coreChainLockedHeight, OutPoint(outPoint.hash.reversedBytes, outPoint.index))
     }
 }
