@@ -8,7 +8,7 @@ use std::sync::Arc;
 use std::thread;
 use dapi_grpc::tonic::codegen::Body;
 
-use dpp::data_contract::DataContract;
+use dpp::data_contract::{DataContract, TokenConfiguration};
 use platform_value::types::identifier::Identifier;
 use drive_proof_verifier::error::ContextProviderError;
 use drive_proof_verifier::ContextProvider;

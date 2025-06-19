@@ -26,6 +26,10 @@ public class BaseTest {
             44, 24, 16, (byte)146, (byte)129, (byte)193, 70, (byte)231, (byte)178, 113, (byte)188,
     };
 
+    static byte[] walletUtilsContracId = new byte[]{
+            92, 20, 14, 101, 92, 2, 101, (byte)187, (byte)194, (byte)168, 8, 113, 109, (byte)225, (byte)132, 121, (byte)133, 19, 89, 24, (byte)173,
+            81, (byte)205, (byte)253, 11, 118, 102, 75, (byte)169, 91, (byte)163, 124
+    };
 
     static MemoryFactory memoryFactory = MemoryFactory.getInstance();
 
