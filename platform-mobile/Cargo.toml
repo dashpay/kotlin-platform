@@ -4,8 +4,8 @@ version = "2.0.0"
 edition = "2021"
 
 [dependencies]
-ferment-interfaces = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-interfaces" }
-ferment-macro = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-macro" }
+ferment = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment" }
+ferment-macro = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-macro" }
 
 platform-value = { path = "../../platform/packages/rs-platform-value" }
 data-contracts = { path = "../../platform/packages/data-contracts" }

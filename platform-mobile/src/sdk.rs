@@ -5,7 +5,7 @@ use std::time::Duration;
 use dash_sdk::{RequestSettings, Sdk};
 use dpp::data_contract::accessors::v0::DataContractV0Getters;
 use dpp::data_contract::DataContract;
-use ferment_interfaces::{boxed, unbox_any};
+use ferment::{boxed, unbox_any};
 use platform_value::Identifier;
 use tokio::runtime::{Builder, Runtime};
 use crate::config::{Config, EntryPoint};

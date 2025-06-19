@@ -2,7 +2,7 @@
 
 %{
 #include "config.h"
-#include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
+#include "../../../../dash-sdk-bindings/target/include/dash_sdk_bindings.h"
 
 #include "dpp.h"
 #include "conversions.h"
@@ -91,7 +91,7 @@ import org.dashj.platform.sdk.base.BaseObject;
 %include "tests.i"
 
 // header files to convert to Java
-%include "../../../../dash-sdk-bindings/target/dash_sdk_bindings.h"
+%include "../../../../dash-sdk-bindings/target/include/dash_sdk_bindings.h"
 %include "src/main/cpp/dpp.h"
 
 // put missing structs here

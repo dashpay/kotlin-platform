@@ -18,7 +18,7 @@ use parking_lot::Mutex;
 use dash_sdk::mock::provider::GrpcContextProvider;
 use dash_sdk::{RequestSettings, Sdk};
 use dpp::data_contract::accessors::v0::DataContractV0Getters;
-use ferment_interfaces::{boxed, unbox_any};
+use ferment::{boxed, unbox_any};
 use dash_sdk::sdk::Uri;
 use tokio::runtime::{Builder, Runtime};
 use crate::logs::setup_logs;

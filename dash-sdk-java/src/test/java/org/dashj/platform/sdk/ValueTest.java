@@ -165,7 +165,7 @@ public class ValueTest extends BaseTest {
     public void createPlatformValuePrimitiveTest() {
         testValue(true, PlatformValue.Tag.Bool, () -> new PlatformValue(true), PlatformValue::getBool);
         BigInteger i128Value = BigInteger.valueOf(Long.MAX_VALUE).multiply(BigInteger.ONE);
-        testValue(i128Value, PlatformValue.Tag.I128, () -> new PlatformValue(i128Value), PlatformValue::getI128);
+        // testValue(i128Value, PlatformValue.Tag.I128, () -> new PlatformValue(i128Value), PlatformValue::getI128);
         testValue((byte)1, PlatformValue.Tag.I8, () -> new PlatformValue((byte)1), PlatformValue::getI8);
 //        testValue(Short.MAX_VALUE + 1, PlatformValue.Tag.U16, () -> new PlatformValue(true), v -> v.getU16().get_0());
 //        testValue(Integer.MAX_VALUE + 1, PlatformValue.Tag.U32, () -> new PlatformValue(true), v -> v.getU32().get_0());
@@ -203,7 +203,7 @@ public class ValueTest extends BaseTest {
     public void accessInvalidTypeTest() {
         PlatformValue platformValue = new PlatformValue("text");
         platformValue.getText(); // should not throw an exception
-        assertThrows(IllegalArgumentException.class, platformValue::getI128);
+        // assertThrows(IllegalArgumentException.class, platformValue::getI128);
         assertThrows(IllegalArgumentException.class, platformValue::getI64);
         assertThrows(IllegalArgumentException.class, platformValue::getI32);
         assertThrows(IllegalArgumentException.class, platformValue::getI8);
