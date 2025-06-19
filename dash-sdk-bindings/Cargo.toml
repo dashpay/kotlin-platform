@@ -21,7 +21,13 @@ drive = { path = "../../platform/packages/rs-drive", default-features = false, f
 ] }
 #tokio = { version = "1.34", features = ["full"] }
 #tokio-util = "0.7.11"
-
+dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
+    "std",
+    "secp-recovery",
+    "rand",
+    "signer",
+    "serde",
+], default-features = false, tag = "v0.39.6" }
 [build-dependencies]
 cbindgen = "0.26.0"
 ferment = { path = "../../ferment/ferment" }

@@ -45,10 +45,10 @@ dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
     "rand",
     "signer",
     "serde",
-], default-features = false, branch = "master" }
+], default-features = false, tag = "v0.39.6" }
 dashcore_hashes = { git = "https://github.com/dashpay/rust-dashcore" }
 # dashcore-rpc is only needed for core rpc; TODO remove once we have correct core rpc impl
-dashcore-rpc = { git = "https://github.com/dashpay/rust-dashcore-rpc", tag = "v0.15.4" }
+dashcore-rpc = { git = "https://github.com/dashpay/rust-dashcore", tag = "v0.39.6" }
 rand = "0.8.5"
 base64 = "0.13"
 tonic = { version = "0.11", features = [
