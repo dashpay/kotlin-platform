@@ -63,6 +63,7 @@ pub fn put_vote_to_platform(
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
             wait_timeout: None,
+            state_transition_creation_options: None
         };
 
         tracing::info!("Call Vote::put_to_platform");

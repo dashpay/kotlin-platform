@@ -18,6 +18,7 @@ use dash_sdk::{Sdk, Error};
 use dpp::identity::IdentityPublicKey;
 use dpp::prelude::CoreBlockHeight;
 use platform_value::types::binary_data::BinaryData;
+use platform_version::version::PlatformVersion;
 use tokio::runtime::{Handle, Runtime};
 use tokio::sync::mpsc;
 use crate::config::Config;
@@ -141,6 +142,7 @@ impl ContextProvider for CallbackContextProvider {
     fn get_data_contract(
         &self,
         data_contract_id: &Identifier,
+        platform_version: &PlatformVersion,
     ) -> Result<Option<Arc<DataContract>>, ContextProviderError> {
         return if let Some(contract) = self.data_contracts_cache.get(data_contract_id) {
             Ok(Some(contract))
@@ -173,6 +175,10 @@ impl ContextProvider for CallbackContextProvider {
 
     fn get_platform_activation_height(&self) -> Result<CoreBlockHeight, ContextProviderError> {
         Ok(1_000_000)
+    }
+
+    fn get_token_configuration(&self, token_id: &Identifier) -> Result<Option<TokenConfiguration>, ContextProviderError> {
+        Ok(None)
     }
 }
 

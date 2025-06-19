@@ -42,6 +42,14 @@ impl Into<DataContractFFI> for DataContract {
                     version: contract.version()
                 }
             }
+            DataContract::V1(contract) => {
+                DataContractFFI {
+                    id: contract.id(),
+                    owner_id: contract.owner_id(),
+                    doc_types: contract.document_types.keys().cloned().collect(),
+                    version: contract.version()
+                }
+            }
             _ => panic!("unknown version of DataContract")
         }
     }
@@ -156,7 +164,7 @@ mod tests {
     #[test]
     fn generate_random_32_byte_vector() {
         let mut rng = rand::thread_rng();
-        let random_bytes: Vec<u8> = (0..32).map(|_| rng.gen()).collect();
+        let random_bytes: Vec<u8> = (0..32).map(|_| rng.r#gen()).collect();
         println!("{:?}", random_bytes);
         // Encode in Base58 and print
         let base58_encoded = encode(&random_bytes, Encoding::Base58);
