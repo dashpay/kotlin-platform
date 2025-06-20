@@ -195,6 +195,7 @@ fn test_put_documents_for_username() {
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
             wait_timeout: None,
+            state_transition_creation_options: None
         };
 
         tracing::warn!("Call Document::put_to_platform_and_wait_for_response");
@@ -211,8 +212,9 @@ fn test_put_documents_for_username() {
         let preorder_transition = new_preorder_document.put_to_platform(
             &sdk,
             preorder_document_type.to_owned_document_type(),
-            entropy.clone(),
+            Some(entropy.clone()),
             identity_public_key.clone(),
+            None,
             &signer,
             Some(settings)
         ).await.or_else(|err|Err(ProtocolError::Generic(err.to_string())))?;
@@ -246,8 +248,9 @@ fn test_put_documents_for_username() {
         let second_document_result = new_domain_document.put_to_platform_and_wait_for_response(
             &sdk,
             domain_document_type.to_owned_document_type(),
-            entropy2,
+            Some(entropy2),
             identity_public_key,
+            None,
             &signer,
             Some(settings)
         ).await.or_else(|err|Err(ProtocolError::Generic(err.to_string())))?;
@@ -320,6 +323,7 @@ fn test_put_txmetadata_contract() {
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
             wait_timeout: None,
+            state_transition_creation_options: None
         };
 
         let file_path = "dashwallet-contract.json";

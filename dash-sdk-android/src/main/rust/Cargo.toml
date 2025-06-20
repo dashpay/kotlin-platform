@@ -1,6 +1,6 @@
 [package]
 name = "dash-sdk-bindings"
-version = "1.0.0"
+version = "2.0.0"
 edition = "2021"
 
 [dependencies]
@@ -22,16 +22,19 @@ dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
     "rand",
     "signer",
     "serde",
-], default-features = false, branch = "master" }
+], default-features = false, tag = "v0.39.6" }
 drive = { path = "../../../../../platform/packages/rs-drive", default-features = false, features = [
     "verify",
     "serde",
 ] }
 drive-proof-verifier = { path = "../../../../../platform/packages/rs-drive-proof-verifier"}
+ferment = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment" }
 
 [build-dependencies]
 cbindgen = "0.26.0"
-ferment = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment" }
+# ferment = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment" }
+ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys", features = ["cbindgen_only"] }
+#ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys" }
 
 [patch.crates-io]
 tower-service = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }

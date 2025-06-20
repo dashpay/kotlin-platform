@@ -1,34 +1,23 @@
 extern crate cbindgen;
-extern crate ferment;
+extern crate ferment_sys;
 
-use std::process::Command;
-use ferment::{Builder, Crate};
-
-pub const SELF_NAME: &str = "dash_sdk_bindings";
 fn main() {
-
-   let c_header = format!("target/{}.h", SELF_NAME);
-   match Builder::new(Crate::current_with_name(SELF_NAME))
-       .with_mod_name("fermented")
-       .with_crates(
-          vec![
-             "platform-value",
-             "dpp",
-             "drive",
-             "dapi-grpc",
-             "drive-proof-verifier",
-             "dash-sdk",
-             "rs-dapi-client",
-              "platform-mobile"
-          ]
-       )
-       .generate() {
-      Ok(()) => match Command::new("cbindgen")
-          .args(["--config", "cbindgen.toml", "-o", c_header.as_str()])
-          .status() {
-         Ok(status) => println!("[cbindgen] [ok] generated into {c_header} with status: {status}"),
-         Err(err) => panic!("[cbindgen] [error] {err}")
-      }
-      Err(err) => panic!("[ferment] Can't create FFI expansion: {err}")
-   }
+    const SELF_NAME: &str = "dash_sdk_bindings";
+    match ferment_sys::Ferment::with_crate_name(SELF_NAME)
+        .with_default_mod_name()
+        .with_cbindgen_config_from_file("cbindgen.toml")
+        .with_external_crates(vec![
+            "platform-value",
+            "dpp",
+            "drive",
+            "dapi-grpc",
+            "drive-proof-verifier",
+            "dash-sdk",
+            "rs-dapi-client",
+            "platform-mobile"
+        ])
+        .generate() {
+        Ok(_) => println!("[ferment] [ok]: {SELF_NAME}"),
+        Err(err) => panic!("[ferment] [err]: {}", err)
+    }
 }

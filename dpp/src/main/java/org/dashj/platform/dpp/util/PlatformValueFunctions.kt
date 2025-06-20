@@ -82,8 +82,8 @@ class EnumString(strings: List<String>) : List<String> {
 
 fun convertPlatformValue(value: PlatformValue): Any? {
     return when (value.tag) {
-        PlatformValue.Tag.U128 -> value.u128
-        PlatformValue.Tag.I128 -> value.i128
+        //PlatformValue.Tag.U128 -> value.u128
+        //PlatformValue.Tag.I128 -> value.i128
         PlatformValue.Tag.U64 -> value.u64
         PlatformValue.Tag.I64 -> value.i64
         PlatformValue.Tag.U32 -> value.u32
@@ -148,7 +148,7 @@ fun convertToPlatformValue(value: Any?) : PlatformValue {
         is Short -> PlatformValue(value)
         is Int -> PlatformValue(value)
         is Long -> PlatformValue(value)
-        is BigInteger -> PlatformValue(value)
+        //is BigInteger -> PlatformValue(value)
         is ByteArray -> PlatformValue(value, true)
         is ByteArray20 -> PlatformValue(value.bytes, true)
         is ByteArray32 -> PlatformValue(value.bytes, true)

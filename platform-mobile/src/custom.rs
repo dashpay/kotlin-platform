@@ -9,20 +9,23 @@ pub struct OutPoint {
     pub txid: *mut [u8; 32],
     pub vout: u32,
 }
-impl ferment_interfaces::FFIConversion<dashcore::blockdata::transaction::OutPoint> for OutPoint {
+impl ferment::FFIConversionFrom<dashcore::blockdata::transaction::OutPoint> for OutPoint {
     unsafe fn ffi_from_const(ffi: *const Self) -> dashcore::blockdata::transaction::OutPoint {
         let ffi = &*ffi;
         dashcore::blockdata::transaction::OutPoint::new(dashcore::hash_types::Txid::from_slice(&*ffi.txid).expect("err"), ffi.vout)
     }
-    unsafe fn ffi_to_const(obj: dashcore::blockdata::transaction::OutPoint) -> *const Self {
-        ferment_interfaces::boxed(OutPoint { txid: ferment_interfaces::boxed(obj.txid.to_raw_hash().into_32()), vout: obj.vout })
+}
+impl ferment::FFIConversionTo<dashcore::blockdata::transaction::OutPoint> for OutPoint {
+
+        unsafe fn ffi_to_const(obj: dashcore::blockdata::transaction::OutPoint) -> *const Self {
+        ferment::boxed(OutPoint { txid: ferment::boxed(obj.txid.to_raw_hash().into()), vout: obj.vout })
     }
 }
 
 impl Drop for OutPoint {
     fn drop(&mut self) {
         unsafe {
-            ferment_interfaces::unbox_any(self.txid);
+            ferment::unbox_any(self.txid);
         }
     }
 }
@@ -39,21 +42,24 @@ impl Drop for OutPoint {
 pub struct InstantLock {
     pub raw: *mut dashcore::ephemerealdata::instant_lock::InstantLock,
 }
-impl ferment_interfaces::FFIConversion<dashcore::ephemerealdata::instant_lock::InstantLock> for InstantLock {
+impl ferment::FFIConversionFrom<dashcore::ephemerealdata::instant_lock::InstantLock> for InstantLock {
     unsafe fn ffi_from_const(ffi: *const Self) -> dashcore::ephemerealdata::instant_lock::InstantLock {
         let ffi = &*ffi;
         let raw = &*ffi.raw;
         raw.clone()
     }
+}
+impl ferment::FFIConversionTo<dashcore::ephemerealdata::instant_lock::InstantLock> for InstantLock {
+
     unsafe fn ffi_to_const(obj: dashcore::ephemerealdata::instant_lock::InstantLock) -> *const Self {
-        ferment_interfaces::boxed(Self { raw: ferment_interfaces::boxed(obj) })
+        ferment::boxed(Self { raw: ferment::boxed(obj) })
     }
 }
 
 impl Drop for InstantLock {
     fn drop(&mut self) {
         unsafe {
-            ferment_interfaces::unbox_any(self.raw);
+            ferment::unbox_any(self.raw);
         }
     }
 }
@@ -70,21 +76,24 @@ impl Drop for InstantLock {
 pub struct Transaction {
     pub raw: *mut dashcore::blockdata::transaction::Transaction,
 }
-impl ferment_interfaces::FFIConversion<dashcore::blockdata::transaction::Transaction> for Transaction {
+impl ferment::FFIConversionFrom<dashcore::blockdata::transaction::Transaction> for Transaction {
     unsafe fn ffi_from_const(ffi: *const Self) -> dashcore::blockdata::transaction::Transaction {
         let ffi = &*ffi;
         let raw = &*ffi.raw;
         raw.clone()
     }
+}
+impl ferment::FFIConversionTo<dashcore::blockdata::transaction::Transaction> for Transaction {
+
     unsafe fn ffi_to_const(obj: dashcore::blockdata::transaction::Transaction) -> *const Self {
-        ferment_interfaces::boxed(Self { raw: ferment_interfaces::boxed(obj) })
+        ferment::boxed(Self { raw: ferment::boxed(obj) })
     }
 }
 
 impl Drop for Transaction {
     fn drop(&mut self) {
         unsafe {
-            ferment_interfaces::unbox_any(self.raw);
+            ferment::unbox_any(self.raw);
         }
     }
 }
@@ -94,11 +103,11 @@ impl Drop for Transaction {
 // pub struct dashcore_consensus_encode_Error {
 //     pub raw: Box<dashcore::consensus::encode::Error>,
 // }
-// impl ferment_interfaces::FFIConversion<dashcore::consensus::encode::Error> for dashcore_consensus_encode_Error {
+// impl ferment::FFIConversion<dashcore::consensus::encode::Error> for dashcore_consensus_encode_Error {
 //     unsafe fn ffi_from_const(ffi: *const Self) -> dashcore::consensus::encode::Error {
 //         *(*ffi).raw
 //     }
 //     unsafe fn ffi_to_const(obj: dashcore::consensus::encode::Error) -> *const Self {
-//         ferment_interfaces::boxed(Self { raw: Box::new(obj) })
+//         ferment::boxed(Self { raw: Box::new(obj) })
 //     }
 // }
