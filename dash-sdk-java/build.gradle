@@ -47,7 +47,7 @@ task generateSWIG(type: Exec) {
             '-outdir', javaOutputDir,
             '-package', 'org.dashj.platform.sdk',
             '-o', "${cppOutputDir}/sdk.cpp",
-            '-I${swigInputDir}', // Include directory for SWIG interfaces
+            "-I${swigInputDir}", // Include directory for SWIG interfaces
             "${swigInputDir}/root.i" // SWIG interface file
 
 
