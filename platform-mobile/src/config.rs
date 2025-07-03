@@ -20,6 +20,8 @@ use dash_sdk::{RequestSettings, Sdk};
 use dpp::data_contract::accessors::v0::DataContractV0Getters;
 use ferment::{boxed, unbox_any};
 use dash_sdk::sdk::Uri;
+use platform_version::version::PlatformVersion;
+use platform_version::version::v7::PLATFORM_V7;
 use tokio::runtime::{Builder, Runtime};
 use crate::logs::setup_logs;
 use crate::provider::{Cache, CallbackContextProvider};
@@ -270,10 +272,12 @@ impl Config {
     /// new test vectors during execution
     /// * `offline-testing` is set - use mock implementation and
     /// load existing test vectors from disk
-    pub async fn setup_api(&self) -> Arc<Sdk> {
+    pub async fn setup_api(&self, version: &'static PlatformVersion) -> Arc<Sdk> {
         let sdk = {
             // Dump all traffic to disk
-            let builder = dash_sdk::SdkBuilder::new(self.address_list()).with_core(
+            let builder = dash_sdk::SdkBuilder::new(self.address_list())
+                .with_version(version)
+                .with_core(
                 &self.core_ip,
                 self.core_port,
                 &self.core_user,
@@ -286,7 +290,8 @@ impl Config {
         sdk.into()
     }
 
-    pub async fn setup_api_list(&self, address_list: Vec<String>) -> Arc<Sdk> {
+    pub async fn setup_api_list(&self, address_list: Vec<String>,
+                                version: &'static PlatformVersion) -> Arc<Sdk> {
         let sdk = {
             // Dump all traffic to disk
             let builder = dash_sdk::SdkBuilder::new(self.new_address_list(address_list)).with_core(
@@ -296,7 +301,9 @@ impl Config {
                 &self.core_password,
             );
 
-            builder.build().expect("cannot initialize api")
+            builder
+                .with_version(version)
+                .build().expect("cannot initialize api")
         };
 
         sdk.into()
@@ -330,7 +337,8 @@ impl Config {
         data_contract_cache: Arc<Cache<Identifier, DataContract>>,
         connect_timeout: usize,
         timeout: usize,
-        retries: usize
+        retries: usize,
+        version: &'static PlatformVersion
     ) -> Arc<Sdk> {
         let mut context_provider = CallbackContextProvider::new(
             context_provider_context,
@@ -361,6 +369,7 @@ impl Config {
                         ban_failed_address: Some(true),
                     }
                 )
+                .with_version(&version)
                 .with_context_provider(context_provider_clone);
             builder.build().expect("cannot initialize api")
         };
@@ -376,7 +385,8 @@ impl Config {
         q: u64,
         d: u64,
         data_contract_cache: Arc<Cache<Identifier, DataContract>>,
-        address_list: Vec<String>
+        address_list: Vec<String>,
+        version: &'static PlatformVersion
     ) -> Arc<Sdk> {
         let mut context_provider = CallbackContextProvider::new(
             context,
@@ -389,7 +399,10 @@ impl Config {
         let mut sdk = {
             // Dump all traffic to disk
             let builder = dash_sdk::SdkBuilder::new(self.new_address_list(address_list));
-            builder.build().expect("cannot initialize api")
+            builder
+                .with_version(version)
+                .build()
+                .expect("cannot initialize api")
         };
         // not ideal because context provider has a clone of the sdk
         context_provider.set_sdk(Some(Arc::new(sdk.clone())));

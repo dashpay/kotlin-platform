@@ -26,7 +26,7 @@ use dpp::state_transition::StateTransition;
 use dpp::util::entropy_generator::{DefaultEntropyGenerator, EntropyGenerator};
 use platform_value::{BinaryData, Identifier, Value};
 use platform_value::string_encoding::Encoding;
-use platform_version::version::PlatformVersion;
+use platform_version::version::{LATEST_PLATFORM_VERSION, PlatformVersion};
 use rand::random;
 use simple_signer::signer::SimpleSigner;
 use tokio::runtime::Builder;
@@ -302,7 +302,7 @@ fn test_put_txmetadata_contract() {
         // Your async code here
         let cfg = if testnet { Config::new_testnet() } else { Config::new_mainnet() };
         tracing::warn!("Setting up SDK");
-        let sdk = cfg.setup_api().await;
+        let sdk = cfg.setup_api(LATEST_PLATFORM_VERSION).await;
         tracing::warn!("Finished SDK, {:?}", sdk);
         tracing::warn!("Set up entropy, data contract and signer");
 
