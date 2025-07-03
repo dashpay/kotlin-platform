@@ -1,6 +1,7 @@
 use dapi_grpc::core::v0::{GetTransactionRequest};
 use dash_sdk::dapi_client::DapiRequestExecutor;
 use dash_sdk::RequestSettings;
+use platform_version::version::LATEST_PLATFORM_VERSION;
 use tokio::runtime::Builder;
 use crate::config::{Config, EntryPoint};
 use crate::logs::setup_logs;
@@ -19,7 +20,7 @@ pub fn get_transaction(txid: [u8; 32], quorum_public_key_callback: u64, data_con
     // Execute the async block using the Tokio runtime
     rt.block_on(async {
         let cfg = Config::new();
-        let sdk = cfg.setup_api().await;
+        let sdk = cfg.setup_api(LATEST_PLATFORM_VERSION).await;
 
         let tx_info_result = sdk.execute(
                 GetTransactionRequest {
