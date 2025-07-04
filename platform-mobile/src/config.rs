@@ -284,7 +284,9 @@ impl Config {
                 &self.core_password,
             );
 
-            builder.build().expect("cannot initialize api")
+            builder
+                .with_version(version)
+                .build().expect("cannot initialize api")
         };
 
         sdk.into()

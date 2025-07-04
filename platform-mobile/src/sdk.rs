@@ -59,7 +59,7 @@ impl EntryPoint for DashSdk {
     }
 }
 
-#[ferment_macro::export]
+// #[ferment_macro::export]
 pub fn update_sdk_with_address_list(
     rust_sdk: * mut DashSdk,
     quorum_public_key_callback: u64,
@@ -222,6 +222,7 @@ pub fn create_dash_sdk_using_single_evonode(
             // use Dash Core for quorum public keys
             cfg.setup_api_list(vec![evonode], version).await
         };
+        tracing::info!("Sdk version {:?}", sdk.version());
         DashSdk {
             config: Arc::new(cfg),
             runtime: rt.clone(),
