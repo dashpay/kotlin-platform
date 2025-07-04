@@ -2340,19 +2340,29 @@ class BlockchainIdentity {
 
     // Transaction Metadata Methods
     @Throws(KeyCrypterException::class)
-    fun publishTxMetaData(txMetadataItems: List<TxMetadataItem>, keyParameter: KeyParameter?, encryptionKeyIndex: Int, version: Int) {
+    fun publishTxMetaData(
+        txMetadataItems: List<TxMetadataItem>,
+        keyParameter: KeyParameter?,
+        encryptionKeyIndex: Int,
+        version: Int,
+        progressListener: ((Int) -> Unit)? = null
+    ) {
         if (!platform.hasApp("wallet-utils")) {
             return
         }
+        progressListener?.invoke(0)
         val documentsToPublish = createTxMetadata(txMetadataItems, keyParameter, encryptionKeyIndex, version)
+        progressListener?.invoke(10)
         val txMetadata = TxMetadata(platform)
-        documentsToPublish.forEach { txMetadataDocument ->
+        documentsToPublish.forEachIndexed { i, txMetadataDocument ->
             txMetadata.publish(
                 txMetadataDocument,
                 identity!!,
                 WalletSignerCallback(wallet!!, keyParameter)
             )
+            progressListener?.invoke(10 + i * 100 / documentsToPublish.size )
         }
+        progressListener?.invoke(100)
     }
 
     fun getTxMetaData(createdAfter: Long = -1, keyParameter: KeyParameter?): Map<TxMetadataDocument, List<TxMetadataItem>> {
