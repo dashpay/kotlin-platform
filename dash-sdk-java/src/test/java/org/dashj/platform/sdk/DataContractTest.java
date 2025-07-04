@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DataContractTest extends SdkBaseTest {
 
@@ -16,7 +17,9 @@ public class DataContractTest extends SdkBaseTest {
         Result<Optional<DataContract>, String> result = dashsdk.platformMobileDataContractsFetchDataContract(
                 sdk, contractId);
 
-        DataContract dataContract = result.unwrap().get();
+        Optional<DataContract> dataContractResult = result.unwrap();
+        assertTrue(dataContractResult.isPresent());
+        DataContract dataContract = dataContractResult.get();
         assertArrayEquals(dpnsContractId, dataContract.getId().get_0().get_0());
         assertEquals(2, dataContract.getDoc_types().size());
         dataContract.getDoc_types().forEach(System.out::println);
@@ -28,10 +31,12 @@ public class DataContractTest extends SdkBaseTest {
         Result<Optional<DataContract>, String> result = dashsdk.platformMobileDataContractsFetchDataContract(
                 sdk, contractId);
 
-        DataContract dataContract = result.unwrap().get();
+        Optional<DataContract> dataContractResult = result.unwrap();
+        assertTrue(dataContractResult.isPresent());
+        DataContract dataContract = dataContractResult.get();
         assertArrayEquals(walletUtilsContracId, dataContract.getId().get_0().get_0());
         assertEquals(3, dataContract.getDoc_types().size());
-        dataContract.getDoc_types().forEach(System.out::println);
+        assertTrue("didn't find txMetadata", dataContract.getDoc_types().stream().allMatch(type -> type.equals("txMetadata")));
     }
 
     @Test
