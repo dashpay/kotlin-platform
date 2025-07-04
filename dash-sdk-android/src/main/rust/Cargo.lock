@@ -793,7 +793,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "dapi-grpc-macros",
  "futures-core",
@@ -810,7 +810,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc-macros"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "heck 0.5.0",
  "quote",
@@ -854,7 +854,7 @@ dependencies = [
 
 [[package]]
 name = "dash-sdk"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "arc-swap",
  "async-trait",
@@ -987,7 +987,7 @@ dependencies = [
 
 [[package]]
 name = "dashpay-contract"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -997,7 +997,7 @@ dependencies = [
 
 [[package]]
 name = "data-contracts"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "dashpay-contract",
  "dpns-contract",
@@ -1115,7 +1115,7 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "dpns-contract"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1125,7 +1125,7 @@ dependencies = [
 
 [[package]]
 name = "dpp"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1170,13 +1170,12 @@ dependencies = [
 
 [[package]]
 name = "drive"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "bincode",
  "byteorder",
  "derive_more 1.0.0",
  "dpp",
- "ferment 0.1.4",
  "ferment-macro 0.1.4 (git+https://github.com/dashpay/ferment?branch=feat%2Fopaque-default)",
  "grovedb",
  "grovedb-costs",
@@ -1197,7 +1196,7 @@ dependencies = [
 
 [[package]]
 name = "drive-proof-verifier"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "bincode",
  "dapi-grpc",
@@ -1379,7 +1378,7 @@ checksum = "e8c02a5121d4ea3eb16a80748c74f5549a5665e4c21333c6098f283870fbdea6"
 
 [[package]]
 name = "feature-flags-contract"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2287,7 +2286,7 @@ dependencies = [
 
 [[package]]
 name = "json-schema-compatibility-validator"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "json-patch",
  "once_cell",
@@ -2344,7 +2343,7 @@ dependencies = [
 
 [[package]]
 name = "keyword-search-contract"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2409,7 +2408,7 @@ dependencies = [
 
 [[package]]
 name = "masternode-reward-shares-contract"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2990,7 +2989,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "bincode",
  "platform-version",
@@ -2998,7 +2997,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization-derive"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3008,7 +3007,7 @@ dependencies = [
 
 [[package]]
 name = "platform-value"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -3030,7 +3029,7 @@ dependencies = [
 
 [[package]]
 name = "platform-version"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "bincode",
  "ferment-macro 0.1.4 (git+https://github.com/dashpay/ferment?branch=feat%2Fopaque-default)",
@@ -3042,7 +3041,7 @@ dependencies = [
 
 [[package]]
 name = "platform-versioning"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3347,7 +3346,7 @@ dependencies = [
 
 [[package]]
 name = "rs-dapi-client"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "backon",
  "chrono",
@@ -3733,7 +3732,7 @@ checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
 
 [[package]]
 name = "simple-signer"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -4105,7 +4104,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "token-history-contract"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -4624,7 +4623,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-utils-contract"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -4922,7 +4921,7 @@ dependencies = [
 
 [[package]]
 name = "withdrawals-contract"
-version = "2.0.0-rc.17"
+version = "2.0.0"
 dependencies = [
  "num_enum 0.5.11",
  "platform-value",
