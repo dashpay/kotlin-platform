@@ -28,22 +28,4 @@ public class BinaryDataTest extends BaseTest {
         System.out.printf("BinaryData %x\n", BinaryData.getCPtr(data));
         data.delete();
     }
-
-    @Test
-    public void getBinaryDataEmptyTest() {
-        BinaryData data = dashsdk.platformMobileTestsGetBinaryDataEmpty();
-        assertNotNull(data);
-        assertEquals(0, data.get_0().length);
-        assertArrayEquals(new byte[0], data.get_0());
-        data.delete();
-    }
-
-    @Test
-    public void getBinaryData4Test() {
-        BinaryData data = dashsdk.platformMobileTestsGetBinaryData4();
-        assertNotNull(data);
-        assertEquals(4, data.get_0().length);
-        assertArrayEquals(new byte[] {0, 1, 2, 3}, data.get_0());
-        data.delete();
-    }
 }

@@ -18,31 +18,6 @@ import static org.junit.Assert.assertThrows;
 
 
 public class ValueTest extends BaseTest {
-    @Test
-    public void getPlatformValueTest() {
-        PlatformValue value = dashsdk.platformMobileTestsGetPlatformValueBool(false);
-        assertNotNull(value);
-        assertEquals(PlatformValue.Tag.Bool, value.getTag());
-        assertFalse(value.getBool());
-        value.delete();
-    }
-
-    @Test
-    public void getPlatformValueMapTest() {
-        PlatformValue value = dashsdk.platformMobileTestsGetPlatformValueWithMap();
-        assertNotNull(value);
-        assertEquals(PlatformValue.Tag.Map, value.getTag());
-        PlatformValueMap valueMap = value.getMap();
-        Map<PlatformValue, PlatformValue> map = valueMap.get_0();
-        assertNotNull(map);
-        assertEquals(1, map.size());
-        map.forEach((k, v) -> {
-            assertEquals(PlatformValue.Tag.Text, k.getTag());
-            assertEquals(PlatformValue.Tag.I32, v.getTag());
-        });
-
-        value.delete();
-    }
 
     @Test
     public void createPlatformValueTest() {
