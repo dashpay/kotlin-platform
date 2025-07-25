@@ -5,12 +5,14 @@ buildscript {
     repositories {
         google()  // Required for Android library and application projects
         mavenCentral()
+        gradlePluginPortal()  // Required for JReleaser plugin
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.android.tools.build:gradle:8.1.4'  // Use the latest version
         classpath "com.google.protobuf:protobuf-gradle-plugin:0.9.4"
+        classpath 'org.jreleaser:jreleaser-gradle-plugin:1.17.0'
     }
 }
 

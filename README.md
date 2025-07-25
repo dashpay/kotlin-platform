@@ -29,14 +29,30 @@ Build the android libraries for the local machine (only works on Mac)
 ```bash
 ./gradlew publishToMavenLocal
 ```
-Build the android libraries to publish to Maven Central
+Build the android libraries to publish to Maven Central:
+1) Verify release & deploy configuration
+```bash
+./gradlew jreleaserConfig
+```
+2) Ensure a clean deployment
+```bash
+./gradlew clean
+```
+3) Generate all needed code for SWIG and Protobuf
+```bash
+./gradlew generateSWIG && ./gradlew generateProto
+```
+4) Stage all artifacts to a local directory
 ```bash
 ./gradlew publish
 ```
-
+5) Deploy and release
+```bash
+./gradlew jreleaserDeploy
+```
 ### Use in other projects
 ```groovy
-dppVersion = "1.7.5"
+dppVersion = "2.0.0-SNAPSHOT"
 dependencies {
     implementation "org.dashj.platform:dash-sdk-java:$dppVersion"
     implementation "org.dashj.platform:dash-sdk-kotlin:$dppVersion" // dpp
