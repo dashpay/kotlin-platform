@@ -148,7 +148,7 @@ fn get_wallet_utils_data_contract_test() {
         & mut sdk,
         Identifier::from(wallet_utils_contract::ID_BYTES)
     ).unwrap();
-    tracing::info!("wallet-utils: {:?}", data_contract);
+    println!("wallet-utils: {:?}", data_contract);
 }
 
 #[test]
@@ -157,8 +157,9 @@ fn get_wallet_utils_data_contract_mainnet_test() {
     let data_contract = fetch_data_contract(
         & mut sdk,
         Identifier::from(wallet_utils_contract::ID_BYTES)
-    ).unwrap();
-    tracing::info!("wallet-utils: {:?}", data_contract);
+    );
+    assert!(data_contract.is_ok(), "cannot find the wallet utils contract");
+    println!("wallet-utils: {:?}", data_contract.unwrap());
 }
 
 #[test]
@@ -179,6 +180,7 @@ fn get_wallet_utils_data_contract_test_all() {
 
 #[test]
 fn get_wallet_utils_data_contract_mainnet_all() {
+    let mut success = true;
     for i in crate::config::MAINNET_ADDRESS_LIST {
         let mut sdk = create_dash_sdk_using_single_evonode(i.into(), 0, 0, false);
         let data_contract_result = fetch_data_contract(
@@ -188,9 +190,13 @@ fn get_wallet_utils_data_contract_mainnet_all() {
         match data_contract_result {
             Ok(Some(data_contract)) => println!("wallet-utils: {}. {:?}", i, data_contract.doc_types),
             Ok(None) => println!("wallet-utils: {}. contract not found", i),
-            Err(e) => println!("wallet-utils {}. {:?}", i, e)
+            Err(e) => {
+                println!("wallet-utils {}. {:?}", i, e);
+                success = false
+            }
         };
     }
+    assert!(success)
 }
 
 #[test]
