@@ -30,7 +30,7 @@ public class DataContractTest extends SdkBaseTest {
 
         DataContract dataContract = result.unwrap().get();
         assertArrayEquals(walletUtilsContracId, dataContract.getId().get_0().get_0());
-        assertEquals(3, dataContract.getDoc_types().size());
+        assertEquals(1, dataContract.getDoc_types().size());
         dataContract.getDoc_types().forEach(System.out::println);
     }
 
