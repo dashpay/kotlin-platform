@@ -26,7 +26,7 @@ use dpp::state_transition::StateTransition;
 use dpp::util::entropy_generator::{DefaultEntropyGenerator, EntropyGenerator};
 use platform_value::{BinaryData, Identifier, Value};
 use platform_value::string_encoding::Encoding;
-use platform_version::version::PlatformVersion;
+use platform_version::version::{LATEST_PLATFORM_VERSION, PlatformVersion};
 use rand::random;
 use simple_signer::signer::SimpleSigner;
 use tokio::runtime::Builder;
@@ -195,6 +195,7 @@ fn test_put_documents_for_username() {
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
             wait_timeout: None,
+            state_transition_creation_options: None
         };
 
         tracing::warn!("Call Document::put_to_platform_and_wait_for_response");
@@ -211,8 +212,9 @@ fn test_put_documents_for_username() {
         let preorder_transition = new_preorder_document.put_to_platform(
             &sdk,
             preorder_document_type.to_owned_document_type(),
-            entropy.clone(),
+            Some(entropy.clone()),
             identity_public_key.clone(),
+            None,
             &signer,
             Some(settings)
         ).await.or_else(|err|Err(ProtocolError::Generic(err.to_string())))?;
@@ -246,8 +248,9 @@ fn test_put_documents_for_username() {
         let second_document_result = new_domain_document.put_to_platform_and_wait_for_response(
             &sdk,
             domain_document_type.to_owned_document_type(),
-            entropy2,
+            Some(entropy2),
             identity_public_key,
+            None,
             &signer,
             Some(settings)
         ).await.or_else(|err|Err(ProtocolError::Generic(err.to_string())))?;
@@ -299,7 +302,7 @@ fn test_put_txmetadata_contract() {
         // Your async code here
         let cfg = if testnet { Config::new_testnet() } else { Config::new_mainnet() };
         tracing::warn!("Setting up SDK");
-        let sdk = cfg.setup_api().await;
+        let sdk = cfg.setup_api(LATEST_PLATFORM_VERSION).await;
         tracing::warn!("Finished SDK, {:?}", sdk);
         tracing::warn!("Set up entropy, data contract and signer");
 
@@ -320,6 +323,7 @@ fn test_put_txmetadata_contract() {
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
             wait_timeout: None,
+            state_transition_creation_options: None
         };
 
         let file_path = "dashwallet-contract.json";

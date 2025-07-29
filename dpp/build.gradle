@@ -5,6 +5,7 @@ plugins {
     id('io.gitlab.arturbosch.detekt').version("1.19.0")
     id 'maven-publish'
     id 'signing'
+    id 'org.jreleaser'
 }
 
 group 'org.dashj.platform'
@@ -149,13 +150,48 @@ publishing {
     }
     repositories {
         maven {
-            // change URLs to point to your repos, e.g. http://my.org/repo
-            def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-            url = project.rootProject.ext.version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-            credentials {
-                username = project.hasProperty('ossrhUsername')?project.findProperty('ossrhUsername'):''
-                password = project.hasProperty('ossrhPassword')?project.findProperty('ossrhPassword'):''
+            url = layout.buildDirectory.dir('staging-deploy')
+        }
+    }
+}
+
+jreleaser {
+    def projectVersion = rootProject.ext.version
+    project {
+        name = 'dash-sdk-kotlin'
+        description = 'Higher level Dash SDK for Kotlin'
+        website = 'https://dashj.org'
+        authors = ['HashEngineering']
+        license = 'The Apache License, Version 2.0'
+        gitRootSearch = true
+        version = projectVersion
+    }
+
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    active = 'ALWAYS'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stagingRepository("$buildDir/staging-deploy")
+                }
+            }
+            nexus2 {
+                app {
+                    active = 'SNAPSHOT'
+                    url = 'https://central.sonatype.com/repository/maven-snapshots/'
+                    snapshotUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
+                    applyMavenCentralRules = true
+                    snapshotSupported = true
+                    closeRepository = true
+                    releaseRepository = true
+                    stagingRepository("$buildDir/staging-deploy")
+                }
             }
         }
     }

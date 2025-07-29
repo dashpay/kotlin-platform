@@ -43,6 +43,7 @@ class Profiles(
         signer: WalletSignerCallback
     ): Document {
         val profileDocument = createProfileDocument(displayName, publicMessage, avatarUrl, avatarHash, avatarFingerprint, identity)
+        log.info("creating profile document: {}", profileDocument.toJSON())
         profileDocument.createdAt = Date().time
 
         val highIdentityPublicKey = identity.getFirstPublicKey(SecurityLevel.HIGH)
@@ -99,7 +100,7 @@ class Profiles(
         val profileDocument = platform.dpp.document.createFromObject(profileData)
         profileDocument.updatedAt = Date().time
         profileDocument.revision += 1
-
+        log.info("replacing profile document: {}", profileDocument.toJSON())
         val highIdentityPublicKey = identity.getFirstPublicKey(SecurityLevel.HIGH)
             ?: error("can't find a public key with HIGH security level")
 
