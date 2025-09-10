@@ -14,7 +14,12 @@ use tokio::runtime::Builder;
 use crate::config::{Config, EntryPoint};
 use crate::logs::setup_logs;
 use crate::provider::Cache;
-use crate::sdk::{create_dash_sdk_using_core_testnet, DashSdk};
+use crate::sdk::{
+    create_dash_sdk_using_core_mainnet,
+    create_dash_sdk_using_core_testnet,
+    create_dash_sdk_using_single_evonode,
+    DashSdk
+};
 
 #[derive(Clone, Debug)]
 #[ferment_macro::export]
@@ -35,6 +40,14 @@ impl Into<DataContractFFI> for DataContract {
     fn into(self) -> DataContractFFI {
         match self {
             DataContract::V0(contract) => {
+                DataContractFFI {
+                    id: contract.id(),
+                    owner_id: contract.owner_id(),
+                    doc_types: contract.document_types.keys().cloned().collect(),
+                    version: contract.version()
+                }
+            }
+            DataContract::V1(contract) => {
                 DataContractFFI {
                     id: contract.id(),
                     owner_id: contract.owner_id(),
@@ -102,11 +115,12 @@ pub fn fetch_data_contract(
             Some(data_contract) => Ok(Some(data_contract.into())),
             None => {
                 let request_settings = unsafe { (*rust_sdk).get_request_settings() };
-                match (DataContract::fetch_with_settings(&sdk, data_contract_id.clone(), request_settings)
-                    .await) {
+                match (DataContract::fetch_with_settings(&sdk, data_contract_id.clone(), request_settings).await) {
                     Ok(Some(data_contract)) => {
+                        tracing::info!("{:?}", data_contract);
                         unsafe { (*rust_sdk).add_data_contract(&data_contract); };
                         let data_contract_ffi: DataContractFFI = data_contract.into();
+                        tracing::info!("{:?}", data_contract_ffi);
                         Ok(Some(data_contract_ffi))
                     },
                     Ok(None) => return Ok(None),//Err("data contract not found".to_string()),
@@ -134,7 +148,55 @@ fn get_wallet_utils_data_contract_test() {
         & mut sdk,
         Identifier::from(wallet_utils_contract::ID_BYTES)
     ).unwrap();
-    tracing::info!("wallet-utils: {:?}", data_contract);
+    println!("wallet-utils: {:?}", data_contract);
+}
+
+#[test]
+fn get_wallet_utils_data_contract_mainnet_test() {
+    let mut sdk = create_dash_sdk_using_core_mainnet();
+    let data_contract = fetch_data_contract(
+        & mut sdk,
+        Identifier::from(wallet_utils_contract::ID_BYTES)
+    );
+    assert!(data_contract.is_ok(), "cannot find the wallet utils contract");
+    println!("wallet-utils: {:?}", data_contract.unwrap());
+}
+
+#[test]
+fn get_wallet_utils_data_contract_test_all() {
+    for i in crate::config::TESTNET_ADDRESS_LIST {
+        let mut sdk = create_dash_sdk_using_single_evonode(i.into(), 0, 0, true);
+        let data_contract_result = fetch_data_contract(
+            &mut sdk,
+            Identifier::from(wallet_utils_contract::ID_BYTES)
+        );
+        match data_contract_result {
+            Ok(Some(data_contract)) => println!("wallet-utils: {}. {:?}", i, data_contract.doc_types),
+            Ok(None) => println!("wallet-utils: {}. contract not found", i),
+            Err(e) => println!("wallet-utils {}. {:?}", i, e)
+        };
+    }
+}
+
+#[test]
+fn get_wallet_utils_data_contract_mainnet_all() {
+    let mut success = true;
+    for i in crate::config::MAINNET_ADDRESS_LIST {
+        let mut sdk = create_dash_sdk_using_single_evonode(i.into(), 0, 0, false);
+        let data_contract_result = fetch_data_contract(
+            &mut sdk,
+            Identifier::from(wallet_utils_contract::ID_BYTES)
+        );
+        match data_contract_result {
+            Ok(Some(data_contract)) => println!("wallet-utils: {}. {:?}", i, data_contract.doc_types),
+            Ok(None) => println!("wallet-utils: {}. contract not found", i),
+            Err(e) => {
+                println!("wallet-utils {}. {:?}", i, e);
+                success = false
+            }
+        };
+    }
+    assert!(success)
 }
 
 #[test]
@@ -156,7 +218,7 @@ mod tests {
     #[test]
     fn generate_random_32_byte_vector() {
         let mut rng = rand::thread_rng();
-        let random_bytes: Vec<u8> = (0..32).map(|_| rng.gen()).collect();
+        let random_bytes: Vec<u8> = (0..32).map(|_| rng.r#gen()).collect();
         println!("{:?}", random_bytes);
         // Encode in Base58 and print
         let base58_encoded = encode(&random_bytes, Encoding::Base58);

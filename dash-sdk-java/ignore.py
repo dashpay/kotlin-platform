@@ -1,7 +1,7 @@
 # ignore _ctor and _destroy functions
 import re
 
-header_file_path = '../dash-sdk-bindings/target/dash_sdk_bindings.h'
+header_file_path = '../dash-sdk-bindings/target/include/dash_sdk_bindings.h'
 output_file_path = 'src/main/swig/ignore.i'
 clone_file_path = 'src/main/cpp/clone.h'
 

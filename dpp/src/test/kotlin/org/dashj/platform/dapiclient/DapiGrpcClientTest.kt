@@ -285,13 +285,20 @@ class DapiGrpcClientTest : BaseTest() {
     fun getTransationTest() {
         val txid = "e43b58cf1f24d3366d7f6e96586586453b706aa3ef1226d2eff32b9b6c077e24"
 
-        val result: ByteArray? = client.getTransactionKotlin(txid)?.transaction
+        val response = client.getTransactionKotlin(txid)
+        val result = response?.transaction
 
+        println(response)
         println(Utils.HEX.encode(result!!))
 
         val resultTwo: ByteArray? = client.getTransactionBytesKotlin(txid)
 
         println(Utils.HEX.encode(resultTwo!!))
+
+        for (i in 0..100) {
+            val resultOfI: ByteArray? = client.getTransactionBytesKotlin(txid)
+            println("$i. ${Utils.HEX.encode(resultOfI!!)}")
+        }
     }
 
     @Test

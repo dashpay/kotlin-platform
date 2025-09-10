@@ -5,8 +5,11 @@ use std::time::Duration;
 use dash_sdk::{RequestSettings, Sdk};
 use dpp::data_contract::accessors::v0::DataContractV0Getters;
 use dpp::data_contract::DataContract;
-use ferment_interfaces::{boxed, unbox_any};
+use ferment::{boxed, unbox_any};
 use platform_value::Identifier;
+use platform_version::version::PlatformVersion;
+use platform_version::version::v7::PLATFORM_V7;
+use platform_version::version::v9::PLATFORM_V9;
 use tokio::runtime::{Builder, Runtime};
 use crate::config::{Config, EntryPoint};
 use crate::logs::setup_logs;
@@ -61,7 +64,8 @@ pub fn update_sdk_with_address_list(
     rust_sdk: * mut DashSdk,
     quorum_public_key_callback: u64,
     data_contract_callback: u64,
-    address_list: Vec<String>
+    address_list: Vec<String>,
+    version: &'static PlatformVersion
 ) {
 
     let rt = unsafe { (*rust_sdk).get_runtime() };
@@ -76,7 +80,8 @@ pub fn update_sdk_with_address_list(
             quorum_public_key_callback,
             data_contract_callback,
             unsafe { (*rust_sdk).get_data_contract_cache() },
-            address_list
+            address_list,
+            version
         ).await;
 
         tracing::info!("sdk created");
@@ -141,7 +146,13 @@ pub fn create_dash_sdk_with_context(
         } else {
             Config::new_mainnet()
         };
+        let version: &'static PlatformVersion = if is_testnet {
+            &PLATFORM_V9
+        } else {
+            &PLATFORM_V9
+        };
         tracing::info!("configuring for testnet={} using platform port={}", cfg.is_testnet, cfg.platform_port);
+        tracing::info!("configuring platform version {:?}", version);
         let data_contract_cache = Arc::new(Cache::new(NonZeroUsize::new(100).expect("Non Zero")));
         let sdk = if quorum_public_key_callback != 0 {
             // use the callbacks to obtain quorum public keys
@@ -152,12 +163,14 @@ pub fn create_dash_sdk_with_context(
                 data_contract_cache.clone(),
                 connect_timeout,
                 timeout,
-                retries
+                retries,
+                &version
             ).await
         } else {
             // use Dash Core for quorum public keys
-            cfg.setup_api().await
+            cfg.setup_api(version).await
         };
+        tracing::info!("Sdk version {:?}", sdk.version());
         DashSdk {
             config: Arc::new(cfg),
             runtime: rt.clone(),
@@ -196,13 +209,18 @@ pub fn create_dash_sdk_using_single_evonode(
         } else {
             Config::new_mainnet()
         };
+        let version: &'static PlatformVersion = if is_testnet {
+            &PLATFORM_V9
+        } else {
+            &PLATFORM_V7
+        };
         let data_contract_cache = Arc::new(Cache::new(NonZeroUsize::new(100).expect("Non Zero")));
         let sdk = if quorum_public_key_callback != 0 {
             // use the callbacks to obtain quorum public keys
-            cfg.setup_api_with_callbacks_cache_list(std::ptr::null(), quorum_public_key_callback, data_contract_callback, data_contract_cache.clone(), vec![evonode]).await
+            cfg.setup_api_with_callbacks_cache_list(std::ptr::null(), quorum_public_key_callback, data_contract_callback, data_contract_cache.clone(), vec![evonode], version).await
         } else {
             // use Dash Core for quorum public keys
-            cfg.setup_api_list(vec![evonode]).await
+            cfg.setup_api_list(vec![evonode], version).await
         };
         DashSdk {
             config: Arc::new(cfg),
@@ -211,8 +229,8 @@ pub fn create_dash_sdk_using_single_evonode(
             context_provider_context: std::ptr::null(),
             data_contract_cache: data_contract_cache,
             request_settings: RequestSettings {
-                connect_timeout: Some(Duration::from_secs(5)),
-                timeout: Some(Duration::from_secs(5)),
+                connect_timeout: Some(Duration::from_secs(10)),
+                timeout: Some(Duration::from_secs(10)),
                 retries: Some(0),
                 ban_failed_address: Some(false),
             }

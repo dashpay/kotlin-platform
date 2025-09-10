@@ -18,8 +18,10 @@ use parking_lot::Mutex;
 use dash_sdk::mock::provider::GrpcContextProvider;
 use dash_sdk::{RequestSettings, Sdk};
 use dpp::data_contract::accessors::v0::DataContractV0Getters;
-use ferment_interfaces::{boxed, unbox_any};
+use ferment::{boxed, unbox_any};
 use dash_sdk::sdk::Uri;
+use platform_version::version::PlatformVersion;
+use platform_version::version::v7::PLATFORM_V7;
 use tokio::runtime::{Builder, Runtime};
 use crate::logs::setup_logs;
 use crate::provider::{Cache, CallbackContextProvider};
@@ -62,8 +64,8 @@ pub const TESTNET_ADDRESS_LIST: [&str; 26] = [
 ];
 
 
-pub const MAINNET_ADDRESS_LIST: [&str; 128] = [
-    "149.28.241.190", "216.238.75.46", "134.255.182.186", "157.66.81.162", "213.199.34.250", "157.90.238.161", "185.198.234.68", "37.60.236.212", "207.244.247.40", "45.32.70.131", "158.220.122.76", "52.33.9.172", "185.158.107.124", "185.198.234.17", "93.190.140.101", "194.163.153.225", "194.146.13.7", "93.190.140.112", "65.108.74.95", "44.240.99.214", "5.75.133.148", "192.248.178.237", "95.179.159.65", "139.84.232.129", "37.60.243.119", "194.195.87.34", "46.254.241.7", "161.97.160.92", "65.108.246.145", "64.176.10.71", "37.60.244.220", "2.58.82.231", "185.198.234.54", "37.27.67.154", "134.255.182.185", "139.84.137.143", "173.212.239.124", "5.189.186.78", "173.249.53.139", "37.60.236.151", "37.27.67.159", "104.200.24.196", "37.60.236.225", "57.128.212.163", "158.220.122.74", "185.198.234.25", "134.255.183.250", "185.192.96.70", "134.255.183.248", "52.36.102.91", "134.255.183.247", "49.13.28.255", "168.119.102.10", "37.27.83.17", "134.255.182.187", "38.242.198.100", "37.27.67.163", "198.7.115.43", "70.34.206.123", "65.108.74.78", "108.61.165.170", "157.10.199.79", "31.220.88.116", "185.166.217.154", "37.27.67.164", "31.220.85.180", "161.97.170.251", "157.10.199.82", "91.107.226.241", "167.88.169.16", "216.238.99.9", "62.169.17.112", "52.10.213.198", "198.7.115.38", "37.60.236.161", "49.13.193.251", "46.254.241.9", "185.215.167.70", "65.108.74.75", "95.179.241.182", "95.216.146.18", "31.220.84.93", "185.197.250.227", "149.28.247.165", "213.199.34.251", "185.198.234.12", "87.228.24.64", "45.32.52.10", "91.107.204.136", "157.66.81.130", "157.10.199.125", "46.254.241.8", "49.12.102.105", "134.255.182.189", "81.17.101.141", "65.108.74.79", "64.23.134.67", "54.69.95.118", "158.220.122.13", "49.13.154.121", "82.211.25.69", "75.119.149.9", "93.190.140.111", "93.190.140.114", "195.201.238.55", "135.181.110.216", "45.76.141.74", "109.199.123.11", "50.116.28.103", "188.245.90.255", "130.162.233.186", "65.109.65.126", "95.179.139.125", "213.199.34.248", "213.199.35.18", "213.199.35.6", "37.60.243.59", "37.27.67.156", "37.60.236.247", "159.69.204.162", "46.254.241.11", "173.199.71.83", "185.215.166.126", "157.66.81.218", "213.199.35.15", "114.132.172.215", "93.190.140.162", "65.108.74.109"
+pub const MAINNET_ADDRESS_LIST: [&str; 92] = [
+    "149.28.241.190", "134.255.182.186", "157.66.81.162", "213.199.34.250", "5.182.33.231", "37.60.236.212", "207.244.247.40", "45.32.70.131", "158.220.122.76", "52.33.9.172", "185.158.107.124", "185.198.234.17", "93.190.140.101", "194.163.153.225", "194.146.13.7", "93.190.140.112", "75.119.132.2", "44.240.99.214", "5.75.133.148", "192.248.178.237", "37.60.243.119", "194.195.87.34", "46.254.241.7", "65.108.246.145", "37.60.244.220", "2.58.82.231", "213.199.44.112", "134.255.182.185", "173.212.239.124", "157.10.199.77", "5.189.186.78", "104.200.24.196", "37.60.236.225", "57.128.212.163", "158.220.122.74", "185.198.234.25", "134.255.183.250", "185.192.96.70", "134.255.183.248", "52.36.102.91", "134.255.183.247", "49.13.237.193", "37.27.83.17", "134.255.182.187", "38.242.198.100", "198.7.115.43", "108.61.165.170", "157.10.199.79", "31.220.88.116", "185.166.217.154", "161.97.170.251", "157.10.199.82", "167.88.169.16", "62.169.17.112", "52.10.213.198", "198.7.115.38", "37.60.236.161", "46.254.241.9", "95.179.241.182", "95.216.146.18", "185.194.216.84", "31.220.84.93", "185.197.250.227", "149.28.247.165", "213.199.34.251", "87.228.24.64", "157.66.81.130", "157.10.199.125", "46.254.241.8", "49.12.102.105", "134.255.182.189", "64.23.134.67", "54.69.95.118", "158.220.122.13", "82.211.25.69", "93.190.140.111", "93.190.140.114", "135.181.110.216", "45.76.141.74", "188.245.90.255", "37.60.236.201", "95.179.139.125", "213.199.34.248", "213.199.35.18", "37.60.243.59", "37.60.236.247", "46.254.241.11", "185.215.166.126", "157.66.81.218", "213.199.35.15", "114.132.172.215", "93.190.140.162"
 ];
 #[ferment_macro::export]
 pub fn testnet_address_list() -> Vec<String> {
@@ -270,23 +272,28 @@ impl Config {
     /// new test vectors during execution
     /// * `offline-testing` is set - use mock implementation and
     /// load existing test vectors from disk
-    pub async fn setup_api(&self) -> Arc<Sdk> {
+    pub async fn setup_api(&self, version: &'static PlatformVersion) -> Arc<Sdk> {
         let sdk = {
             // Dump all traffic to disk
-            let builder = dash_sdk::SdkBuilder::new(self.address_list()).with_core(
+            let builder = dash_sdk::SdkBuilder::new(self.address_list())
+                .with_version(version)
+                .with_core(
                 &self.core_ip,
                 self.core_port,
                 &self.core_user,
                 &self.core_password,
             );
 
-            builder.build().expect("cannot initialize api")
+            builder
+                .with_version(version)
+                .build().expect("cannot initialize api")
         };
 
         sdk.into()
     }
 
-    pub async fn setup_api_list(&self, address_list: Vec<String>) -> Arc<Sdk> {
+    pub async fn setup_api_list(&self, address_list: Vec<String>,
+                                version: &'static PlatformVersion) -> Arc<Sdk> {
         let sdk = {
             // Dump all traffic to disk
             let builder = dash_sdk::SdkBuilder::new(self.new_address_list(address_list)).with_core(
@@ -296,7 +303,9 @@ impl Config {
                 &self.core_password,
             );
 
-            builder.build().expect("cannot initialize api")
+            builder
+                .with_version(version)
+                .build().expect("cannot initialize api")
         };
 
         sdk.into()
@@ -330,7 +339,8 @@ impl Config {
         data_contract_cache: Arc<Cache<Identifier, DataContract>>,
         connect_timeout: usize,
         timeout: usize,
-        retries: usize
+        retries: usize,
+        version: &'static PlatformVersion
     ) -> Arc<Sdk> {
         let mut context_provider = CallbackContextProvider::new(
             context_provider_context,
@@ -361,6 +371,7 @@ impl Config {
                         ban_failed_address: Some(true),
                     }
                 )
+                .with_version(&version)
                 .with_context_provider(context_provider_clone);
             builder.build().expect("cannot initialize api")
         };
@@ -376,7 +387,8 @@ impl Config {
         q: u64,
         d: u64,
         data_contract_cache: Arc<Cache<Identifier, DataContract>>,
-        address_list: Vec<String>
+        address_list: Vec<String>,
+        version: &'static PlatformVersion
     ) -> Arc<Sdk> {
         let mut context_provider = CallbackContextProvider::new(
             context,
@@ -389,7 +401,10 @@ impl Config {
         let mut sdk = {
             // Dump all traffic to disk
             let builder = dash_sdk::SdkBuilder::new(self.new_address_list(address_list));
-            builder.build().expect("cannot initialize api")
+            builder
+                .with_version(version)
+                .build()
+                .expect("cannot initialize api")
         };
         // not ideal because context provider has a clone of the sdk
         context_provider.set_sdk(Some(Arc::new(sdk.clone())));

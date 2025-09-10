@@ -1,11 +1,11 @@
 [package]
 name = "dash-sdk-bindings"
-version = "1.0.0"
+version = "2.0.0"
 edition = "2021"
 
 [dependencies]
-ferment-interfaces = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-interfaces" }
-ferment-macro = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-macro" }
+ferment = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment" }
+ferment-macro = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-macro" }
 platform-mobile = { path = "../platform-mobile"}
 # dependencies required by ferment
 platform-value = { path = "../../platform/packages/rs-platform-value" }
@@ -21,10 +21,17 @@ drive = { path = "../../platform/packages/rs-drive", default-features = false, f
 ] }
 #tokio = { version = "1.34", features = ["full"] }
 #tokio-util = "0.7.11"
-
+dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
+    "std",
+    "secp-recovery",
+    "rand",
+    "signer",
+    "serde",
+], default-features = false, tag = "v0.39.6" }
 [build-dependencies]
 cbindgen = "0.26.0"
-ferment = { path = "../../ferment/ferment" }
+ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys", features = ["cbindgen_only"] }
+#ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys"}
 toml = "0.8.8"
 
 [patch.crates-io]

@@ -13,7 +13,7 @@ use drive_proof_verifier::types::IdentityBalance;
 use platform_value::string_encoding::Encoding;
 use crate::config::{Config, EntryPoint};
 use crate::logs::setup_logs;
-use crate::sdk::{create_dash_sdk, create_dash_sdk_using_core_testnet, DashSdk};
+use crate::sdk::{create_dash_sdk, create_dash_sdk_using_core_mainnet, create_dash_sdk_using_core_testnet, DashSdk};
 
 pub fn test_identifier() -> Identifier {
     Identifier::from_string("7Yowk46VwwHqmD5yZyyygggh937aP6h2UW7aQWBdWpM5", Encoding::Base58).unwrap()

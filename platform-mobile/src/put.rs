@@ -408,6 +408,7 @@ pub fn put_identity_sdk(
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
             wait_timeout: None,
+            state_transition_creation_options: None
         };
 
         let state_transition_result = Identity::put_to_platform(
@@ -479,6 +480,7 @@ pub fn topup_identity_sdk(
             identity_nonce_stale_time_s: None,
             user_fee_increase: Some(user_fee_increase),
             wait_timeout: None,
+            state_transition_creation_options: None
         };
         let identity_result = identity.top_up_identity(
             &sdk,
@@ -510,8 +512,9 @@ fn put_document_with_retry(
         match new_document.put_to_platform(
             &sdk,
             document_type.clone(),
-            entropy.clone(),
+            Some(entropy.clone()),
             identity_public_key.clone(),
+            None,
             &signer_callback,
             Some(put_settings)
         ).await {
@@ -604,6 +607,7 @@ pub fn put_document_sdk(
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
             wait_timeout: None,
+            state_transition_creation_options: None
         };
 
         trace!("call Document::put_to_platform & wait_for_response");
@@ -729,6 +733,7 @@ pub fn replace_document_sdk(
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
             wait_timeout: None,
+            state_transition_creation_options: None
         };
 
         trace!("call Document::replace_on_platform & wait_for_response");

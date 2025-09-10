@@ -3,6 +3,7 @@ plugins {
     id 'maven-publish'
     id 'signing'
 }
+apply plugin: 'org.jreleaser'
 
 android {
     namespace "org.dashj.platform"
@@ -102,7 +103,7 @@ dependencies {
 
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
+    archiveClassifier.set("sources")
 }
 
 assemble.dependsOn(publishToMavenLocal)
@@ -117,7 +118,7 @@ task javadoc(type: Javadoc) {
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier.set("javadoc")
     from javadoc.destinationDir
 }
 
@@ -130,12 +131,14 @@ assemble.dependsOn(publishToMavenLocal)
 assemble.dependsOn(sourcesJar)
 
 afterEvaluate {
+    def projectVersion = rootProject.ext.version
+    
     publishing {
         publications {
             release(MavenPublication) {
                 groupId group
                 artifactId 'dash-sdk-android'
-                version project.rootProject.ext.version
+                version projectVersion
                 from components.release
 
                 pom {
@@ -166,13 +169,46 @@ afterEvaluate {
         }
         repositories {
             maven {
-                // change URLs to point to your repos, e.g. http://my.org/repo
-                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-                def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-                url = project.rootProject.ext.version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-                credentials {
-                    username = project.hasProperty('ossrhUsername') ? project.findProperty('ossrhUsername') : ''
-                    password = project.hasProperty('ossrhPassword') ? project.findProperty('ossrhPassword') : ''
+                url = layout.buildDirectory.dir('staging-deploy')
+            }
+        }
+    }
+    jreleaser {
+        project {
+            name = 'dash-sdk-android'
+            description = 'Dash-SDK-Android'
+            website = 'https://dashj.org'
+            authors = ['HashEngineering']
+            license = 'MIT'
+            gitRootSearch = true
+            version = projectVersion
+        }
+
+        signing {
+            active = 'ALWAYS'
+            armored = true
+        }
+
+        deploy {
+            maven {
+                mavenCentral {
+                    sonatype {
+                        active = 'ALWAYS'
+                        url = 'https://central.sonatype.com/api/v1/publisher'
+                        stagingRepository("$buildDir/staging-deploy")
+                    }
+                }
+                nexus2 {
+                    app {
+                        active = 'SNAPSHOT'
+                        url = 'https://central.sonatype.com/repository/maven-snapshots/'
+                        snapshotUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
+                        applyMavenCentralRules = false // must be false for aar
+                        snapshotSupported = true
+                        closeRepository = true
+                        releaseRepository = true
+                        stagingRepository("$buildDir/staging-deploy")
+                    }
                 }
             }
         }
