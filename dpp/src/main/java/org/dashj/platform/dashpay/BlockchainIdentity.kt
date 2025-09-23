@@ -566,7 +566,7 @@ class BlockchainIdentity {
             try {
                 topUpWithISLock(topupAssetLockTransaction, keyParameter)
             } catch (e: Exception) {
-
+                log.info("topup error:", e)
                 if (e is InvalidInstantAssetLockProofException ||
                     e.message?.contains("Instant lock proof signature is invalid or wasn't created recently. Pleases try chain asset lock proof instead.") == true ||
                     e.message?.contains(Regex("Asset Lock proof core chain height \\d+ is higher than the current consensus core height \\d+")) == true) {
