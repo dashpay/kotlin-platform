@@ -64,15 +64,20 @@ pub fn fetch_identity_with_keyhash_sdk(
         match identity_from_keyhash_sdk(rust_sdk, &PublicKeyHash(key_hash)) {
             Ok(identity) => Ok(identity),
             Err(err) => {
-                match non_uniqueIdentity_from_keyhash_sdk(rust_sdk, &PublicKeyHash(key_hash)) {
-                    Ok(identity) => {
-                        tracing::info!("found via non-unique: {:?}", identity);
-                        Ok(identity)
-                    },
-                    Err(err) => {
-                        tracing::info!("not found via non-unique: {:?}", err);
-                        Err(err.to_string())
+                let err_msg = err.to_string();
+                if err_msg.contains("Identity not found") {
+                    match non_uniqueIdentity_from_keyhash_sdk(rust_sdk, &PublicKeyHash(key_hash)) {
+                        Ok(identity) => {
+                            tracing::info!("found via non-unique: {:?}", identity);
+                            Ok(identity)
+                        }
+                        Err(e2) => {
+                            tracing::info!("not found via non-unique: {:?}", e2);
+                            Err(err_msg) // preserve original “not found”
+                        }
                     }
+                } else {
+                    Err(err_msg) // propagate non‑not‑found errors as‑is
                 }
             }
         }
@@ -175,39 +180,33 @@ unsafe fn non_uniqueIdentity_from_keyhash_sdk(rust_sdk: *mut DashSdk, pubkey_has
         };
 
         // Now fetch identities by this non-unique public key hash
-        let mut count = 0;
-        let mut identity_result: Result<Option<Identity>, Error> = Ok(None);
-        while let Some(found) = Identity::fetch_with_settings(&sdk, query, settings)
-            .await
-            .expect("fetch identities by non-unique key hash")
-        {
-            count += 1;
-            if (count > 1) {
-                identity_result = Ok(None);
-                break;
+        let mut count = 0usize;
+        let mut last: Option<Identity> = None;
+        loop {
+            match Identity::fetch_with_settings(&sdk, query, settings).await {
+                Ok(Some(found)) => {
+                    count += 1;
+                    if count > 1 {
+                        return Err(ProtocolError::IdentifierError(
+                            "Multiple identities found for key hash".to_string()
+                        ));
+                    }
+                    tracing::info!(?found, ?key_hash, ?count, "fetched identities by non-unique public key hash");
+                    query = NonUniquePublicKeyHashQuery {
+                        key_hash: pubkey_hash.0,
+                        after: Some(*found.id().as_bytes()),
+                    };
+                    last = Some(found);
+                }
+                Ok(None) => break,
+                Err(e) => {
+                    return Err(ProtocolError::IdentifierError(
+                        format!("Fetch by non-unique key hash failed: {}", e)
+                    ));
+                }
             }
-
-            tracing::info!(
-                ?found,
-                ?key_hash,
-                ?count,
-                "fetched identities by non-unique public key hash"
-            );
-
-            query = NonUniquePublicKeyHashQuery {
-                key_hash: pubkey_hash.0,
-                after: Some(*found.id().as_bytes()),
-            };
-            identity_result = Ok(Some(found.clone()));
         }
-
-        match identity_result {
-            Ok(Some(identity)) => Ok(identity),
-            Ok(None) => Err(ProtocolError::IdentifierError("Identity not found".to_string())), // Placeholder for actual error handling
-            Err(e) => Err(ProtocolError::IdentifierError(
-                format!("Identifier not found: failure: {})", e))
-            )
-        }
+        last.ok_or_else(|| ProtocolError::IdentifierError("Identity not found".to_string()))
     })
 }
 

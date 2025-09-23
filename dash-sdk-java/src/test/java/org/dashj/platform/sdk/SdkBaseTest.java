@@ -26,6 +26,9 @@ public class SdkBaseTest extends BaseTest {
     @AfterClass
     public static void tearDown() {
         dashsdk.platformMobileSdkDestroyDashSdk(sdk);
+        if (mainNetSdk != null) {
+            dashsdk.platformMobileSdkDestroyDashSdk(mainNetSdk);
+        }
         // SWIGTYPE_p_DashSdk does not own the pointer
         // assertEquals(sdk.getCPointer(), 0);
     }
