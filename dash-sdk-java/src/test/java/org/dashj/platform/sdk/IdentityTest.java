@@ -1,6 +1,7 @@
 package org.dashj.platform.sdk;
 
 import org.bitcoinj.core.Base58;
+import org.bitcoinj.core.Utils;
 import org.dashj.platform.sdk.base.Result;
 import org.junit.Test;
 
@@ -55,6 +56,14 @@ public class IdentityTest extends SdkBaseTest {
     public void identityBalanceTest() throws Exception {
         Identifier id = new Identifier(Base58.decode(testIdentifier));
         Result<Long, String> result2 = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(sdk, id);
+        result2.unwrap();
+    }
+
+
+    @Test
+    public void identityFromHash160Test() throws Exception {
+        byte [] id = Utils.HEX.decode("a9579df520c44c8d8773887bc5c9fbec579b962a");
+        Result<Identity, String> result2 = dashsdk.platformMobileFetchIdentityFetchIdentityWithKeyhashSdk(mainNetSdk, id);
         result2.unwrap();
     }
 }
