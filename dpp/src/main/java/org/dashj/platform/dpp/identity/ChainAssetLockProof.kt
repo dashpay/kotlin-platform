@@ -25,7 +25,7 @@ class ChainAssetLockProof(
             coreChainLockedHeight,
             TransactionOutPoint(
                 params,
-                outPoint.sliceArray(0 until OUTPOINT_HASH_SIZE).reversedArray().plus(
+                outPoint.sliceArray(0 until OUTPOINT_HASH_SIZE).plus(
                     outPoint.sliceArray(OUTPOINT_HASH_SIZE until OUTPOINT_SIZE)
                 ),
                 0
