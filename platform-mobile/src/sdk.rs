@@ -149,7 +149,7 @@ pub fn create_dash_sdk_with_context(
         let version: &'static PlatformVersion = if is_testnet {
             &PLATFORM_V9
         } else {
-            &PLATFORM_V7
+            &PLATFORM_V9
         };
         tracing::info!("configuring for testnet={} using platform port={}", cfg.is_testnet, cfg.platform_port);
         tracing::info!("configuring platform version {:?}", version);
@@ -230,8 +230,8 @@ pub fn create_dash_sdk_using_single_evonode(
             context_provider_context: std::ptr::null(),
             data_contract_cache: data_contract_cache,
             request_settings: RequestSettings {
-                connect_timeout: Some(Duration::from_secs(5)),
-                timeout: Some(Duration::from_secs(5)),
+                connect_timeout: Some(Duration::from_secs(10)),
+                timeout: Some(Duration::from_secs(10)),
                 retries: Some(0),
                 ban_failed_address: Some(false),
             }
