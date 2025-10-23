@@ -546,26 +546,28 @@ object PlatformExplorer {
                         null,
                         false
                     )
-                    val contestedResources = result.unwrap()
-                    val list = contestedResources._0
+                    var contestedResources = result.unwrap()
+                    var list = contestedResources._0
                     println("${list.size} contested resources: ")
                     for (item in list) {
                         println(item.value.text)
                     }
 
-                    val result2 = dashsdk.platformMobileVotingGetContestedResources(
-                        sdk,
-                        "domain",
-                        Identifier(dpnsContractId),
-                        100,
-                        contestedResources._0.lastOrNull()?._0,
-                        false
-                    )
-                    val contestedResources2 = result2.unwrap()
-                    val list2 = contestedResources2._0
-                    println("${list2.size} contested resources: ")
-                    for (item in list2) {
-                        println(item.value.text)
+                    while (list.size == 100) {
+                        val result2 = dashsdk.platformMobileVotingGetContestedResources(
+                            sdk,
+                            "domain",
+                            Identifier(dpnsContractId),
+                            100,
+                            contestedResources._0.lastOrNull()?._0,
+                            false
+                        )
+                        contestedResources = result2.unwrap()
+                        list = contestedResources._0
+                        println("${list.size} contested resources: ")
+                        for (item in list) {
+                            println(item.value.text)
+                        }
                     }
                 }
                 "11" -> {
