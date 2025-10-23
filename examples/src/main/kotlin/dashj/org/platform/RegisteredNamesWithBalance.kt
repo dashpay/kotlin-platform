@@ -31,7 +31,7 @@ class RegisteredNamesWithBalance {
             val platform = sdk.platform
 
             var lastItem = Identifier.from(Sha256Hash.ZERO_HASH)
-            var documents: List<Document>? = null
+            var documents: List<Document>
             val allDocuments = arrayListOf<Document>()
             var requests = 0
             val limit = Documents.DOCUMENT_LIMIT
@@ -45,20 +45,16 @@ class RegisteredNamesWithBalance {
                     allDocuments.addAll(documents)
                     requests += 1
 
-//                    for (doc in documents) {
-//                        println(
-//                            "Name: %-20s".format(doc.data["label"]) +
-//                                " (domain: " + doc.data["normalizedParentDomainName"] +
-//                                ") Identity: " + doc.ownerId
-//                        )
-//                    }
+                    if (documents.isEmpty()) {
+                        break
+                    }
 
                     lastItem = documents.last().id
-                    if (documents.size == 100) {
+                    if (documents.size == limit) {
                         queryOpts = DocumentQuery.Builder()
                             .startAt(lastItem)
                             .orderBy("normalizedLabel")
-                            .limit(100)
+                            .limit(limit)
                             .build()
                     }
                 } catch (e: Exception) {
@@ -66,12 +62,17 @@ class RegisteredNamesWithBalance {
                     println(e.message)
                     return
                 }
-            } while (requests >= 0 && documents!!.size == limit)
+            } while (requests >= 0 && documents.size == limit)
 
             val nameBalanceMap = hashMapOf<String, Long>()
             allDocuments.forEachIndexed { i, document ->
                 val nameDocument = DomainDocument(document)
-                val balance = try { platform.client.getIdentityBalance(nameDocument.dashUniqueIdentityId!!) } catch (e: Exception) { - 2 }
+                val balance = try {
+                    platform.client.getIdentityBalance(nameDocument.dashUniqueIdentityId!!)
+                } catch (e: Exception) {
+                    println("Failed to fetch balance for ${nameDocument.label}: ${e.message}")
+                    null
+                } ?: return@forEachIndexed
                 nameBalanceMap[nameDocument.normalizedLabel] = balance
             }
             println("username count: ${allDocuments.size}")
