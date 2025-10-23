@@ -62,15 +62,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ansi_term"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d52a9bb7ec0cf484c551830a7ce27bd20d67eac647e1befb56b0be4ee39a55d2"
-dependencies = [
- "winapi",
-]
-
-[[package]]
 name = "anstream"
 version = "0.6.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -474,20 +465,6 @@ dependencies = [
 
 [[package]]
 name = "cargo_metadata"
-version = "0.18.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d886547e41f740c616ae73108f6eb70afe6d940c7bc697cb30f13daec073037"
-dependencies = [
- "camino",
- "cargo-platform",
- "semver",
- "serde",
- "serde_json",
- "thiserror 1.0.64",
-]
-
-[[package]]
-name = "cargo_metadata"
 version = "0.19.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd5eb614ed4c27c5d706420e4320fbe3216ab31fa1c33cd8246ac36dae4479ba"
@@ -793,7 +770,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "dapi-grpc-macros",
  "futures-core",
@@ -810,7 +787,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc-macros"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "heck 0.5.0",
  "quote",
@@ -854,7 +831,7 @@ dependencies = [
 
 [[package]]
 name = "dash-sdk"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "arc-swap",
  "async-trait",
@@ -871,8 +848,8 @@ dependencies = [
  "drive",
  "drive-proof-verifier",
  "envy",
- "ferment-interfaces",
- "ferment-macro 0.1.4 (git+https://github.com/dashpay/ferment?branch=feat%2Fopaque-default)",
+ "ferment",
+ "ferment-macro 0.2.3",
  "futures",
  "hex",
  "http 1.1.0",
@@ -899,9 +876,9 @@ dependencies = [
  "dpp",
  "drive",
  "drive-proof-verifier",
- "ferment 0.2.3",
+ "ferment",
  "ferment-interfaces",
- "ferment-macro 0.1.4 (git+https://github.com/dashpay/ferment?branch=feat%2Fopaque-default)",
+ "ferment-macro 0.1.4",
  "ferment-sys",
  "platform-mobile",
  "platform-value",
@@ -987,7 +964,7 @@ dependencies = [
 
 [[package]]
 name = "dashpay-contract"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -997,7 +974,7 @@ dependencies = [
 
 [[package]]
 name = "data-contracts"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "dashpay-contract",
  "dpns-contract",
@@ -1115,7 +1092,7 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "dpns-contract"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1125,7 +1102,7 @@ dependencies = [
 
 [[package]]
 name = "dpp"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1141,7 +1118,7 @@ dependencies = [
  "data-contracts",
  "derive_more 1.0.0",
  "env_logger",
- "ferment-macro 0.1.4 (git+https://github.com/dashpay/ferment?branch=feat%2Fopaque-default)",
+ "ferment-macro 0.2.3",
  "getrandom",
  "hex",
  "indexmap 2.7.0",
@@ -1170,13 +1147,13 @@ dependencies = [
 
 [[package]]
 name = "drive"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "bincode",
  "byteorder",
  "derive_more 1.0.0",
  "dpp",
- "ferment-macro 0.1.4 (git+https://github.com/dashpay/ferment?branch=feat%2Fopaque-default)",
+ "ferment-macro 0.2.3",
  "grovedb",
  "grovedb-costs",
  "grovedb-epoch-based-storage-flags",
@@ -1196,14 +1173,14 @@ dependencies = [
 
 [[package]]
 name = "drive-proof-verifier"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "bincode",
  "dapi-grpc",
  "derive_more 1.0.0",
  "dpp",
  "drive",
- "ferment-macro 0.1.4 (git+https://github.com/dashpay/ferment?branch=feat%2Fopaque-default)",
+ "ferment-macro 0.2.3",
  "hex",
  "indexmap 2.7.0",
  "platform-serialization",
@@ -1378,26 +1355,12 @@ checksum = "e8c02a5121d4ea3eb16a80748c74f5549a5665e4c21333c6098f283870fbdea6"
 
 [[package]]
 name = "feature-flags-contract"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
  "serde_json",
  "thiserror 2.0.12",
-]
-
-[[package]]
-name = "ferment"
-version = "0.1.4"
-dependencies = [
- "ansi_term",
- "cargo_metadata 0.18.1",
- "env_logger",
- "ferment-macro 0.1.4",
- "log",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
 ]
 
 [[package]]
@@ -1415,14 +1378,6 @@ version = "0.1.4"
 source = "git+https://github.com/dashpay/ferment?branch=feat%2Fopaque-default#a9cf93872a7bd1229c394ac2443c109fb0d70949"
 dependencies = [
  "indexmap 2.7.0",
-]
-
-[[package]]
-name = "ferment-macro"
-version = "0.1.4"
-dependencies = [
- "quote",
- "syn 1.0.109",
 ]
 
 [[package]]
@@ -1448,7 +1403,7 @@ name = "ferment-sys"
 version = "0.2.3"
 source = "git+https://github.com/dashpay/ferment?tag=v0.2.3#867aba9a03b86c8552d3526952af80f566ab0174"
 dependencies = [
- "cargo_metadata 0.19.2",
+ "cargo_metadata",
  "cbindgen 0.28.0",
  "env_logger",
  "ferment-macro 0.2.3",
@@ -2286,7 +2241,7 @@ dependencies = [
 
 [[package]]
 name = "json-schema-compatibility-validator"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "json-patch",
  "once_cell",
@@ -2343,7 +2298,7 @@ dependencies = [
 
 [[package]]
 name = "keyword-search-contract"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2408,7 +2363,7 @@ dependencies = [
 
 [[package]]
 name = "masternode-reward-shares-contract"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2961,7 +2916,7 @@ dependencies = [
  "drive",
  "drive-proof-verifier",
  "envy",
- "ferment 0.2.3",
+ "ferment",
  "ferment-macro 0.2.3",
  "hex",
  "http 0.2.12",
@@ -2989,7 +2944,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "bincode",
  "platform-version",
@@ -2997,7 +2952,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization-derive"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3007,15 +2962,14 @@ dependencies = [
 
 [[package]]
 name = "platform-value"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "base64 0.22.1",
  "bincode",
  "bs58",
  "cbindgen 0.26.0",
  "ciborium",
- "ferment 0.1.4",
- "ferment-macro 0.1.4 (git+https://github.com/dashpay/ferment?branch=feat%2Fopaque-default)",
+ "ferment-macro 0.2.3",
  "hex",
  "indexmap 2.7.0",
  "platform-serialization",
@@ -3029,10 +2983,10 @@ dependencies = [
 
 [[package]]
 name = "platform-version"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "bincode",
- "ferment-macro 0.1.4 (git+https://github.com/dashpay/ferment?branch=feat%2Fopaque-default)",
+ "ferment-macro 0.2.3",
  "grovedb-version",
  "once_cell",
  "thiserror 2.0.12",
@@ -3041,7 +2995,7 @@ dependencies = [
 
 [[package]]
 name = "platform-versioning"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3346,12 +3300,12 @@ dependencies = [
 
 [[package]]
 name = "rs-dapi-client"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "backon",
  "chrono",
  "dapi-grpc",
- "ferment-macro 0.1.4 (git+https://github.com/dashpay/ferment?branch=feat%2Fopaque-default)",
+ "ferment-macro 0.2.3",
  "futures",
  "getrandom",
  "gloo-timers",
@@ -3732,7 +3686,7 @@ checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
 
 [[package]]
 name = "simple-signer"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -4104,7 +4058,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "token-history-contract"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -4623,7 +4577,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-utils-contract"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -4921,7 +4875,7 @@ dependencies = [
 
 [[package]]
 name = "withdrawals-contract"
-version = "2.0.0"
+version = "2.0.1"
 dependencies = [
  "num_enum 0.5.11",
  "platform-value",
