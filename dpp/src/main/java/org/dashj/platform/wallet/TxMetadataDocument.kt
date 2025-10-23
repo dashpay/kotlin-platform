@@ -74,7 +74,7 @@ class TxMetadataDocument(document: Document) : AbstractDocument(document) {
                 txMetadataVersion = VERSION_PROTOBUF
                 batch.itemsList.map { TxMetadataItem(it) }
             }
-            else -> error("")
+            else -> error("unknown txmetadata version $version")
         }
     }
 }

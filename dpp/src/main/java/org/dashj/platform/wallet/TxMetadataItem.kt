@@ -93,7 +93,7 @@ class TxMetadataItem(
         if (protoTxMetadata.barcodeValue != "") protoTxMetadata.barcodeValue else null,
         if (protoTxMetadata.barcodeFormat != "") protoTxMetadata.barcodeFormat else null,
         if (protoTxMetadata.merchantUrl != "") protoTxMetadata.merchantUrl else null,
-        if (protoTxMetadata.otherDataMap.isNotEmpty()) protoTxMetadata.otherDataMap else null
+        protoTxMetadata.otherDataMap.ifEmpty { null }
     )
 
     fun toObject(): Map<String, Any?> {
