@@ -139,7 +139,7 @@ object CreateTxMetadataTest {
 
     private fun publishTransactions(txMetadata: TxMetadataItem, count: Int) {
         val txMetadataList = arrayListOf<TxMetadataItem>()
-        for (i in IntRange(0, count)) {
+        repeat(count) {
             txMetadataList.add(txMetadata)
         }
         val balanceBefore = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(platform.rustSdk, blockchainIdentity.uniqueIdentifier.toNative())
