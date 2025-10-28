@@ -25,6 +25,12 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
+    - name: Install Android NDK
+      run: |
+        echo "Installing Android NDK 29.0.14206865..."
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;29.0.14206865"
+        echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/29.0.14206865" >> $GITHUB_ENV
+
     - name: Cache Gradle packages
       uses: actions/cache@v4
       with:
@@ -42,6 +48,12 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y swig
+
+    - name: generate the header file
+      run: |
+        cd dash-sdk-bindings
+        cargo build
+        cd ..
 
     - name: Generate SWIG bindings
       run: ./gradlew generateSWIG
