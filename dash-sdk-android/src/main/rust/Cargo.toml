@@ -49,3 +49,9 @@ crate-type = ["staticlib"]
 [features]
 default = ["verify"]
 verify = []
+
+[target.armv7-linux-androideabi]
+rustflags = ["-C", "target-feature=+strict-align"]
+
+[target.aarch64-linux-android]
+rustflags = []

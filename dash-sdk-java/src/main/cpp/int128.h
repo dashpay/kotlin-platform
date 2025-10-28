@@ -191,13 +191,13 @@ struct __attribute__((aligned(16))) int128_t {
     }
 };
 
-typedef int128_t i128;
-typedef uint128_t u128;
+typedef int128_t int128;
+typedef uint128_t uint128;
 
 #else
 
-typedef __int128 i128;
-typedef unsigned __int128 u128;
+typedef __int128 int128;
+typedef unsigned __int128 uint128;
 
 // are these defined?
 typedef __int128 int128_t;

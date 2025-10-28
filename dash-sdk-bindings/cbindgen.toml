@@ -18,3 +18,7 @@ enum_class = true
 
 [export]
 exclude = ["__android_log_write"]
+
+[export.rename]
+"u128" = "uint128"
+"i128" = "int128"

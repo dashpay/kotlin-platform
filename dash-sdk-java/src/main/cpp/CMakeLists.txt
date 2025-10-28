@@ -5,6 +5,10 @@ SET(BUILD_MODE Debug)
 SET(CMAKE_CXX_FLAGS "-Wall -fPIC")
 SET(CMAKE_CXX_FLAGS_DEBUG "-g")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3")
+# set(MI_LOCAL_DYNAMIC_TLS ON CACHE BOOL "Use dlopen-compatible TLS mechanism")
+if(UNIX AND NOT APPLE)
+    set(MI_LOCAL_DYNAMIC_TLS ON CACHE BOOL "Use dlopen-compatible TLS mechanism")
+endif()
 project(sdk)
 
 # Define the C source file
@@ -19,6 +23,9 @@ set(C_SOURCE_FILE ${CMAKE_SOURCE_DIR}/../../../build/generated/cpp/sdk.cpp
 
 # Define the pre-built Rust library
 set(RUST_LIBRARY ${CMAKE_SOURCE_DIR}/../../../../dash-sdk-bindings/target/debug/libdash_sdk_bindings.a)
+set(JAVA_AWT_LIBRARY NotNeeded)
+set(JAVA_JVM_LIBRARY NotNeeded)
+set(JAVA_AWT_INCLUDE_PATH NotNeeded)
 find_package(JNI REQUIRED)
 include_directories(${JNI_INCLUDE_DIRS}, ${CMAKE_SOURCE_DIR})
 # Create an executable that links C and Rust code
