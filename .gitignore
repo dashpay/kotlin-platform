@@ -10,3 +10,4 @@ build/
 *.wallet
 
 .DS_Store
+local.properties
