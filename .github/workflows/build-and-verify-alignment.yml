@@ -38,6 +38,20 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
+    - name: Install SWIG
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y swig
+
+    - name: Generate SWIG bindings
+      run: ./gradlew generateSWIG
+
+    - name: Generate Protobuf
+      run: ./gradlew generateProto
+
+    - name: Build CMake
+      run: ./gradlew cmakeClean cmakeConfigure cmakeBuild
+
     - name: Build with Gradle
       run: ./gradlew build
 
