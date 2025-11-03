@@ -64,7 +64,7 @@ class TxMetadataDocument(document: Document) : AbstractDocument(document) {
         val version = decryptedData.copyOfRange(0, 1)[0].toInt() and 0xFF
         return when (version) {
             VERSION_CBOR -> {
-                val list = Cbor.decodeList(decryptedData)
+                val list = Cbor.decodeList(decryptedData.copyOfRange(1, decryptedData.size))
                 this.txMetadataVersion = VERSION_CBOR
                 // use .map to convert to List<TxMetadataItem>
                 list.map { TxMetadataItem(it as Map<String, Any?>) }
