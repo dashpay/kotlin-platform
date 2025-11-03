@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import kotlin.math.pow
 
 class BlockchainIdentityTest : PlatformNetwork() {
 
@@ -169,9 +170,14 @@ class BlockchainIdentityTest : PlatformNetwork() {
                 val parentEncryptionKey = authenticationGroupExtension.identityKeyChain.getKeyByPath(parentEncryptionKeyPath)
                     .deriveChildKey(ChildNumber(2, true))
                 val expectedEncryptionKey = parentEncryptionKey
-                    .deriveChildKey(ChildNumber(2 shl 15 + 1, true))
+                    .deriveChildKey(ChildNumber((2 shl 14) + 1, true))
                     .derive(1)
                 assertEquals(expectedEncryptionKey, actualEncryptionKey)
+                val expectedEncryptionKey2 = parentEncryptionKey
+                    .deriveChildKey(ChildNumber(2.toDouble().pow(15).toInt() + 1, true))
+                    .derive(1)
+                assertEquals(expectedEncryptionKey2, actualEncryptionKey)
+
             }
             
             // Verify decryption and reconstruction of all items
@@ -186,6 +192,7 @@ class BlockchainIdentityTest : PlatformNetwork() {
             largeItems.forEachIndexed { index, originalItem ->
                 assertEquals(originalItem, allDecryptedItems[index])
             }
+            println("success!")
         }
     }
 }
