@@ -20,8 +20,8 @@ import org.dashj.platform.wallet.WalletUtils.TxMetadataBatch
 class TxMetadataDocument(document: Document) : AbstractDocument(document) {
 
     companion object {
-        // 2^16 + 2
-        val childNumber = ChildNumber(2 shl 15 + 1, true)
+        // 2^15 + 1
+        val childNumber = ChildNumber((2 shl 14) + 1, true)
         const val MAX_ENCRYPTED_SIZE = 4096 - 32 // leave room for a partially filled block and the IV
 
         const val VERSION_UNKNOWN = -1
