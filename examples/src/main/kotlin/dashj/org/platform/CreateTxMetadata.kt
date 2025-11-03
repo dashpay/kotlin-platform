@@ -51,7 +51,7 @@ class CreateTxMetadata {
             println("Tx Metadata: -----------------------------------")
             for (doc in documents) {
                 val txDoc = TxMetadataDocument(doc)
-                if (txDoc.encryptedMetadata[0] != 0.toByte()) {
+                if (txDoc.encryptedMetadata.isNotEmpty() && txDoc.encryptedMetadata[0] != 0.toByte()) {
                     println(JSONObject(doc.toJSON()).toString(2))
                     val txList = blockchainIdentity.decryptTxMetadata(txDoc, null)
                     println("  $txList")
