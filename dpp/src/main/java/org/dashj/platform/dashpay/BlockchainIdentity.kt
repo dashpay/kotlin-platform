@@ -2374,7 +2374,11 @@ class BlockchainIdentity {
         val results = LinkedHashMap<TxMetadataDocument, List<TxMetadataItem>>()
         documents.forEach {
             val doc = TxMetadataDocument(it)
-            results[doc] = decryptTxMetadata(TxMetadataDocument(it), keyParameter)
+            try {
+                results[doc] = decryptTxMetadata(TxMetadataDocument(it), keyParameter)
+            } catch (e: Exception) {
+                log.info("txMetadata document could not be decrypted: {}", doc.id)
+            }
         }
         return results
     }
