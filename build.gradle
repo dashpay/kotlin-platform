@@ -1,5 +1,6 @@
 buildscript {
     ext.version = '2.0.1-TX-SNAPSHOT'
+    ext.version = '2.0.1'
     ext.kotlin_version = '1.8.22'
     ext.dashj_version = '21.1.9'
     repositories {
