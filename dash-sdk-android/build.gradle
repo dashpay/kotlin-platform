@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         minSdk 24
-        targetSdk 32
+        targetSdk 35
         versionCode 1
         versionName project.rootProject.ext.version
 
@@ -26,15 +26,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     packagingOptions {
         pickFirst '**/*.so'
     }
 
-    ndkVersion = "23.1.7779620"
+    ndkVersion = "29.0.14206865"
     externalNativeBuild {
         cmake {
             path 'src/main/cpp/CMakeLists.txt'

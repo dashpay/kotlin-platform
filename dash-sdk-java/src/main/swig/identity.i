@@ -34,7 +34,7 @@
     }
 
     struct dpp_identity_identity_public_key_v0_IdentityPublicKeyV0 * getPublicKeyById(uint32_t id) {
-        for (int i = 0; i < $self->public_keys->count; ++i) {
+        for (uintptr_t i = 0; i < $self->public_keys->count; ++i) {
             if ($self->public_keys->keys[i]->_0 == id)
                 return $self->public_keys->values[i]->v0._0;
         }

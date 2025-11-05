@@ -868,7 +868,7 @@ dependencies = [
 
 [[package]]
 name = "dash-sdk-bindings"
-version = "2.0.0"
+version = "2.0.2"
 dependencies = [
  "cbindgen 0.26.0",
  "dash-sdk",
@@ -2899,7 +2899,7 @@ checksum = "953ec861398dccce10c670dfeaf3ec4911ca479e9c02154b3a215178c5f566f2"
 
 [[package]]
 name = "platform-mobile"
-version = "2.0.0"
+version = "2.0.2"
 dependencies = [
  "async-trait",
  "base64 0.13.1",

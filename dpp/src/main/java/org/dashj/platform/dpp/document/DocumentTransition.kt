@@ -24,11 +24,11 @@ abstract class DocumentTransition(rawStateTransition: MutableMap<String, Any?>, 
             }
 
             fun getByName(name: String): Action {
-                return values.filter { it.name.toLowerCase() == name }[0]
+                return values.filter { it.name.lowercase() == name }[0]
             }
 
             fun getValidNames(): List<String> {
-                return values.map { it.name.toLowerCase() }
+                return values.map { it.name.lowercase() }
             }
         }
     }

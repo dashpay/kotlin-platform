@@ -1668,7 +1668,7 @@ class BlockchainIdentity {
     ) {
         val query = DocumentQuery.Builder()
             .where("normalizedParentDomainName", "==", Names.DEFAULT_PARENT_DOMAIN)
-            .where(listOf("normalizedLabel", "in", usernames.map { it.toLowerCase() }))
+            .where(listOf("normalizedLabel", "in", usernames.map { it.lowercase() }))
             .orderBy("normalizedParentDomainName")
             .orderBy("normalizedLabel")
             .build()
@@ -1677,7 +1677,7 @@ class BlockchainIdentity {
         if (nameDocuments.isNotEmpty()) {
             val usernamesLeft = ArrayList(usernames)
             for (username in usernames) {
-                val normalizedName = username.toLowerCase()
+                val normalizedName = username.lowercase()
                 for (nameDocument in nameDocuments) {
                     if (nameDocument.data["normalizedLabel"] == normalizedName) {
                         val usernameStatus = usernameStatuses[username]!!
@@ -1733,13 +1733,13 @@ class BlockchainIdentity {
     ): Pair<Boolean, List<String>> {
         val query = DocumentQuery.Builder()
             .where("normalizedParentDomainName", "==", Names.DEFAULT_PARENT_DOMAIN)
-            .where(listOf("normalizedLabel", "in", usernames.map { "${it.toLowerCase()}" })).build()
+            .where(listOf("normalizedLabel", "in", usernames.map { "${it.lowercase()}" })).build()
         val nameDocuments = platform.documents.get(Names.DPNS_DOMAIN_DOCUMENT, query)
 
         if (nameDocuments.isNotEmpty()) {
             val usernamesLeft = ArrayList(usernames)
             for (username in usernames) {
-                val normalizedName = username.toLowerCase()
+                val normalizedName = username.lowercase()
                 for (nameDocument in nameDocuments) {
                     if (nameDocument.data["normalizedLabel"] == normalizedName) {
                         val usernameStatus = usernameStatuses[username]!!
