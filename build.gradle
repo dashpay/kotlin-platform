@@ -1,7 +1,7 @@
 buildscript {
-    ext.version = '2.0.1-TX-SNAPSHOT'
-    ext.kotlin_version = '1.8.22'
-    ext.dashj_version = '21.1.9'
+    ext.version = '2.0.2-TX-SNAPSHOT'
+    ext.kotlin_version = '2.1.20'
+    ext.dashj_version = '21.1.12'
     repositories {
         google()  // Required for Android library and application projects
         mavenCentral()
@@ -10,7 +10,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.android.tools.build:gradle:8.1.4'  // Use the latest version
+        classpath 'com.android.tools.build:gradle:8.5.1'
         classpath "com.google.protobuf:protobuf-gradle-plugin:0.9.4"
         classpath 'org.jreleaser:jreleaser-gradle-plugin:1.17.0'
     }

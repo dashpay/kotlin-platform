@@ -2,6 +2,7 @@
 // Created by Eric Britten on 3/24/24.
 //
 #include <jni.h>
+#include <string.h>
 #include "conversions.h"
 
 // TODO: This function needs to handle all of the variants
