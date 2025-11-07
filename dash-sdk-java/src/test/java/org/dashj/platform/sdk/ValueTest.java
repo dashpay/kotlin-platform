@@ -24,8 +24,7 @@ public class ValueTest extends BaseTest {
         PlatformValue v1 = new PlatformValue((byte)1);
         assertEquals(PlatformValue.Tag.I8, v1.getTag());
         assertEquals((byte) 1, v1.getI8());
-        //PlatformValue v2 = new PlatformValue((short)1);
-        //assertEquals(PlatformValue.Tag.I16, v2.getTag());
+
         PlatformValue v3 = new PlatformValue(1);
         assertEquals(PlatformValue.Tag.I32, v3.getTag());
         assertEquals(1, v3.getI32());

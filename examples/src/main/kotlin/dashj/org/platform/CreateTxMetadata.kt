@@ -7,7 +7,7 @@
 package dashj.org.platform
 
 import org.dashj.platform.contracts.wallet.TxMetadataDocument
-import org.dashj.platform.contracts.wallet.TxMetadataItem
+import org.dashj.platform.wallet.TxMetadataItem
 import org.dashj.platform.dashpay.BlockchainIdentity
 import org.dashj.platform.dpp.util.Entropy
 import org.dashj.platform.sdk.Client
@@ -44,14 +44,14 @@ class CreateTxMetadata {
                     TxMetadataItem(Entropy.generateRandomBytes(32), 2, memo = "Book Store")
                 )
 
-                blockchainIdentity.publishTxMetaData(txMetadataItems, null)
+                blockchainIdentity.publishTxMetaData(txMetadataItems, null, 1, TxMetadataDocument.VERSION_PROTOBUF)
             }
             val documents = txMetadata.get(identity.id)
 
             println("Tx Metadata: -----------------------------------")
             for (doc in documents) {
                 val txDoc = TxMetadataDocument(doc)
-                if (txDoc.encryptedMetadata[0] != 0.toByte()) {
+                if (txDoc.encryptedMetadata.isNotEmpty() && txDoc.encryptedMetadata[0] != 0.toByte()) {
                     println(JSONObject(doc.toJSON()).toString(2))
                     val txList = blockchainIdentity.decryptTxMetadata(txDoc, null)
                     println("  $txList")

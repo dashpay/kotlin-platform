@@ -14,13 +14,19 @@ import org.bouncycastle.crypto.params.KeyParameter
 import org.dashj.platform.dpp.document.Document
 import org.dashj.platform.dpp.util.Cbor
 import org.dashj.platform.sdk.platform.AbstractDocument
+import org.dashj.platform.wallet.TxMetadataItem
+import org.dashj.platform.wallet.WalletUtils.TxMetadataBatch
 
 class TxMetadataDocument(document: Document) : AbstractDocument(document) {
 
     companion object {
-        // 2^16 + 2
-        val childNumber = ChildNumber(2 shl 15 + 1, true)
+        // 2^15 + 1
+        val childNumber = ChildNumber((2 shl 14) + 1, true)
         const val MAX_ENCRYPTED_SIZE = 4096 - 32 // leave room for a partially filled block and the IV
+
+        const val VERSION_UNKNOWN = -1
+        const val VERSION_CBOR = 0
+        const val VERSION_PROTOBUF = 1
     }
 
     val keyIndex: Int
@@ -29,6 +35,8 @@ class TxMetadataDocument(document: Document) : AbstractDocument(document) {
         get() = (document.data["encryptionKeyIndex"] as Long).toInt()
     val encryptedMetadata: ByteArray
         get() = getFieldByteArray("encryptedMetadata")!!
+    var txMetadataVersion = VERSION_UNKNOWN
+        private set
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -53,9 +61,20 @@ class TxMetadataDocument(document: Document) : AbstractDocument(document) {
         val iv = encryptedMetadata.copyOfRange(0, 16)
         val encryptedData = encryptedMetadata.copyOfRange(16, encryptedMetadata.size)
         val decryptedData = cipher.decrypt(EncryptedData(iv, encryptedData), keyParameter)
-        // use Cbor.decodeList
-        val list = Cbor.decodeList(decryptedData)
-        // use .map to convert to List<TxMetadataItem>
-        return list.map { TxMetadataItem(it as Map<String, Any?>) }
+        val version = decryptedData.copyOfRange(0, 1)[0].toInt() and 0xFF
+        return when (version) {
+            VERSION_CBOR -> {
+                val list = Cbor.decodeList(decryptedData.copyOfRange(1, decryptedData.size))
+                this.txMetadataVersion = VERSION_CBOR
+                // use .map to convert to List<TxMetadataItem>
+                list.map { TxMetadataItem(it as Map<String, Any?>) }
+            }
+            VERSION_PROTOBUF -> {
+                val batch = TxMetadataBatch.parser().parseFrom(decryptedData, 1, decryptedData.size - 1)
+                txMetadataVersion = VERSION_PROTOBUF
+                batch.itemsList.map { TxMetadataItem(it) }
+            }
+            else -> error("unknown txmetadata version $version")
+        }
     }
 }

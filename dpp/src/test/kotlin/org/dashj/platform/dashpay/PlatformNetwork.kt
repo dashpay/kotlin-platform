@@ -23,7 +23,7 @@ import org.junit.jupiter.api.AfterEach
 open class PlatformNetwork {
 
     val platform = Platform(TestNet3Params.get())
-    val seed = "domain major supply stove finger endorse crystal grape cinnamon syrup happy total"
+    val seed = "grid bind point inhale blame tell trigger alter index print insect return"
     val wallet: Wallet = Wallet(
         platform.params,
         KeyChainGroup.builder(platform.params)

@@ -49,7 +49,7 @@ import org.bitcoinj.wallet.authentication.AuthenticationGroupExtension
 import org.bouncycastle.crypto.params.KeyParameter
 import org.dashj.platform.wallet.TxMetadata
 import org.dashj.platform.contracts.wallet.TxMetadataDocument
-import org.dashj.platform.contracts.wallet.TxMetadataItem
+import org.dashj.platform.wallet.TxMetadataItem
 import org.dashj.platform.dapiclient.MaxRetriesReachedException
 import org.dashj.platform.dapiclient.model.DocumentQuery
 import org.dashj.platform.dashpay.callback.*
@@ -67,6 +67,7 @@ import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.*
 import org.dashj.platform.sdk.platform.Names
 import org.dashj.platform.sdk.platform.Platform
+import org.dashj.platform.wallet.WalletUtils.TxMetadataBatch
 import org.slf4j.LoggerFactory
 import java.math.BigInteger
 import java.util.concurrent.ExecutionException
@@ -2274,18 +2275,26 @@ class BlockchainIdentity {
         return "assetlocktx=$txid&pk=$wif&du=${currentUsername!!}&islock=${cftx.confidence.instantSendlock.toStringHex()}"
     }
 
-    // Transaction Metadata Methods
     @Throws(KeyCrypterException::class)
-    fun publishTxMetaData(txMetadataItems: List<TxMetadataItem>, keyParameter: KeyParameter?) {
-        if (!platform.hasApp("dashwallet")) {
-            return
+    fun createTxMetadata(txMetadataItems: List<TxMetadataItem>, keyParameter: KeyParameter?, encryptionKeyIndex: Int, version: Int): List<Document> {
+        if (!platform.hasApp("wallet-utils")) {
+            return arrayListOf()
         }
-        val keyIndex = 1
-        val encryptionKeyIndex = 0
-        val encryptionKey = privateKeyAtPath(keyIndex, TxMetadataDocument.childNumber, encryptionKeyIndex, KeyType.ECDSA_SECP256K1, keyParameter)
+        val encryptionIdentityPublicKey = identity!!.getFirstPublicKey(Purpose.ENCRYPTION, SecurityLevel.MEDIUM)
+            ?: identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
+            ?: error("can't find a authentication public key with HIGH security level or encryption key")
+        val keyIndex = encryptionIdentityPublicKey.id
+        val encryptionKey = privateKeyAtPath(
+            keyIndex,
+            TxMetadataDocument.childNumber,
+            encryptionKeyIndex,
+            KeyType.ECDSA_SECP256K1,
+            keyParameter
+        )
 
         var lastItem: TxMetadataItem? = null
         var currentIndex = 0
+        val result = arrayListOf<Document>()
         log.info("publish ${txMetadataItems.size} by breaking it up into pieces")
         while (currentIndex < txMetadataItems.size) {
             var estimatedDocSize = 0
@@ -2306,27 +2315,58 @@ class BlockchainIdentity {
             }
 
             log.info("publishing ${currentMetadataItems.size} items of ${txMetadataItems.size}")
-            val metadataBytes = Cbor.encode(currentMetadataItems.map { it.toObject() })
+            val txMetadata = TxMetadata(platform)
+            val metadataBytes = txMetadata.getBuffer(TxMetadataDocument.VERSION_PROTOBUF, currentMetadataItems)//Cbor.encode(currentMetadataItems.map { it.toObject() })
 
             // encrypt data
             val cipher = KeyCrypterAESCBC()
             val aesKey = cipher.deriveKey(encryptionKey)
             val encryptedData = cipher.encrypt(metadataBytes, aesKey)
-
-            TxMetadata(platform).create(
+            val allEncryptedData = ByteArray(1 + encryptedData.initialisationVector.size + encryptedData.encryptedBytes.size)
+            allEncryptedData[0] = version.toByte()
+            encryptedData.initialisationVector.copyInto(allEncryptedData, 1)
+            encryptedData.encryptedBytes.copyInto(allEncryptedData, encryptedData.initialisationVector.size + 1)
+            val txMetadataDocument = txMetadata.createDocument(
                 keyIndex,
                 encryptionKeyIndex,
-                encryptedData.initialisationVector.plus(encryptedData.encryptedBytes),
+                allEncryptedData,
                 identity!!,
-                KeyIndexPurpose.AUTHENTICATION.ordinal,
-                WalletSignerCallback(wallet!!, keyParameter)
             )
+            result.add(txMetadataDocument)
             currentMetadataItems.clear()
         }
+        return result
+    }
+
+    // Transaction Metadata Methods
+    @Throws(KeyCrypterException::class)
+    fun publishTxMetaData(
+        txMetadataItems: List<TxMetadataItem>,
+        keyParameter: KeyParameter?,
+        encryptionKeyIndex: Int,
+        version: Int,
+        progressListener: ((Int) -> Unit)? = null
+    ) {
+        if (!platform.hasApp("wallet-utils")) {
+            return
+        }
+        progressListener?.invoke(0)
+        val documentsToPublish = createTxMetadata(txMetadataItems, keyParameter, encryptionKeyIndex, version)
+        progressListener?.invoke(10)
+        val txMetadata = TxMetadata(platform)
+        documentsToPublish.forEachIndexed { i, txMetadataDocument ->
+            txMetadata.publish(
+                txMetadataDocument,
+                identity!!,
+                WalletSignerCallback(wallet!!, keyParameter)
+            )
+            progressListener?.invoke(10 + i * 100 / documentsToPublish.size )
+        }
+        progressListener?.invoke(100)
     }
 
     fun getTxMetaData(createdAfter: Long = -1, keyParameter: KeyParameter?): Map<TxMetadataDocument, List<TxMetadataItem>> {
-        if (!platform.hasApp("dashwallet")) {
+        if (!platform.hasApp("wallet-utils")) {
             return hashMapOf()
         }
         val documents = TxMetadata(platform).get(uniqueIdentifier, createdAfter)
@@ -2334,13 +2374,18 @@ class BlockchainIdentity {
         val results = LinkedHashMap<TxMetadataDocument, List<TxMetadataItem>>()
         documents.forEach {
             val doc = TxMetadataDocument(it)
-            results[doc] = decryptTxMetadata(TxMetadataDocument(it), keyParameter)
+            try {
+                results[doc] = decryptTxMetadata(TxMetadataDocument(it), keyParameter)
+            } catch (e: Exception) {
+                log.info("txMetadata document could not be decrypted: {}", doc.id)
+            }
         }
         return results
     }
 
     @Throws(KeyCrypterException::class)
     fun decryptTxMetadata(txMetadataDocument: TxMetadataDocument, keyParameter: KeyParameter?): List<TxMetadataItem> {
+        checkArgument(wallet!!.isEncrypted == (keyParameter != null), "isEncrypted must match keyParameter")
         val cipher = KeyCrypterAESCBC()
         val encryptionKey = privateKeyAtPath(
             txMetadataDocument.keyIndex,
@@ -2350,17 +2395,27 @@ class BlockchainIdentity {
             keyParameter
         )
         val aesKeyParameter = cipher.deriveKey(encryptionKey)
-
+        val version = txMetadataDocument.encryptedMetadata[0].toInt()
         // now decrypt
         val encryptedData = EncryptedData(
-            txMetadataDocument.encryptedMetadata.copyOfRange(0, 16),
-            txMetadataDocument.encryptedMetadata.copyOfRange(16, txMetadataDocument.encryptedMetadata.size)
+            txMetadataDocument.encryptedMetadata.copyOfRange(1, 17),
+            txMetadataDocument.encryptedMetadata.copyOfRange(17, txMetadataDocument.encryptedMetadata.size)
         )
 
         val decryptedData = cipher.decrypt(encryptedData, aesKeyParameter)
-        val decryptedList = Cbor.decodeList(decryptedData)
 
-        return decryptedList.map { TxMetadataItem(it as Map<String, Any?>) }
+
+        return when (version) {
+            TxMetadataDocument.VERSION_CBOR -> {
+                val decryptedList = Cbor.decodeList(decryptedData)
+                decryptedList.map { TxMetadataItem(it as Map<String, Any?>) }
+            }
+            TxMetadataDocument.VERSION_PROTOBUF -> {
+                val decryptedList = TxMetadataBatch.parser().parseFrom(decryptedData)
+                decryptedList.itemsList.map { TxMetadataItem(it) }
+            }
+            else -> error ("invalid tx metadata version $version")
+        }
     }
 
     fun deleteDocument(typeLocator: String, documentId: Identifier, keyParameter: KeyParameter?): Boolean {

@@ -27,7 +27,7 @@ class IdentityVerify(
 ) {
 
     companion object {
-        const val DOCUMENT: String = "dashwallet.identityVerify"
+        const val DOCUMENT: String = "identity-verify.identityVerify"
         private val log = LoggerFactory.getLogger(IdentityVerify::class.java)
     }
 

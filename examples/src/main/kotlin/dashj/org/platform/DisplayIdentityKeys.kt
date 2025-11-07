@@ -6,6 +6,8 @@
  */
 package dashj.org.platform
 
+import org.bitcoinj.core.Address
+import org.bitcoinj.core.DumpedPrivateKey
 import org.bitcoinj.crypto.MnemonicCode
 import org.bitcoinj.wallet.authentication.AuthenticationGroupExtension
 import java.util.Scanner
@@ -40,7 +42,11 @@ class DisplayIdentityKeys {
             val authGroup = client.wallet!!.getKeyChainExtension(AuthenticationGroupExtension.EXTENSION_ID) as AuthenticationGroupExtension
             val firstKey = authGroup.identityKeyChain.getKey(0)
             println(firstKey)
+            println("privateKey: ${firstKey.privKeyBytes.toHex()}")
+            println("privateKey: ${DumpedPrivateKey(client.params,firstKey.privKeyBytes, true)}")
+            println("pubkey: ${firstKey.pubKey.toHex()}")
             println("pubkeyhash: ${firstKey.pubKeyHash.toHex()}")
+            println("address: ${Address.fromKey(client.params, firstKey)}")
         }
     }
 }
