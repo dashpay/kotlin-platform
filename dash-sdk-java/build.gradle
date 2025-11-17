@@ -110,7 +110,7 @@ publishing {
             pom {
                 name = 'Dash SDK for Java'
                 description = 'Dash SDK Java Library for Platform'
-                url = 'httsp://dashj.org'
+                url = 'https://dashj.org'
 
                 licenses {
                     license {

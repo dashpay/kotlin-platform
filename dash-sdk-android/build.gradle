@@ -195,6 +195,7 @@ afterEvaluate {
                     sonatype {
                         active = 'ALWAYS'
                         url = 'https://central.sonatype.com/api/v1/publisher'
+                        verifyPom = false
                         stagingRepository("$buildDir/staging-deploy")
                     }
                 }
@@ -207,6 +208,7 @@ afterEvaluate {
                         snapshotSupported = true
                         closeRepository = true
                         releaseRepository = true
+                        verifyPom = false
                         stagingRepository("$buildDir/staging-deploy")
                     }
                 }

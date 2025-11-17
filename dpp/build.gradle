@@ -125,7 +125,7 @@ publishing {
             pom {
                 name = 'Higher level Dash SDK for Kotlin'
                 description = 'High Level Dash SDK Java Library for Platform'
-                url = 'httsp://dashj.org'
+                url = 'https://dashj.org'
 
                 licenses {
                     license {
