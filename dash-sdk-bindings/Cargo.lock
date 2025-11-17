@@ -775,7 +775,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "dapi-grpc-macros",
  "futures-core",
@@ -792,7 +792,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc-macros"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "heck 0.5.0",
  "quote",
@@ -836,7 +836,7 @@ dependencies = [
 
 [[package]]
 name = "dash-sdk"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "arc-swap",
  "async-trait",
@@ -969,7 +969,7 @@ dependencies = [
 
 [[package]]
 name = "dashpay-contract"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -979,7 +979,7 @@ dependencies = [
 
 [[package]]
 name = "data-contracts"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "dashpay-contract",
  "dpns-contract",
@@ -1097,7 +1097,7 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "dpns-contract"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1107,7 +1107,7 @@ dependencies = [
 
 [[package]]
 name = "dpp"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1152,7 +1152,7 @@ dependencies = [
 
 [[package]]
 name = "drive"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "bincode",
  "byteorder",
@@ -1178,7 +1178,7 @@ dependencies = [
 
 [[package]]
 name = "drive-proof-verifier"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "bincode",
  "dapi-grpc",
@@ -1360,7 +1360,7 @@ checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
 name = "feature-flags-contract"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2400,7 +2400,7 @@ dependencies = [
 
 [[package]]
 name = "json-schema-compatibility-validator"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "json-patch",
  "once_cell",
@@ -2457,7 +2457,7 @@ dependencies = [
 
 [[package]]
 name = "keyword-search-contract"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2527,7 +2527,7 @@ dependencies = [
 
 [[package]]
 name = "masternode-reward-shares-contract"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -3102,7 +3102,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "bincode",
  "platform-version",
@@ -3110,7 +3110,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization-derive"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3120,7 +3120,7 @@ dependencies = [
 
 [[package]]
 name = "platform-value"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -3141,7 +3141,7 @@ dependencies = [
 
 [[package]]
 name = "platform-version"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "bincode",
  "ferment-macro",
@@ -3153,7 +3153,7 @@ dependencies = [
 
 [[package]]
 name = "platform-versioning"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3469,7 +3469,7 @@ dependencies = [
 
 [[package]]
 name = "rs-dapi-client"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "backon",
  "chrono",
@@ -3893,7 +3893,7 @@ checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
 
 [[package]]
 name = "simple-signer"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -4290,7 +4290,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "token-history-contract"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -4861,7 +4861,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-utils-contract"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -5331,7 +5331,7 @@ checksum = "f17a85883d4e6d00e8a97c586de764dabcc06133f7f1d55dce5cdc070ad7fe59"
 
 [[package]]
 name = "withdrawals-contract"
-version = "2.0.1"
+version = "2.0.0-rc.17"
 dependencies = [
  "num_enum 0.5.11",
  "platform-value",
