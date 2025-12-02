@@ -54,6 +54,7 @@ class IdentityFactory(dpp: DashPlatformProtocol, stateRepository: StateRepositor
                     KeyType.ECDSA_SECP256K1,
                     Purpose.AUTHENTICATION,
                     SecurityLevel.MASTER,
+                    contractBounds = null,
                     it.pubKey,
                     false
                 )

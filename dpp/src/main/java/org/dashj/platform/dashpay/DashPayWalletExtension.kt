@@ -51,6 +51,7 @@ class DashPayWalletExtension(
                             KeyType.swigToEnum(it.type),
                             Purpose.swigToEnum(it.purpose),
                             SecurityLevel.swigToEnum(it.securityLevel),
+                            contractBounds = null,
                             it.data.toByteArray(),
                             it.readOnly,
                             if (it.disabledAt == -1L) {
