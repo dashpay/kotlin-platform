@@ -65,6 +65,7 @@ import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Cbor
 import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.*
+import org.dashj.platform.sdk.platform.DomainDocument
 import org.dashj.platform.sdk.platform.Names
 import org.dashj.platform.sdk.platform.Platform
 import org.dashj.platform.wallet.WalletUtils.TxMetadataBatch
@@ -148,6 +149,8 @@ class BlockchainIdentity {
 
     // lateinit var usernames: List<String>
 
+    var primaryUsername: String? = null
+    var secondaryUsername: String? = null
     var currentUsername: String? = null
     var currentUsernameRequested = false
     var currentVotingPeriodStarts = -1L
@@ -347,7 +350,7 @@ class BlockchainIdentity {
         Preconditions.checkArgument(if (wallet!!.isEncrypted) keyParameter != null else true)
         val privateKey = authenticationGroup!!.currentKey(type)
         var request = SendRequest.assetLock(wallet!!.params, privateKey as ECKey, credits, emptyWallet)
-        if (useCoinJoin) {
+        if (useCoinJoin) {    /** sends the transaction and waits for IS or CL */
             // these are the settings for coinjoin
             request.coinSelector = CoinJoinCoinSelector(wallet!!)
             request.returnChange = returnChange
@@ -419,6 +422,7 @@ class BlockchainIdentity {
             try {
                 registerIdentityWithISLockWithRetry(keyParameter, 5)
             } catch (e: Exception) {
+                log.warn("registerIdentity error: ", e)
                 if (e is InvalidInstantAssetLockProofException ||
                     e.message?.contains("Instant lock proof signature is invalid or wasn't created recently. Please") == true ||
                     e.message?.contains(Regex("Asset Lock proof core chain height \\d+ is higher than the current consensus core height \\d+")) == true ||
@@ -445,23 +449,17 @@ class BlockchainIdentity {
         val signingKey = maybeDecryptKey(assetLockTransaction!!.assetLockPublicKey, keyParameter)
         var registeredOrError = false
         var count = 1
-        val coreHeight = if (assetLockTransaction!!.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
-            assetLockTransaction!!.confidence.appearedAtChainHeight
-        } else {
-            try {
-                // determine the height from Platform Core (getTransaction)
-                val response = platform.client.getTransactionKotlin(assetLockTransaction!!.txId.toString())
-                response?.height ?: DashSystem.get(wallet!!.params).blockChain.bestChainHeight
-            } catch(e: Exception) {
-                DashSystem.get(wallet!!.params).blockChain.bestChainHeight
-            }
-        }.toLong()
+        var coreHeight = determineBlockHeight(assetLockTransaction)
 
         while (!registeredOrError) {
             log.info("register identity attempt: $count")
 
 
             try {
+                if (coreHeight == 0L) {
+                    // in case the tx hasn't been mined.  This will wait for the next block
+                    error("transaction block height is 0")
+                }
                 identity = platform.identities.register(
                     0,
                     assetLockTransaction!!,
@@ -476,6 +474,9 @@ class BlockchainIdentity {
                 if (!waitForChainlock || !waitForNextBlock()) {
                     throw e
                 }
+                if (coreHeight == 0L) {
+                    coreHeight = determineBlockHeight(assetLockTransaction)
+                }
                 count++
             }
         }
@@ -483,6 +484,19 @@ class BlockchainIdentity {
         registrationStatus = IdentityStatus.REGISTERED
         finalizeIdentityRegistration(assetLockTransaction!!)
     }
+
+    private fun determineBlockHeight(assetLockTransaction: AssetLockTransaction?): Long =
+        if (assetLockTransaction!!.confidence.confidenceType == TransactionConfidence.ConfidenceType.BUILDING) {
+            assetLockTransaction!!.confidence.appearedAtChainHeight
+        } else {
+            try {
+                // determine the height from Platform Core (getTransaction)
+                val response = platform.client.getTransactionKotlin(assetLockTransaction!!.txId.toString())
+                response?.height ?: DashSystem.get(wallet!!.params).blockChain.bestChainHeight
+            } catch (e: Exception) {
+                DashSystem.get(wallet!!.params).blockChain.bestChainHeight
+            }
+        }.toLong()
 
     private fun waitForNextBlock(): Boolean {
         return try {
@@ -714,6 +728,7 @@ class BlockchainIdentity {
             KeyType.ECDSA_SECP256K1,
             Purpose.AUTHENTICATION,
             SecurityLevel.MASTER,
+            contractBounds = null,
             masterPrivateKey.pubKey,
             false
         )
@@ -723,6 +738,7 @@ class BlockchainIdentity {
             KeyType.ECDSA_SECP256K1,
             Purpose.AUTHENTICATION,
             SecurityLevel.HIGH,
+            contractBounds = null,
             highPrivateKey.pubKey,
             false
         )
@@ -732,6 +748,7 @@ class BlockchainIdentity {
             KeyType.ECDSA_SECP256K1,
             Purpose.ENCRYPTION,
             SecurityLevel.MEDIUM,
+            contractBounds = null,
             encryptionPrivateKey.pubKey,
             false
         )
@@ -927,7 +944,7 @@ class BlockchainIdentity {
 
         val usernamesLeft = ArrayList(usernames)
         for (username in usernames) {
-            val normalizedName = username.lowercase()
+            val normalizedName = Names.normalizeString(username)
             for (nameDocumentTransition in domainDocuments) {
                 if (nameDocumentTransition.data["normalizedLabel"] == normalizedName) {
                     val usernameInfo = usernameStatuses[username]!!
@@ -1055,16 +1072,48 @@ class BlockchainIdentity {
             "Identity must be registered before recovering usernames"
         )
 
-        val nameDocuments = arrayListOf<Document>()
-        nameDocuments.addAll(platform.names.getByOwnerId(uniqueIdentifier))
+        val nameDocuments = arrayListOf<DomainDocument>()
+        nameDocuments.addAll(platform.names.getByOwnerId(uniqueIdentifier).map {
+            DomainDocument(it)
+        })
         val usernames = ArrayList<String>()
 
         for (nameDocument in nameDocuments) {
-            val username = nameDocument.data["normalizedLabel"] as String
+            val username = nameDocument.normalizedLabel
             usernameStatuses[username] = UsernameInfo(null, UsernameStatus.CONFIRMED, username)
             usernames.add(username)
         }
-        currentUsername = usernames.firstOrNull()
+        val documentsByName = nameDocuments.associateBy { it.normalizedLabel }
+        // assign primary and secondary usernames
+        when (usernames.size) {
+            1 -> {
+                currentUsername = usernames.first()
+                primaryUsername = currentUsername
+                secondaryUsername = null
+                log.info("username recovered: {}", currentUsername)
+            }
+            0 -> {
+                currentUsername = null
+                primaryUsername = null
+                secondaryUsername = null
+                log.info("username recovered: none")
+
+            }
+            else -> {
+                // there are more than one user name
+                val contestedNameDocuments = documentsByName.filter { Names.isUsernameContestable(it.key) }
+                val firstContestedUsername = contestedNameDocuments.minByOrNull { it.value.createdAt ?: Long.MAX_VALUE }!!.value
+                primaryUsername = firstContestedUsername.normalizedLabel
+                currentUsername = firstContestedUsername.normalizedLabel
+                // is there a secondary username?
+                documentsByName.filter {
+                    !Names.isUsernameContestable(it.key)
+                }.filter { it.key.contains(primaryUsername!!) }.let {
+                    secondaryUsername = it.keys.first()
+                }
+                log.info("usernames recovered: primary: {}; secondary {}; all: {}", primaryUsername, secondaryUsername, usernames)
+            }
+        }
         saveUsernames(usernames, UsernameStatus.CONFIRMED)
     }
 
@@ -1153,7 +1202,14 @@ class BlockchainIdentity {
 
     fun addUsername(username: String, status: UsernameStatus, save: Boolean) {
         usernameStatuses[username] = UsernameInfo(null, status, username)
-        currentUsername = username
+        if (currentUsername == null) {
+            currentUsername = username
+        }
+        if (primaryUsername == null) {
+            primaryUsername = username
+        } else if (secondaryUsername != null) {
+            secondaryUsername = username
+        }
 
         if (save) {
             saveNewUsername(username, UsernameStatus.INITIAL)
@@ -1669,7 +1725,7 @@ class BlockchainIdentity {
     ) {
         val query = DocumentQuery.Builder()
             .where("normalizedParentDomainName", "==", Names.DEFAULT_PARENT_DOMAIN)
-            .where(listOf("normalizedLabel", "in", usernames.map { it.lowercase() }))
+            .where(listOf("normalizedLabel", "in", usernames.map { Names.normalizeString(it) }))
             .orderBy("normalizedParentDomainName")
             .orderBy("normalizedLabel")
             .build()
@@ -1678,7 +1734,7 @@ class BlockchainIdentity {
         if (nameDocuments.isNotEmpty()) {
             val usernamesLeft = ArrayList(usernames)
             for (username in usernames) {
-                val normalizedName = username.lowercase()
+                val normalizedName = Names.normalizeString(username)
                 for (nameDocument in nameDocuments) {
                     if (nameDocument.data["normalizedLabel"] == normalizedName) {
                         val usernameStatus = usernameStatuses[username]!!
@@ -1689,7 +1745,7 @@ class BlockchainIdentity {
                     }
                 }
             }
-            if (usernamesLeft.size > 0 && retryCount > 0) {
+            if (usernamesLeft.isNotEmpty() && retryCount > 0) {
                 Timer("monitorForDPNSUsernames", false).schedule(
                     timerTask {
                         val nextDelay = delayMillis * when (retryDelayType) {
@@ -1701,7 +1757,7 @@ class BlockchainIdentity {
                     },
                     delayMillis
                 )
-            } else if (usernamesLeft.size > 0) {
+            } else if (usernamesLeft.isNotEmpty()) {
                 callback.onTimeout(usernamesLeft)
             } else {
                 callback.onComplete(usernames)
@@ -1734,13 +1790,13 @@ class BlockchainIdentity {
     ): Pair<Boolean, List<String>> {
         val query = DocumentQuery.Builder()
             .where("normalizedParentDomainName", "==", Names.DEFAULT_PARENT_DOMAIN)
-            .where(listOf("normalizedLabel", "in", usernames.map { "${it.lowercase()}" })).build()
+            .where(listOf("normalizedLabel", "in", usernames.map { Names.normalizeString(it) })).build()
         val nameDocuments = platform.documents.get(Names.DPNS_DOMAIN_DOCUMENT, query)
 
         if (nameDocuments.isNotEmpty()) {
             val usernamesLeft = ArrayList(usernames)
             for (username in usernames) {
-                val normalizedName = username.lowercase()
+                val normalizedName = Names.normalizeString(username)
                 for (nameDocument in nameDocuments) {
                     if (nameDocument.data["normalizedLabel"] == normalizedName) {
                         val usernameStatus = usernameStatuses[username]!!
@@ -1751,7 +1807,7 @@ class BlockchainIdentity {
                     }
                 }
             }
-            if (usernamesLeft.size > 0 && retryCount > 0) {
+            if (usernamesLeft.isNotEmpty() && retryCount > 0) {
                 val nextDelay = delayMillis * when (retryDelayType) {
                     RetryDelayType.SLOW20 -> 5 / 4
                     RetryDelayType.SLOW50 -> 3 / 2
@@ -1759,7 +1815,7 @@ class BlockchainIdentity {
                 }
                 delay(nextDelay)
                 return watchUsernames(usernamesLeft, retryCount - 1, nextDelay, retryDelayType)
-            } else if (usernamesLeft.size > 0) {
+            } else if (usernamesLeft.isNotEmpty()) {
                 return Pair(false, usernamesLeft)
             } else {
                 return Pair(true, usernames)
@@ -1777,8 +1833,6 @@ class BlockchainIdentity {
                 return Pair(false, usernames)
             }
         }
-        // throw exception or return false
-        return Pair(false, usernames)
     }
 
     // DashPay Profile methods
