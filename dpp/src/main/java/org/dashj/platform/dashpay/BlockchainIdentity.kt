@@ -65,6 +65,7 @@ import org.dashj.platform.dpp.toHex
 import org.dashj.platform.dpp.util.Cbor
 import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.*
+import org.dashj.platform.sdk.platform.DomainDocument
 import org.dashj.platform.sdk.platform.Names
 import org.dashj.platform.sdk.platform.Platform
 import org.dashj.platform.wallet.WalletUtils.TxMetadataBatch
@@ -1071,16 +1072,48 @@ class BlockchainIdentity {
             "Identity must be registered before recovering usernames"
         )
 
-        val nameDocuments = arrayListOf<Document>()
-        nameDocuments.addAll(platform.names.getByOwnerId(uniqueIdentifier))
+        val nameDocuments = arrayListOf<DomainDocument>()
+        nameDocuments.addAll(platform.names.getByOwnerId(uniqueIdentifier).map {
+            DomainDocument(it)
+        })
         val usernames = ArrayList<String>()
 
         for (nameDocument in nameDocuments) {
-            val username = nameDocument.data["normalizedLabel"] as String
+            val username = nameDocument.normalizedLabel
             usernameStatuses[username] = UsernameInfo(null, UsernameStatus.CONFIRMED, username)
             usernames.add(username)
         }
-        currentUsername = usernames.firstOrNull()
+        val documentsByName = nameDocuments.associateBy { it.normalizedLabel }
+        // assign primary and secondary usernames
+        when (usernames.size) {
+            1 -> {
+                currentUsername = usernames.first()
+                primaryUsername = currentUsername
+                secondaryUsername = null
+                log.info("username recovered: {}", currentUsername)
+            }
+            0 -> {
+                currentUsername = null
+                primaryUsername = null
+                secondaryUsername = null
+                log.info("username recovered: none")
+
+            }
+            else -> {
+                // there are more than one user name
+                val contestedNameDocuments = documentsByName.filter { Names.isUsernameContestable(it.key) }
+                val firstContestedUsername = contestedNameDocuments.minByOrNull { it.value.createdAt ?: Long.MAX_VALUE }!!.value
+                primaryUsername = firstContestedUsername.normalizedLabel
+                currentUsername = firstContestedUsername.normalizedLabel
+                // is there a secondary username?
+                documentsByName.filter {
+                    !Names.isUsernameContestable(it.key)
+                }.filter { it.key.contains(primaryUsername!!) }.let {
+                    secondaryUsername = it.keys.first()
+                }
+                log.info("usernames recovered: primary: {}; secondary {}; all: {}", primaryUsername, secondaryUsername, usernames)
+            }
+        }
         saveUsernames(usernames, UsernameStatus.CONFIRMED)
     }
 
