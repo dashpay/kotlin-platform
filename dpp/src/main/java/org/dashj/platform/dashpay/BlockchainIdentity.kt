@@ -1102,14 +1102,21 @@ class BlockchainIdentity {
             else -> {
                 // there are more than one user name
                 val contestedNameDocuments = documentsByName.filter { Names.isUsernameContestable(it.key) }
-                val firstContestedUsername = contestedNameDocuments.minByOrNull { it.value.createdAt ?: Long.MAX_VALUE }!!.value
-                primaryUsername = firstContestedUsername.normalizedLabel
-                currentUsername = firstContestedUsername.normalizedLabel
+                val firstContestedUsername = contestedNameDocuments.minByOrNull { it.value.createdAt ?: Long.MAX_VALUE }?.value
+                if (firstContestedUsername != null) {
+                    primaryUsername = firstContestedUsername.normalizedLabel
+                    currentUsername = firstContestedUsername.normalizedLabel
+                } else {
+                    // Fallback to first username if no contested usernames exist
+                    val firstUsername = documentsByName.values.minByOrNull { it.createdAt ?: Long.MAX_VALUE }
+                    primaryUsername = firstUsername?.normalizedLabel
+                    currentUsername = primaryUsername
+                }
                 // is there a secondary username?
                 documentsByName.filter {
                     !Names.isUsernameContestable(it.key)
-                }.filter { it.key.contains(primaryUsername!!) }.let {
-                    secondaryUsername = it.keys.first()
+                }.filter { primaryUsername != null && it.key.contains(primaryUsername!!) }.let {
+                    secondaryUsername = it.keys.firstOrNull()
                 }
                 log.info("usernames recovered: primary: {}; secondary {}; all: {}", primaryUsername, secondaryUsername, usernames)
             }
@@ -1207,7 +1214,7 @@ class BlockchainIdentity {
         }
         if (primaryUsername == null) {
             primaryUsername = username
-        } else if (secondaryUsername != null) {
+        } else if (secondaryUsername == null) {
             secondaryUsername = username
         }
 
