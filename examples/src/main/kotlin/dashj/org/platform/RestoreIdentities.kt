@@ -77,7 +77,7 @@ class RestoreIdentities {
 
                     if (identity != null) {
                         if (identities.contains(identity)) {
-                            return
+                            continue
                         }
                         identities.add(identity)
                         identitiesFound++
