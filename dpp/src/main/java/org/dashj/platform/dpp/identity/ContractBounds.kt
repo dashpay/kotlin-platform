@@ -14,6 +14,7 @@ abstract class ContractBounds(val type: String, val identifier: Identifier)
                     Identifier(rustContractBounds.single_contract_document_type.id),
                     rustContractBounds.single_contract_document_type.document_type_name
                 )
+                else -> error("Unknown ContractBounds tag: ${rustContractBounds.tag}")
             }
         }
 
