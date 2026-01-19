@@ -1268,8 +1268,7 @@ dependencies = [
 [[package]]
 name = "elliptic-curve-tools"
 version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e48843edfbd0a370b3dd14cdbb4e446e9a8855311e6b2b57bf9a1fd1367bc317"
+source = "git+https://github.com/mikelodder7/elliptic-curve-tools?rev=5789c0491252d5af8add829348af9dd6ac09d8f6#5789c0491252d5af8add829348af9dd6ac09d8f6"
 dependencies = [
  "elliptic-curve",
  "heapless",

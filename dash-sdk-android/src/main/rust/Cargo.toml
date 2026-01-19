@@ -42,6 +42,7 @@ tower-layer = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/
 tower = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
 # this is required until this PR is merged
 rs-x11-hash = { git = "https://github.com/hashengineering/rs-x11-hash", branch = "feat/add-android-support" }
+elliptic-curve-tools = { git = "https://github.com/mikelodder7/elliptic-curve-tools", rev = "5789c0491252d5af8add829348af9dd6ac09d8f6" }
 
 [lib]
 crate-type = ["staticlib"]
