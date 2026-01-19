@@ -31,10 +31,11 @@ class IdentityPublicKey(
     val type: KeyType,
     val purpose: Purpose,
     val securityLevel: SecurityLevel,
+    val contractBounds: ContractBounds?,
     val data: ByteArray,
     val readOnly: Boolean,
     var disabledAt: Long? = null,
-    var signature: ByteArray? = null
+    var signature: ByteArray? = null,
 ) : BaseObject() {
 
 //    enum class Type(val value: Int) {
@@ -111,6 +112,7 @@ class IdentityPublicKey(
                         ipk.keyType,
                         ipk.purpose,
                         ipk.securityLevel,
+                        ContractBounds.tryFrom(ipk.contract_bounds),
                         ipk.data._0,
                         ipk.read_only,
                         ipk.disabled_at?.toLong()
@@ -122,13 +124,16 @@ class IdentityPublicKey(
     }
 
     constructor(id: Int, type: KeyType, purpose: Purpose, securityLevel: SecurityLevel, data: String, readOnly: Boolean) :
-        this(id, type, purpose, securityLevel, Converters.fromBase64(data), readOnly)
+        this(id, type, purpose, securityLevel, null, Converters.fromBase64(data), readOnly)
+
+    constructor(id: Int, type: KeyType, purpose: Purpose, securityLevel: SecurityLevel, contractBounds: ContractBounds?, data: String, readOnly: Boolean) :
+            this(id, type, purpose, securityLevel, contractBounds, Converters.fromBase64(data), readOnly)
 
     constructor(id: Int, type: KeyType, data: String) :
-        this(id, type, Purpose.AUTHENTICATION, SecurityLevel.MASTER, Converters.fromBase64(data), true)
+        this(id, type, Purpose.AUTHENTICATION, SecurityLevel.MASTER, null, Converters.fromBase64(data), true)
 
     constructor(id: Int, type: KeyType, data: ByteArray) :
-        this(id, type, Purpose.AUTHENTICATION, SecurityLevel.MASTER, data, true)
+        this(id, type, Purpose.AUTHENTICATION, SecurityLevel.MASTER, null, data, true)
 
     constructor(rawIdentityPublicKey: Map<String, Any?>) :
         this(
@@ -147,6 +152,10 @@ class IdentityPublicKey(
                 is SecurityLevel -> rawIdentityPublicKey["securityLevel"] as SecurityLevel
                 is Int -> SecurityLevel.swigToEnum(rawIdentityPublicKey["securityLevel"] as Int)
                 else -> SecurityLevel.CRITICAL
+            },
+            when (rawIdentityPublicKey["contractBounds"]) {
+                is ContractBounds -> rawIdentityPublicKey["contractBounds"] as ContractBounds
+                else -> null
             },
             when (rawIdentityPublicKey["data"]) {
                 is String -> Converters.fromBase64(rawIdentityPublicKey["data"] as String)
@@ -181,6 +190,9 @@ class IdentityPublicKey(
         disabledAt?.run {
             objMap.put("disabledAt", this)
         }
+        contractBounds?.run {
+            objMap.put("contractBounds", this)
+        }
         if (signature != null && !skipSignature) {
             objMap["signature"] = signature!!
         }
@@ -190,6 +202,9 @@ class IdentityPublicKey(
     override fun toJSON(): Map<String, Any> {
         val json = toObject().toMutableMap()
         json["data"] = data.toBase64()
+        contractBounds?.run {
+            json.put("contractBounds", this.toJSON())
+        }
         signature?.run {
             json["signature"] = toBase64()
         }
@@ -251,6 +266,6 @@ class IdentityPublicKey(
     }
 
     fun copy(skipSignature: Boolean): IdentityPublicKey {
-        return IdentityPublicKey(id, type, purpose, securityLevel, data, readOnly, disabledAt, if (skipSignature) null else signature)
+        return IdentityPublicKey(id, type, purpose, securityLevel, contractBounds, data, readOnly, disabledAt, if (skipSignature) null else signature)
     }
 }
