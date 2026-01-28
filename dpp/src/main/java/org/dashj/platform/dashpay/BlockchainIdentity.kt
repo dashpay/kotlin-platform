@@ -2144,6 +2144,10 @@ class BlockchainIdentity {
         // derived the shared key (our private key + their public key)
         val encryptionKey = keyCrypter.deriveKey(decryptedIdentityKey, contactPublicKey)
 
+        log.info("decryptedIdentityKey privKey size: ${decryptedIdentityKey?.privKeyBytes?.size}")
+        log.info("contactPublicKey pubKey size: ${contactPublicKey.pubKey.size}")
+        log.info("encryptionKey size: ${encryptionKey.key.size}")
+
         // encrypt
         val encryptedData = keyCrypter.encrypt(xpub, encryptionKey)
 
