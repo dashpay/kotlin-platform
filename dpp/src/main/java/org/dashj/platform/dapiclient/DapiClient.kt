@@ -500,7 +500,8 @@ class DapiClient(
                     null
                 }
             } catch (e: Exception) {
-                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true ||
+                    e.message?.contains("invalid peer certificate: certificate expired") == true) {
                     exceptionList.add(e)
                     retriesLeft--
                 } else {
@@ -532,7 +533,8 @@ class DapiClient(
                     null
                 }
             } catch (e: Exception) {
-                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true ||
+                    e.message?.contains("invalid peer certificate: certificate expired") == true) {
                     exceptionList.add(e)
                     retriesLeft--
                 } else {
@@ -572,7 +574,8 @@ class DapiClient(
                     null
                 }
             } catch (e: Exception) {
-                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true ||
+                    e.message?.contains("invalid peer certificate: certificate expired") == true) {
                     exceptionList.add(e)
                     retriesLeft--
                 } else {
@@ -627,7 +630,8 @@ class DapiClient(
                     Document(it, contractIdentifier)
                 }
             } catch (e: Exception) {
-                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true ||
+                    e.message?.contains("invalid peer certificate: certificate expired") == true) {
                     exceptionList.add(e)
                     retriesLeft--
                 } else {
@@ -1116,7 +1120,8 @@ class DapiClient(
             try {
                 return result.unwrap()
             } catch (e: Exception) {
-                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true ||
+                    e.message?.contains("invalid peer certificate: certificate expired") == true) {
                     exceptionList.add(e)
                     retriesLeft--
                 } else {
@@ -1147,7 +1152,8 @@ class DapiClient(
             try {
                 return Contenders(result.unwrap())
             } catch (e: Exception) {
-                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true ||
+                    e.message?.contains("invalid peer certificate: certificate expired") == true) {
                     exceptionList.add(e)
                     retriesLeft--
                 } else {
@@ -1180,7 +1186,8 @@ class DapiClient(
             try {
                 return ContestedResources(result.unwrap())
             } catch (e: Exception) {
-                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true ||
+                    e.message?.contains("invalid peer certificate: certificate expired") == true) {
                     exceptionList.add(e)
                     retriesLeft--
                 } else {
@@ -1258,7 +1265,8 @@ class DapiClient(
             try {
                 return VotePollsGroupedByTimestamp(result.unwrap())
             } catch (e: Exception) {
-                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true ||
+                    e.message?.contains("invalid peer certificate: certificate expired") == true) {
                     exceptionList.add(e)
                     retriesLeft--
                 } else {
@@ -1298,7 +1306,8 @@ class DapiClient(
             try {
                 return ResourceVotesByIdentity(result.unwrap())
             } catch (e: Exception) {
-                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true) {
+                if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true ||
+                    e.message?.contains("invalid peer certificate: certificate expired") == true) {
                     exceptionList.add(e)
                     retriesLeft--
                 } else {
