@@ -134,10 +134,6 @@ open class PlatformStateRepository(val platform: Platform) : StateRepository {
     }
 
     override fun fetchIdentity(id: Identifier): Identity? {
-        if (identityMap.containsKey(id)) {
-            return identityMap[id]
-        }
-
         val identity = try {
             val identityResponse =
                 platform.client.getIdentity(id.toBuffer(), Features.proveIdentities)
