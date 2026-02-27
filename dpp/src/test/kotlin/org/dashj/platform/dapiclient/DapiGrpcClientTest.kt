@@ -7,6 +7,7 @@ import com.hashengineering.crypto.X11
 import io.grpc.Status
 import io.grpc.Status.ALREADY_EXISTS
 import io.grpc.Status.FAILED_PRECONDITION
+import io.grpc.Status.INVALID_ARGUMENT
 import io.grpc.StatusRuntimeException
 import org.bitcoinj.core.Base58
 import org.bitcoinj.core.Block
@@ -309,18 +310,17 @@ class DapiGrpcClientTest : BaseTest() {
             client.broadcastTransaction(txBytes)
             fail("this transaction is a coinbase tx on testnet")
         } catch (e: StatusRuntimeException) {
-            checkState(FAILED_PRECONDITION.code == e.status.code)
+            checkState(ALREADY_EXISTS.code == e.status.code)
         }
 
         try {
-
             val txBytes = client.getTransactionBytesKotlin(
                 "d881e3bc6c47eea64adec49e31c311f882616a098bbfe1a6f42c644bea68dc85"
             )!!
             client.broadcastTransaction(txBytes)
             fail("this transaction already exists on testnet")
         } catch (e: StatusRuntimeException) {
-            checkState(ALREADY_EXISTS.code == e.status.code)
+            checkState(INVALID_ARGUMENT.code == e.status.code)
         }
     }
 

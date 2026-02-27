@@ -26,6 +26,7 @@ class DashPayWalletExtensionTest : PlatformNetwork() {
                     KeyType.ECDSA_SECP256K1,
                     Purpose.AUTHENTICATION,
                     SecurityLevel.MASTER,
+                    contractBounds = null,
                     ECKey().pubKey,
                     true
                 )
