@@ -703,6 +703,46 @@ class BlockchainIdentity {
 
     }
 
+    val defaultKeyList = arrayListOf<IdentityPublicKey>(
+        IdentityPublicKey(
+            0,
+            KeyType.ECDSA_SECP256K1,
+            Purpose.AUTHENTICATION,
+            SecurityLevel.MASTER,
+            contractBounds = null,
+            byteArrayOf(),
+            false
+        ),
+        IdentityPublicKey(
+            id = 1,
+            KeyType.ECDSA_SECP256K1,
+            Purpose.AUTHENTICATION,
+            SecurityLevel.HIGH,
+            contractBounds = null,
+            byteArrayOf(),
+            false
+        ),
+        IdentityPublicKey(
+            2,
+            KeyType.ECDSA_SECP256K1,
+            Purpose.ENCRYPTION,
+            SecurityLevel.MEDIUM,
+            contractBounds = null,
+            byteArrayOf(),
+            false
+        ),
+
+        IdentityPublicKey(
+            3,
+            KeyType.ECDSA_SECP256K1,
+            Purpose.TRANSFER,
+            SecurityLevel.CRITICAL,
+            contractBounds = null,
+            byteArrayOf(),
+            false
+        )
+    )
+
     private fun createIdentityPublicKeys(keyParameter: KeyParameter?): Pair<List<ECKey>, List<IdentityPublicKey>> {
         val masterPrivateKey = checkNotNull(
             privateKeyAtIndex(0, KeyType.ECDSA_SECP256K1, keyParameter)
@@ -717,12 +757,12 @@ class BlockchainIdentity {
         ) { "key must exist" }
 
 //        val criticalAuthenticationKey = checkNotNull(
-//            privateKeyAtIndex(3, KeyType.ECDSA_SECP256K1, keyParameter)
-//        ) { "key must exist" }
-//
-//        val criticalTransferKey = checkNotNull(
 //            privateKeyAtIndex(4, KeyType.ECDSA_SECP256K1, keyParameter)
 //        ) { "key must exist" }
+
+        val criticalTransferKey = checkNotNull(
+            privateKeyAtIndex(3, KeyType.ECDSA_SECP256K1, keyParameter)
+        ) { "key must exist" }
 
         val masterKey = IdentityPublicKey(
             0,
@@ -754,28 +794,106 @@ class BlockchainIdentity {
             false
         )
 
+        val transferKey = IdentityPublicKey(
+            3,
+            KeyType.ECDSA_SECP256K1,
+            Purpose.TRANSFER,
+            SecurityLevel.CRITICAL,
+            contractBounds = null,
+            criticalTransferKey.pubKey,
+            false
+        )
+
 //        val criticalAuthKey = IdentityPublicKey(
-//            3,
+//            4,
 //            KeyType.ECDSA_SECP256K1,
 //            Purpose.AUTHENTICATION,
 //            SecurityLevel.CRITICAL,
 //            criticalAuthenticationKey.pubKey,
 //            false
 //        )
-//
-//        val transferKey = IdentityPublicKey(
-//            4,
-//            KeyType.ECDSA_SECP256K1,
-//            Purpose.TRANSFER,
-//            SecurityLevel.MEDIUM,
-//            criticalTransferKey.pubKey,
-//            false
-//        )
 
         return Pair(
-            listOf(masterPrivateKey, highPrivateKey, encryptionPrivateKey/*, criticalAuthenticationKey, criticalTransferKey*/),
-            listOf(masterKey, highKey, encryptionKey/*, criticalAuthKey, transferKey*/)
+            listOf(masterPrivateKey, highPrivateKey, encryptionPrivateKey/*, criticalAuthenticationKey,*/, criticalTransferKey),
+            listOf(masterKey, highKey, encryptionKey/*, criticalAuthKey*/, transferKey)
         )
+    }
+
+    fun getIdentityPublicKey(purpose: Purpose, securityLevel: SecurityLevel? = null): IdentityPublicKey? =
+        identity?.publicKeys?.find { key ->
+            key.purpose == purpose &&
+                securityLevel?.let { it == key.securityLevel } ?: true
+        }
+
+    fun hasTransferKey() = getIdentityPublicKey(Purpose.TRANSFER, SecurityLevel.CRITICAL) != null
+
+    fun hasEncryptionKey() = getIdentityPublicKey(Purpose.ENCRYPTION, SecurityLevel.MEDIUM) != null
+
+    private fun determineMissingKeys(): List<IdentityPublicKey> {
+        checkState(identity != null)
+        return defaultKeyList.filter { defaultKey ->
+            identity!!.publicKeys.find {
+                it.type == defaultKey.type && it.purpose == defaultKey.purpose
+            } == null
+        }
+    }
+
+    fun addMissingKeys(
+        signer: WalletSignerCallback
+    ) {
+        platform.identities.get(uniqueIdentifier)?.let { updatedIdentity ->
+            val missingKeys = determineMissingKeys()
+            val addPublicKeys = missingKeys.map {
+                createIdentityPublicKey(updatedIdentity, it, signer.keyParameter) ?:
+                    error("missing private key for ${it.id} when determining missing keys")
+            }
+            addPublicKeys.forEach {
+                it.validate()
+            }
+
+
+            val masterIdentityPublicKey = updatedIdentity.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.MASTER)
+                ?: error("can't find a public key with MASTER security level")
+            updatedIdentity.revision++
+
+            val identityResult = dashsdk.platformMobilePutPutIdentityUpdateSdk(
+                platform.rustSdk,
+                updatedIdentity.toNative(),
+                KeyID(masterIdentityPublicKey.id),
+                addPublicKeys.map { it.toNative() },
+                arrayListOf(),
+                signer.nativeContext,
+                BigInteger.valueOf(signer.signerCallback)
+                )
+            identity = Identity(identityResult.unwrap())
+        }
+    }
+
+    private fun createIdentityPublicKey(
+        updatedIdentity: Identity,
+        template: IdentityPublicKey,
+        keyParameter: KeyParameter?
+    ): IdentityPublicKey? {
+        checkArgument(updatedIdentity.publicKeys.isNotEmpty())
+        val nextKeyId = updatedIdentity.publicKeys.maxOf { it.id } + 1
+        return maybeDecryptKey(nextKeyId, KeyType.ECDSA_SECP256K1, keyParameter)?.let { privateKey ->
+            IdentityPublicKey(
+               id = nextKeyId,
+               template.type,
+               template.purpose,
+               template.securityLevel,
+               contractBounds = null,
+               data = privateKey.pubKey,
+               readOnly = false,
+               disabledAt = null,
+           )
+        }
+    }
+
+    fun updateIdentity() {
+        platform.identities.get(uniqueIdentifier)?.let {
+            identity = it
+        }
     }
 
     fun recoverIdentity(creditFundingTransaction: AssetLockTransaction): Boolean {
