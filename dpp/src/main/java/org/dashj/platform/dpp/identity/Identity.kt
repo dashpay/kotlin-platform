@@ -14,6 +14,7 @@ import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.sdk.Identity
 import org.dashj.platform.sdk.IdentityV0
 import org.dashj.platform.sdk.KeyID
+import org.dashj.platform.sdk.KeyType
 import org.dashj.platform.sdk.Purpose
 import org.dashj.platform.sdk.Revision
 import org.dashj.platform.sdk.SecurityLevel
@@ -122,8 +123,20 @@ class Identity : BaseObject {
 
     fun getFirstPublicKey(purpose: Purpose, securityLevel: SecurityLevel): IdentityPublicKey? {
         return try {
-            publicKeys.first { it.purpose == purpose && it.securityLevel == securityLevel && it.disabledAt == null}
-        } catch (e: NoSuchElementException) {
+            publicKeys.first {
+                it.purpose == purpose && it.securityLevel == securityLevel && it.disabledAt == null
+            }
+        } catch (_: NoSuchElementException) {
+            null
+        }
+    }
+
+    fun getFirstPublicKey(purpose: Purpose, securityLevel: SecurityLevel, type: KeyType): IdentityPublicKey? {
+        return try {
+            publicKeys.first {
+                it.purpose == purpose && it.securityLevel == securityLevel && it.type == type && it.disabledAt == null
+            }
+        } catch (_: NoSuchElementException) {
             null
         }
     }
