@@ -51,6 +51,8 @@ class Identity : BaseObject {
                 val identity = identity.v0._0
                 id = Identifier(identity.id)
                 publicKeys = identity.publicKeys.values.map { IdentityPublicKey.from(it) }.toMutableList()
+                revision = identity.revision.toLong().toInt()
+                balance = identity.balance
             }
         }
     }
@@ -131,7 +133,7 @@ class Identity : BaseObject {
             id.toNative(),
             publicKeys.associateBy({ KeyID(it.id) }, { it.toNative() }),
             BigInteger.ZERO,
-            Revision(1)
+            Revision(revision)
         )
         return RustIdentity(identityV0)
     }
