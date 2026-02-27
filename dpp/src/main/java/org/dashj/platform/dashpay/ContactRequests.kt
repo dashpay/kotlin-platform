@@ -37,16 +37,16 @@ class ContactRequests(val platform: Platform) {
         val contactKey = contactKeyChain.watchingKey
         val contactPub = contactKey.serializeContactPub()
 
-//        val toUserPublicKey = toUser.publicKeys.find { publicKey ->
-//            // is the publicKey disabled?
-//            if (publicKey.disabledAt == null || publicKey.disabledAt!! > Date().time) {
-//                // is the public key of type ECDSA with a high enough security level?
-//                publicKey.type == KeyType.ECDSA_SECP256K1 && publicKey.securityLevel <= SecurityLevel.MEDIUM
-//            } else {
-//                false
-//            }
-//        }
-        val toUserPublicKey = toUser.getFirstPublicKey(Purpose.ENCRYPTION) ?: toUser.publicKeys[KeyIndexPurpose.AUTHENTICATION.ordinal]
+        // The key must be ESCDA_SECP256K1 for ECDH
+        val toUserPublicKey = toUser.getFirstPublicKey(
+            Purpose.ENCRYPTION,
+            SecurityLevel.MEDIUM,
+            KeyType.ECDSA_SECP256K1
+        ) ?: toUser.getFirstPublicKey(
+            Purpose.AUTHENTICATION,
+            SecurityLevel.HIGH,
+            KeyType.ECDSA_SECP256K1
+        )
 
         if (toUserPublicKey != null) {
             val contactRequestDocument = createDocument(fromUser, contactPub, toUser, toUserPublicKey, aesKey)
