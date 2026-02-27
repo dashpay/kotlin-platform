@@ -103,6 +103,7 @@ class BlockchainIdentity {
         REVOKED
     }
 
+    @Deprecated(message = "use alternative", replaceWith = ReplaceWith("identity!!.getFirstPublicKey"))
     enum class KeyIndexPurpose {
         MASTER,
         AUTHENTICATION,
@@ -347,7 +348,7 @@ class BlockchainIdentity {
         returnChange: Boolean,
         emptyWallet: Boolean
     ): AssetLockTransaction {
-        Preconditions.checkArgument(if (wallet!!.isEncrypted) keyParameter != null else true)
+        checkArgument(if (wallet!!.isEncrypted) keyParameter != null else true)
         val privateKey = authenticationGroup!!.currentKey(type)
         var request = SendRequest.assetLock(wallet!!.params, privateKey as ECKey, credits, emptyWallet)
         if (useCoinJoin) {    /** sends the transaction and waits for IS or CL */
@@ -848,7 +849,7 @@ class BlockchainIdentity {
         val signer = WalletSignerCallback(wallet!!, keyParameter)
 
         var i = 0
-        val highIdentityPublicKey = identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
+        val highIdentityPublicKey = getHighAuthenticationKey()
             ?: error("can't find a public key with HIGH security level")
 
         preorderDocuments.forEach { preorder ->
@@ -979,7 +980,7 @@ class BlockchainIdentity {
         signer: WalletSignerCallback
     ): org.dashj.platform.sdk.Document? {
         var error: Exception? = null
-        val highIdentityPublicKey = identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
+        val highIdentityPublicKey = getHighAuthenticationKey()
             ?: error("can't find a public key with HIGH security level")
         val credits = dashsdk.platformMobileFetchIdentityFetchIdentityBalanceWithSdk(platform.rustSdk, identity!!.id.toNative()).unwrap()
         log.info("credit balance: {}", credits)
@@ -1306,9 +1307,11 @@ class BlockchainIdentity {
         return privateKey
     }
 
+    @Deprecated(message = "use alternative", replaceWith = ReplaceWith("identity!!.getFirstPublicKey"))
     fun getPrivateKeyByPurpose(purpose: KeyIndexPurpose, keyParameter: KeyParameter?): ECKey {
         return maybeDecryptKey(purpose.ordinal, identity!!.getPublicKeyById(purpose.ordinal)!!.type, keyParameter)!!
     }
+    @Deprecated(message = "use alternative", replaceWith = ReplaceWith("identity!!.getFirstPublicKey"))
     fun getIdentityPublicKeyByPurpose(purpose: KeyIndexPurpose): IdentityPublicKey {
         return identity!!.getPublicKeyById(purpose.ordinal)!!
     }
@@ -2041,7 +2044,7 @@ class BlockchainIdentity {
         when (contactKeyChain.type) {
             FriendKeyChain.KeyChainType.RECEIVING_CHAIN -> {
                 wallet!!.run {
-                    Preconditions.checkArgument(isEncrypted == (encryptionKey != null))
+                    checkArgument(isEncrypted == (encryptionKey != null))
                     if (isEncrypted) {
                         val encryptedContactKeyChain = contactKeyChain.toEncrypted(keyCrypter, encryptionKey)
                         addReceivingFromFriendKeyChain(encryptedContactKeyChain)
@@ -2138,8 +2141,8 @@ class BlockchainIdentity {
         val keyCrypter = KeyCrypterECDH()
         checkIdentity()
         // first decrypt our identity key if necessary (currently uses the first key [0])
-        val myKeyIndex = identity!!.getFirstPublicKey(Purpose.ENCRYPTION)?.id ?: KeyIndexPurpose.AUTHENTICATION.ordinal
-        val decryptedIdentityKey = maybeDecryptKey(myKeyIndex, signingAlgorithm, aesKey)
+        val myKeyIndex = getEncryptionKey()?.id ?: getHighAuthenticationKey()?.id
+        val decryptedIdentityKey = maybeDecryptKey(myKeyIndex!!, signingAlgorithm, aesKey)
 
         // derived the shared key (our private key + their public key)
         val encryptionKey = keyCrypter.deriveKey(decryptedIdentityKey, contactPublicKey)
@@ -2167,6 +2170,8 @@ class BlockchainIdentity {
 
         return Triple(boas.toByteArray(), accountLabelBoas.toByteArray(), myKeyIndex)
     }
+
+    private fun getEncryptionKey(): IdentityPublicKey? = identity!!.getFirstPublicKey(Purpose.ENCRYPTION)
 
     fun decryptExtendedPublicKey(
         encryptedXpub: ByteArray,
@@ -2346,7 +2351,7 @@ class BlockchainIdentity {
             return arrayListOf()
         }
         val encryptionIdentityPublicKey = identity!!.getFirstPublicKey(Purpose.ENCRYPTION, SecurityLevel.MEDIUM)
-            ?: identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
+            ?: getHighAuthenticationKey()
             ?: error("can't find a authentication public key with HIGH security level or encryption key")
         val keyIndex = encryptionIdentityPublicKey.id
         val encryptionKey = privateKeyAtPath(
@@ -2401,6 +2406,14 @@ class BlockchainIdentity {
             currentMetadataItems.clear()
         }
         return result
+    }
+
+    private fun getHighAuthenticationKey(
+        type: KeyType? = null
+    ): IdentityPublicKey? = if (type == null) {
+        identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH)
+    } else {
+        identity!!.getFirstPublicKey(Purpose.AUTHENTICATION, SecurityLevel.HIGH, type)
     }
 
     // Transaction Metadata Methods
