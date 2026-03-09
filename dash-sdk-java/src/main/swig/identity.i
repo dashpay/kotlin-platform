@@ -107,3 +107,13 @@ MAP_STRUCT_TYPEMAP(
     Vec_u8 *asset_lock_proof_private_key,
     bool is_testnet
 );
+
+%newobject platform_mobile_put_put_identity_update_sdk(
+    DashSdk *rust_sdk,
+    dpp_identity_identity_Identity *identity,
+    dpp_identity_identity_public_key_KeyID *master_public_key_id,
+    Vec_dpp_identity_identity_public_key_IdentityPublicKey *add_public_keys,
+    Vec_dpp_identity_identity_public_key_KeyID *disable_public_keys,
+    uintptr_t signer_context,
+    uint64_t signer_callback
+);
