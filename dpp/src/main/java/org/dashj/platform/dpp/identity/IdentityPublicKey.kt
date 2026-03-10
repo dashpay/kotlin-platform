@@ -127,7 +127,7 @@ class IdentityPublicKey(
         this(id, type, purpose, securityLevel, null, Converters.fromBase64(data), readOnly)
 
     constructor(id: Int, type: KeyType, purpose: Purpose, securityLevel: SecurityLevel, contractBounds: ContractBounds?, data: String, readOnly: Boolean) :
-            this(id, type, purpose, securityLevel, contractBounds, Converters.fromBase64(data), readOnly)
+        this(id, type, purpose, securityLevel, contractBounds, Converters.fromBase64(data), readOnly)
 
     constructor(id: Int, type: KeyType, data: String) :
         this(id, type, Purpose.AUTHENTICATION, SecurityLevel.MASTER, null, Converters.fromBase64(data), true)
@@ -167,10 +167,10 @@ class IdentityPublicKey(
                 else -> false
             }
         ) {
-            when (rawIdentityPublicKey["signature"]) {
-                is String -> signature = Converters.fromBase64(rawIdentityPublicKey["signature"] as String)
-                is ByteArray -> signature = rawIdentityPublicKey["signature"] as ByteArray
-                else -> {}
+            signature = when (rawIdentityPublicKey["signature"]) {
+                is String -> Converters.fromBase64(rawIdentityPublicKey["signature"] as String)
+                is ByteArray -> rawIdentityPublicKey["signature"] as ByteArray
+                else -> null
             }
         }
 
@@ -267,5 +267,15 @@ class IdentityPublicKey(
 
     fun copy(skipSignature: Boolean): IdentityPublicKey {
         return IdentityPublicKey(id, type, purpose, securityLevel, contractBounds, data, readOnly, disabledAt, if (skipSignature) null else signature)
+    }
+
+    fun validate() {
+        try {
+            allowedSecurityLevels[purpose]?.let { allowedList ->
+                allowedList.first { it == securityLevel }
+            }
+        } catch (e: NoSuchElementException) {
+            error("purpose $purpose does not support the given security level $securityLevel; ${e.message}")
+        }
     }
 }

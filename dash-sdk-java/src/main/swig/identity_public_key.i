@@ -75,6 +75,19 @@
 %newobject random_key;
 %newobject random_key_args;
 
+LIST_STRUCT_TYPEMAP(
+    Vec_dpp_identity_identity_public_key_IdentityPublicKey,
+    dpp_identity_identity_public_key_IdentityPublicKey,
+    IdentityPublicKey,
+    clone
+);
+LIST_STRUCT_TYPEMAP(
+    Vec_dpp_identity_identity_public_key_KeyID,
+    dpp_identity_identity_public_key_KeyID,
+    KeyID,
+    clone
+);
+
 %ignore std_collections_Map_keys_dpp_identity_identity_public_key_KeyID_values_dpp_identity_identity_public_key_IdentityPublicKey_ctor(uintptr_t count,
                                                                                                                                                                                                                                                           dpp_identity_identity_public_key_KeyID **keys,
                                                                                                                                                                                                                                                           dpp_identity_identity_public_key_IdentityPublicKey **values);

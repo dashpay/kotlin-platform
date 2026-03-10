@@ -9,6 +9,7 @@ use dash_sdk::{Error, RequestSettings, Sdk};
 use dash_sdk::platform::{DocumentQuery, Fetch};
 use dash_sdk::platform::transition::put_document::PutDocument;
 use dash_sdk::platform::transition::put_identity::PutIdentity;
+use dash_sdk::platform::transition::put_identity_update::PutIdentityUpdate;
 use dash_sdk::platform::transition::put_settings::PutSettings;
 use dash_sdk::platform::transition::TxId;
 use dashcore::hashes::{Hash, sha256};
@@ -427,6 +428,69 @@ pub fn put_identity_sdk(
 
         //tracing::info!("state transition (signable): {}", hex::encode(state_transition.signable_bytes().unwrap()));
         //tracing::info!("state transition (serialized): {}", hex::encode(state_transition.serialize_to_bytes().unwrap()));
+        tracing::info!(
+            "state transition (hash): {}",
+            hex::encode(hash_double_to_vec(state_transition.serialize_to_bytes().unwrap()))
+        );
+
+        let identity_result = wait_for_response_concurrent_identity(
+            &identity,
+            &sdk,
+            &state_transition,
+            Some(put_settings)
+        ).await;
+
+        return match identity_result {
+            Ok(identity) => Ok(identity),
+            Err(e) => Err(e.to_string())
+        }
+    })
+}
+
+#[ferment_macro::export]
+pub fn put_identity_update_sdk(
+    rust_sdk: *mut DashSdk,
+    identity: Identity,
+    master_public_key_id: KeyID,
+    add_public_keys: Vec<IdentityPublicKey>,
+    disable_public_keys: Vec<KeyID>,
+    signer_context: usize,
+    signer_callback: u64,
+) -> Result<Identity, String> {
+    let rt = unsafe { (*rust_sdk).get_runtime() };
+
+    rt.block_on(async {
+        trace!("Setting up SDK");
+        let sdk = unsafe { (*rust_sdk).get_sdk() };
+        trace!("Finished SDK, {:?}", sdk);
+        trace!("Set up signer");
+
+        let signer = CallbackSigner::new(signer_context, signer_callback).expect("signer");
+        let request_settings = unsafe { (*rust_sdk).get_request_settings() };
+        tracing::info!("call identity.put_identity_update_to_platform & wait_for_response");
+
+        let put_settings = PutSettings {
+            request_settings,
+            identity_nonce_stale_time_s: None,
+            user_fee_increase: None,
+            wait_timeout: None,
+            state_transition_creation_options: None
+        };
+
+        let state_transition_result = identity.put_identity_update_to_platform(
+            &sdk,
+            &master_public_key_id,
+            add_public_keys,
+            disable_public_keys,
+            &signer,
+            Some(put_settings)
+        ).await;
+
+        let state_transition = match state_transition_result {
+            Ok(st) => st,
+            Err(err) => return Err(err.to_string())
+        };
+
         tracing::info!(
             "state transition (hash): {}",
             hex::encode(hash_double_to_vec(state_transition.serialize_to_bytes().unwrap()))
