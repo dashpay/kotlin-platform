@@ -27,7 +27,7 @@ dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
     "rand",
     "signer",
     "serde",
-], default-features = false, tag = "v0.39.6" }
+], default-features = false, rev = "8cbae416458565faac21d3452fbc6d80b324f6d3" }
 [build-dependencies]
 cbindgen = "0.26.0"
 ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys", features = ["cbindgen_only"] }

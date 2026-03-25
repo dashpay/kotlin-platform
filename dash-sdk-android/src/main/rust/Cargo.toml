@@ -22,7 +22,7 @@ dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
     "rand",
     "signer",
     "serde",
-], default-features = false, tag = "v0.39.6" }
+], default-features = false, rev = "8cbae416458565faac21d3452fbc6d80b324f6d3" }
 drive = { path = "../../../../../platform/packages/rs-drive", default-features = false, features = [
     "verify",
     "serde",
