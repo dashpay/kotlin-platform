@@ -6,8 +6,8 @@ edition = "2021"
 [dependencies]
 dash-sdk = { path = "../../../../../platform/packages/rs-sdk" }
 #dash-sdk = { git = "https://github.com/dashpay/platform.git", branch="v1.0-dev" }
-ferment-macro = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-macro" }
-ferment-interfaces = { git = "https://github.com/dashpay/ferment", branch = "feat/opaque-default", package = "ferment-interfaces" }
+ferment-macro = { git = "https://github.com/dashpay/ferment", rev = "5114330ae564858803d656efba84bb4adacb2a2e", package = "ferment-macro" }
+ferment-interfaces = { git = "https://github.com/dashpay/ferment", rev = "5114330ae564858803d656efba84bb4adacb2a2e", package = "ferment-interfaces" }
 
 platform-mobile = { path = "../../../../platform-mobile"}
 
@@ -22,26 +22,26 @@ dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
     "rand",
     "signer",
     "serde",
-], default-features = false, tag = "v0.39.6" }
+], default-features = false, rev = "5114330ae564858803d656efba84bb4adacb2a2e" }
 drive = { path = "../../../../../platform/packages/rs-drive", default-features = false, features = [
     "verify",
     "serde",
 ] }
 drive-proof-verifier = { path = "../../../../../platform/packages/rs-drive-proof-verifier"}
-ferment = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment" }
+ferment = { git = "https://github.com/dashpay/ferment", rev = "5114330ae564858803d656efba84bb4adacb2a2e", package = "ferment" }
 
 [build-dependencies]
 cbindgen = "0.26.0"
-# ferment = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment" }
-ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys", features = ["cbindgen_only"] }
-#ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys" }
+# ferment = { git = "https://github.com/dashpay/ferment", rev = "5114330ae564858803d656efba84bb4adacb2a2e", package = "ferment" }
+ferment-sys = { git = "https://github.com/dashpay/ferment", rev = "5114330ae564858803d656efba84bb4adacb2a2e", package = "ferment-sys", features = ["cbindgen_only"] }
+#ferment-sys = { git = "https://github.com/dashpay/ferment", rev = "5114330ae564858803d656efba84bb4adacb2a2e", package = "ferment-sys" }
 
 [patch.crates-io]
-tower-service = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
-tower-layer = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
-tower = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }
+tower-service = { git = "https://github.com/QuantumExplorer/tower", rev = "5114330ae564858803d656efba84bb4adacb2a2e" }
+tower-layer = { git = "https://github.com/QuantumExplorer/tower", rev = "5114330ae564858803d656efba84bb4adacb2a2e" }
+tower = { git = "https://github.com/QuantumExplorer/tower", rev = "5114330ae564858803d656efba84bb4adacb2a2e" }
 # this is required until this PR is merged
-rs-x11-hash = { git = "https://github.com/hashengineering/rs-x11-hash", branch = "feat/add-android-support" }
+rs-x11-hash = { git = "https://github.com/hashengineering/rs-x11-hash", rev = "5114330ae564858803d656efba84bb4adacb2a2e" }
 elliptic-curve-tools = { git = "https://github.com/mikelodder7/elliptic-curve-tools", rev = "5789c0491252d5af8add829348af9dd6ac09d8f6" }
 
 [lib]

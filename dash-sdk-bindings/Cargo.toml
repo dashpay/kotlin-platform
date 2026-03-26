@@ -4,8 +4,8 @@ version = "2.0.4"
 edition = "2021"
 
 [dependencies]
-ferment = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment" }
-ferment-macro = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-macro" }
+ferment = { git = "https://github.com/dashpay/ferment", rev = "5114330ae564858803d656efba84bb4adacb2a2e", package = "ferment" }
+ferment-macro = { git = "https://github.com/dashpay/ferment", rev = "5114330ae564858803d656efba84bb4adacb2a2e", package = "ferment-macro" }
 platform-mobile = { path = "../platform-mobile"}
 # dependencies required by ferment
 platform-value = { path = "../../platform/packages/rs-platform-value" }
@@ -27,15 +27,15 @@ dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
     "rand",
     "signer",
     "serde",
-], default-features = false, tag = "v0.39.6" }
+], default-features = false, rev = "5114330ae564858803d656efba84bb4adacb2a2e" }
 [build-dependencies]
 cbindgen = "0.26.0"
-ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys", features = ["cbindgen_only"] }
-#ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys"}
+ferment-sys = { git = "https://github.com/dashpay/ferment", rev = "5114330ae564858803d656efba84bb4adacb2a2e", package = "ferment-sys", features = ["cbindgen_only"] }
+#ferment-sys = { git = "https://github.com/dashpay/ferment", rev = "5114330ae564858803d656efba84bb4adacb2a2e", package = "ferment-sys"}
 toml = "0.8.8"
 
 [patch.crates-io]
-rs-x11-hash = { git = "https://github.com/hashengineering/rs-x11-hash", branch = "feat/add-android-support" }
+rs-x11-hash = { git = "https://github.com/hashengineering/rs-x11-hash", rev = "5114330ae564858803d656efba84bb4adacb2a2e" }
 elliptic-curve-tools = { git = "https://github.com/mikelodder7/elliptic-curve-tools", rev = "5789c0491252d5af8add829348af9dd6ac09d8f6" }
 
 [lib]

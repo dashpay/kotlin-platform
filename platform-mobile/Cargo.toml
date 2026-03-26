@@ -4,8 +4,8 @@ version = "2.0.4"
 edition = "2021"
 
 [dependencies]
-ferment = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment" }
-ferment-macro = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-macro" }
+ferment = { git = "https://github.com/dashpay/ferment", rev = "5114330ae564858803d656efba84bb4adacb2a2e", package = "ferment" }
+ferment-macro = { git = "https://github.com/dashpay/ferment", rev = "5114330ae564858803d656efba84bb4adacb2a2e", package = "ferment-macro" }
 
 platform-value = { path = "../../platform/packages/rs-platform-value" }
 data-contracts = { path = "../../platform/packages/data-contracts" }
@@ -45,10 +45,10 @@ dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
     "rand",
     "signer",
     "serde",
-], default-features = false, tag = "v0.39.6" }
-dashcore_hashes = { git = "https://github.com/dashpay/rust-dashcore" }
+], default-features = false, rev = "5114330ae564858803d656efba84bb4adacb2a2e" }
+dashcore_hashes = { git = "https://github.com/dashpay/rust-dashcore", rev = "5114330ae564858803d656efba84bb4adacb2a2e" }
 # dashcore-rpc is only needed for core rpc; TODO remove once we have correct core rpc impl
-dashcore-rpc = { git = "https://github.com/dashpay/rust-dashcore", tag = "v0.39.6" }
+dashcore-rpc = { git = "https://github.com/dashpay/rust-dashcore", rev = "5114330ae564858803d656efba84bb4adacb2a2e" }
 rand = "0.8.5"
 base64 = "0.13"
 tonic = { version = "0.11", features = [
