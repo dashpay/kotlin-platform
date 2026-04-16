@@ -50,7 +50,11 @@ jobs:
     - name: Install SWIG and protoc
       run: |
         sudo apt-get update
-        sudo apt-get install -y swig protobuf-compiler
+        sudo apt-get install -y swig
+        PROTOC_VERSION=25.3
+        curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip
+        unzip protoc-${PROTOC_VERSION}-linux-x86_64.zip -d $HOME/.local
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
 
     - name: generate the header file
       run: |
