@@ -56,6 +56,9 @@ jobs:
         unzip protoc-${PROTOC_VERSION}-linux-x86_64.zip -d $HOME/.local
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
+    - name: Install cbindgen
+      run: cargo install cbindgen
+
     - name: generate the header file
       run: |
         cd dash-sdk-bindings
