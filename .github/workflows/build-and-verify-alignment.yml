@@ -41,6 +41,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
+    - name: clone platform repo
+      run: git clone --branch ferment-2.0 https://github.com/hashengineering/platform.git
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
