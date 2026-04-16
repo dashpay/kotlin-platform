@@ -47,10 +47,10 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Install SWIG
+    - name: Install SWIG and protoc
       run: |
         sudo apt-get update
-        sudo apt-get install -y swig
+        sudo apt-get install -y swig protobuf-compiler
 
     - name: generate the header file
       run: |
