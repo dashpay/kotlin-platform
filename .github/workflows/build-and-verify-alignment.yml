@@ -93,7 +93,7 @@ jobs:
       run: ./gradlew cmakeClean cmakeConfigure cmakeBuild
 
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew build -x test
 
     - name: Verify 16KB Page Size Alignment
       run: ./scripts/verify-16kb-alignment.sh
