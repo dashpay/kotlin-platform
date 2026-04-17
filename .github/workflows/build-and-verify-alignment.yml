@@ -46,7 +46,7 @@ jobs:
       run: git clone --branch ferment-2.0 https://github.com/hashengineering/platform.git ../platform
 
     - name: clone rs-x11-hash repo
-      run: git clone --branch feat/add-android-support https://github.com/hashengineering/rs-x11-hash.git
+      run: git clone --branch feat/add-android-support https://github.com/hashengineering/rs-x11-hash.git ../rs-x11-hash
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
