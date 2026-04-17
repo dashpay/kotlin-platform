@@ -30,6 +30,7 @@ jobs:
         echo "Installing Android NDK 29.0.14206865..."
         $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;29.0.14206865"
         echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/29.0.14206865" >> $GITHUB_ENV
+        echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/29.0.14206865" >> $GITHUB_ENV
 
     - name: Cache Gradle packages
       uses: actions/cache@v4
@@ -52,8 +53,16 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y swig
         PROTOC_VERSION=25.3
-        curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip
-        unzip protoc-${PROTOC_VERSION}-linux-x86_64.zip -d $HOME/.local
+        BASE_URL="https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}"
+        ZIP_FILE="protoc-${PROTOC_VERSION}-linux-x86_64.zip"
+        curl -fL -o "${ZIP_FILE}" "${BASE_URL}/${ZIP_FILE}"
+        curl -fL -o "${ZIP_FILE}.sha256sum" "${BASE_URL}/${ZIP_FILE}.sha256sum"
+        sha256sum --check "${ZIP_FILE}.sha256sum"
+        PROTOC_TMP=$(mktemp -d)
+        unzip -n "${ZIP_FILE}" -d "${PROTOC_TMP}"
+        cp -n "${PROTOC_TMP}/bin/protoc" "$HOME/.local/bin/protoc"
+        chmod +x "$HOME/.local/bin/protoc"
+        rm -rf "${PROTOC_TMP}" "${ZIP_FILE}" "${ZIP_FILE}.sha256sum"
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
     - name: Install cbindgen
@@ -71,11 +80,14 @@ jobs:
     - name: Generate Protobuf
       run: ./gradlew generateProto
 
+    - name: Install Cargo NDK and Rust targets
+      run: |
+        cargo install cargo-ndk --version "^3"
+        rustup component add rust-src --toolchain nightly
+        rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android --toolchain nightly
+
     - name: Build CMake
       run: ./gradlew cmakeClean cmakeConfigure cmakeBuild
-
-    - name: Install Cargo NDK
-      run: cargo install cargo-ndk --version "^3"
 
     - name: Build with Gradle
       run: ./gradlew build
