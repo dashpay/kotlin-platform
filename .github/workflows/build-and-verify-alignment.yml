@@ -60,11 +60,13 @@ jobs:
         echo "${PROTOC_SHA256}  ${ZIP_FILE}" | sha256sum --check
         PROTOC_TMP=$(mktemp -d)
         unzip -n "${ZIP_FILE}" -d "${PROTOC_TMP}"
-        mkdir -p "$HOME/.local/bin"
+        mkdir -p "$HOME/.local/bin" "$HOME/.local/include"
         cp --update=none "${PROTOC_TMP}/bin/protoc" "$HOME/.local/bin/protoc"
         chmod +x "$HOME/.local/bin/protoc"
-        rm -rf "${PROTOC_TMP}" "${ZIP_FILE}" "${ZIP_FILE}.sha256sum"
+        cp -r --update=none "${PROTOC_TMP}/include/." "$HOME/.local/include/"
+        rm -rf "${PROTOC_TMP}" "${ZIP_FILE}"
         echo "$HOME/.local/bin" >> $GITHUB_PATH
+        echo "PROTOC_INCLUDE=$HOME/.local/include" >> $GITHUB_ENV
 
     - name: Install cbindgen
       run: cargo install cbindgen
