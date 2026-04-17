@@ -60,7 +60,8 @@ jobs:
         echo "${PROTOC_SHA256}  ${ZIP_FILE}" | sha256sum --check
         PROTOC_TMP=$(mktemp -d)
         unzip -n "${ZIP_FILE}" -d "${PROTOC_TMP}"
-        cp -n "${PROTOC_TMP}/bin/protoc" "$HOME/.local/bin/protoc"
+        mkdir -p "$HOME/.local/bin"
+        cp --update=none "${PROTOC_TMP}/bin/protoc" "$HOME/.local/bin/protoc"
         chmod +x "$HOME/.local/bin/protoc"
         rm -rf "${PROTOC_TMP}" "${ZIP_FILE}" "${ZIP_FILE}.sha256sum"
         echo "$HOME/.local/bin" >> $GITHUB_PATH
