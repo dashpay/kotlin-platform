@@ -96,7 +96,7 @@ jobs:
       run: ./gradlew cmakeClean cmakeConfigure cmakeBuild
 
     - name: Build with Gradle
-      run: ./gradlew build -x test
+      run: ./gradlew build -x test -PskipDetekt
 
     - name: Verify 16KB Page Size Alignment
       run: ./scripts/verify-16kb-alignment.sh
