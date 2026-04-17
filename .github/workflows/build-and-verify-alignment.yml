@@ -74,6 +74,9 @@ jobs:
     - name: Build CMake
       run: ./gradlew cmakeClean cmakeConfigure cmakeBuild
 
+    - name: Install Cargo NDK
+      run: cargo install cargo-ndk
+
     - name: Build with Gradle
       run: ./gradlew build
 
