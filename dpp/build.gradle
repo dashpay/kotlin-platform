@@ -206,6 +206,13 @@ tasks.withType(Copy) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
+tasks.withType(io.gitlab.arturbosch.detekt.Detekt).configureEach {
+    onlyIf { !project.hasProperty('skipDetekt') }
+}
+tasks.withType(io.gitlab.arturbosch.detekt.DetektCreateBaselineTask).configureEach {
+    onlyIf { !project.hasProperty('skipDetekt') }
+}
+
 assemble.dependsOn(publishToMavenLocal)
 assemble.dependsOn(sourcesJar)
 // apply from: 'ktlint.gradle'

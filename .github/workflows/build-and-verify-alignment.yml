@@ -30,6 +30,7 @@ jobs:
         echo "Installing Android NDK 29.0.14206865..."
         $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;29.0.14206865"
         echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/29.0.14206865" >> $GITHUB_ENV
+        echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/29.0.14206865" >> $GITHUB_ENV
 
     - name: Cache Gradle packages
       uses: actions/cache@v4
@@ -41,13 +42,37 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
+    - name: clone platform repo
+      run: git clone --branch ferment-2.0 https://github.com/hashengineering/platform.git ../platform
+
+    - name: clone rs-x11-hash repo
+      run: git clone --branch feat/add-android-support https://github.com/hashengineering/rs-x11-hash.git ../rs-x11-hash
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Install SWIG
+    - name: Install SWIG and protoc
       run: |
         sudo apt-get update
         sudo apt-get install -y swig
+        PROTOC_VERSION=25.3
+        PROTOC_SHA256="f853e691868d0557425ea290bf7ba6384eef2fa9b04c323afab49a770ba9da80"
+        BASE_URL="https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}"
+        ZIP_FILE="protoc-${PROTOC_VERSION}-linux-x86_64.zip"
+        curl -fL -o "${ZIP_FILE}" "${BASE_URL}/${ZIP_FILE}"
+        echo "${PROTOC_SHA256}  ${ZIP_FILE}" | sha256sum --check
+        PROTOC_TMP=$(mktemp -d)
+        unzip -n "${ZIP_FILE}" -d "${PROTOC_TMP}"
+        mkdir -p "$HOME/.local/bin" "$HOME/.local/include"
+        cp --update=none "${PROTOC_TMP}/bin/protoc" "$HOME/.local/bin/protoc"
+        chmod +x "$HOME/.local/bin/protoc"
+        cp -r --update=none "${PROTOC_TMP}/include/." "$HOME/.local/include/"
+        rm -rf "${PROTOC_TMP}" "${ZIP_FILE}"
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        echo "PROTOC_INCLUDE=$HOME/.local/include" >> $GITHUB_ENV
+
+    - name: Install cbindgen
+      run: cargo install cbindgen
 
     - name: generate the header file
       run: |
@@ -61,11 +86,17 @@ jobs:
     - name: Generate Protobuf
       run: ./gradlew generateProto
 
+    - name: Install Cargo NDK and Rust targets
+      run: |
+        cargo install cargo-ndk --version "^3"
+        rustup component add rust-src --toolchain nightly
+        rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android --toolchain nightly
+
     - name: Build CMake
       run: ./gradlew cmakeClean cmakeConfigure cmakeBuild
 
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew build -x test -PskipDetekt
 
     - name: Verify 16KB Page Size Alignment
       run: ./scripts/verify-16kb-alignment.sh

@@ -82,6 +82,7 @@ import org.bitcoinj.crypto.MnemonicCode;
 import org.bitcoinj.crypto.MnemonicException;
 import org.bitcoinj.crypto.TransactionSignature;
 import org.bitcoinj.evolution.AssetLockTransaction;
+import org.bitcoinj.manager.DashSystem;
 import org.bitcoinj.net.discovery.ThreeMethodPeerDiscovery;
 import org.bitcoinj.params.BinTangDevNetParams;
 import org.bitcoinj.params.MainNetParams;
@@ -195,6 +196,7 @@ public class WalletTool {
     private static OptionSpec<Boolean> aliasFlag;
 
     private static Context context;
+    private static DashSystem system;
     private static NetworkParameters params;
     private static File walletFile;
     private static BlockStore store;
@@ -416,18 +418,19 @@ public class WalletTool {
         }
 
         context = new Context(params);
+        system = new DashSystem(context);
         EnumSet<MasternodeSync.SYNC_FLAGS> syncFlags = MasternodeSync.SYNC_DEFAULT_SPV;
         syncFlags.add(MasternodeSync.SYNC_FLAGS.SYNC_HEADERS_MN_LIST_FIRST);
         syncFlags.add(MasternodeSync.SYNC_FLAGS.SYNC_BLOCKS_AFTER_PREPROCESSING);
-        context.initDash(true, true, syncFlags);
-        context.initDashSync(".");
+        system.initDash(true, true, syncFlags);
+        system.initDashSync(".");
         Context.propagate(context);
 
         platform = new Platform(params);
         authenticationGroupExtension = new AuthenticationGroupExtension(params);
         dashPayWalletExtension = new DashPayWalletExtension(platform, authenticationGroupExtension);
 
-        platform.setMasternodeListManager(context.masternodeListManager);
+        platform.setMasternodeListManager(system.masternodeListManager);
 
         mode = modeFlag.value(options);
 
@@ -661,7 +664,7 @@ public class WalletTool {
 
         // wait for the preblock download to be done first
         Futures.addCallback(waitAndShutdownFuture, waitAndShutdownCallback, Executors.newSingleThreadExecutor());
-        if (!context.masternodeSync.syncFlags.contains(MasternodeSync.SYNC_FLAGS.SYNC_BLOCKS_AFTER_PREPROCESSING))
+        if (!system.masternodeSync.syncFlags.contains(MasternodeSync.SYNC_FLAGS.SYNC_BLOCKS_AFTER_PREPROCESSING))
             waitAndShutdownFuture.set(waitForFlag);
     }
 
@@ -1479,7 +1482,7 @@ public class WalletTool {
             }
         } else {
             // TODO: we used to use peerGroup.setRequiredServices(0); here
-            peerGroup.addPeerDiscovery(new ThreeMethodPeerDiscovery(params, Context.get().masternodeListManager));
+            peerGroup.addPeerDiscovery(new ThreeMethodPeerDiscovery(params, system.masternodeListManager));
         }
         platform.setBlockChain(chain);
     }
@@ -1571,7 +1574,7 @@ public class WalletTool {
                 peerGroup.stop();
             saveWallet(walletFile);
             store.close();
-            wallet.getContext().close();
+            system.close();
             wallet = null;
             System.exit(0);
         } catch (BlockStoreException e) {
@@ -1793,13 +1796,13 @@ public class WalletTool {
                 final KeyParameter aesKey = passwordToKey(true);
                 if (aesKey == null)
                     return; // Error message already printed.
-                System.out.println(wallet.toString(dumpLookahead, true, aesKey, true, true, chain));
+                System.out.println(wallet.toString(dumpLookahead, true, aesKey, true, true, chain, false));
             } else {
                 System.err.println("Can't dump privkeys, wallet is encrypted.");
                 return;
             }
         } else {
-            System.out.println(wallet.toString(dumpLookahead, dumpPrivkeys, null, true, true, chain));
+            System.out.println(wallet.toString(dumpLookahead, dumpPrivkeys, null, true, true, chain, false));
         }
     }
 
@@ -1832,16 +1835,19 @@ public class WalletTool {
             CoinJoinClientOptions.setMultiSessionEnabled(options.valueOf(multiSessionFlag));
         }
 
-        wallet.getContext().coinJoinManager.coinJoinClientManagers.put(wallet.getDescription(), new CoinJoinClientManager(wallet));
-        wallet.getContext().coinJoinManager.addSessionStartedListener(Threading.SAME_THREAD, reporter);
-        wallet.getContext().coinJoinManager.addSessionCompleteListener(Threading.SAME_THREAD, reporter);
-        wallet.getContext().coinJoinManager.addMixingCompleteListener(Threading.SAME_THREAD, reporter);
+        system.coinJoinManager.coinJoinClientManagers.put(
+                wallet.getDescription(),
+                new CoinJoinClientManager(wallet, system.masternodeSync, system.coinJoinManager, system.masternodeListManager, system.masternodeMetaDataManager)
+        );
+        system.coinJoinManager.addSessionStartedListener(Threading.SAME_THREAD, reporter);
+        system.coinJoinManager.addSessionCompleteListener(Threading.SAME_THREAD, reporter);
+        system.coinJoinManager.addMixingCompleteListener(Threading.SAME_THREAD, reporter);
 
         // mix coins
         try {
-            CoinJoinClientManager it = wallet.getContext().coinJoinManager.coinJoinClientManagers.get(wallet.getDescription());
+            CoinJoinClientManager it = system.coinJoinManager.coinJoinClientManagers.get(wallet.getDescription());
             it.setStopOnNothingToDo(true);
-            it.setBlockChain(wallet.getContext().blockChain);
+            it.setBlockChain(system.blockChain);
 
             {
                 if (wallet.isEncrypted()) {
@@ -1860,13 +1866,13 @@ public class WalletTool {
             System.out.println("Mixing " + (result ? "started successfully" : ("start failed: " + it.getStatuses() + ", will retry")));
 
             // wait until finished mixing
-            SettableFuture<Boolean> mixingFinished = wallet.getContext().coinJoinManager.getMixingFinishedFuture(wallet);
+            SettableFuture<Boolean> mixingFinished = system.coinJoinManager.getMixingFinishedFuture(wallet);
             mixingFinished.addListener(() -> System.out.println("Mixing complete."), Threading.SAME_THREAD);
             mixingFinished.get();
-            wallet.getContext().coinJoinManager.removeSessionCompleteListener(reporter);
-            wallet.getContext().coinJoinManager.removeMixingCompleteListener(reporter);
-            wallet.getContext().coinJoinManager.removeSessionStartedListener(reporter);
-            wallet.getContext().coinJoinManager.stop();
+            system.coinJoinManager.removeSessionCompleteListener(reporter);
+            system.coinJoinManager.removeMixingCompleteListener(reporter);
+            system.coinJoinManager.removeSessionStartedListener(reporter);
+            system.coinJoinManager.stop();
         } catch (ExecutionException | InterruptedException x) {
             throw new RuntimeException(x);
         }

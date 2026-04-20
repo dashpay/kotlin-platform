@@ -4,13 +4,12 @@
 
 ### Clone Repos
 ```bash
-# create a containing directory
+# create a containing directory such as `dashpay`
 mkdir dashpay
 cd dashpay
 
 git clone https://github.com/dashpay/kotlin-platform.git
-git clone --branch feat/add-android-support https://github.com/hashengineering/rs-x11-hash.git # the android PR is not yet merged
-git clone --branch ferment-1.7.1 https://github.com/hashengineering/platform.git 
+git clone --branch ferment-2.0 https://github.com/hashengineering/platform.git
 ```
 
 ### Build
