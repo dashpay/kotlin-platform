@@ -362,7 +362,7 @@ fn docs_get_all_query_sdk_test() {
 
 #[test]
 fn docs_startswith_query_sdk_using_single_node_test() {
-    let mut sdk = create_dash_sdk_using_single_evonode("35.163.144.230".into(), 0, 0, true);
+    let mut sdk = create_dash_sdk_using_single_evonode("68.67.122.29".into(), 0, 0, true);
     let contract_id = Identifier::from(dpns_contract::ID_BYTES);
     let docs_result = unsafe {
         fetch_documents_with_query_and_sdk(

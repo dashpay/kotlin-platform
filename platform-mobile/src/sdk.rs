@@ -8,7 +8,7 @@ use dpp::data_contract::DataContract;
 use ferment::{boxed, unbox_any};
 use platform_value::Identifier;
 use platform_version::version::PlatformVersion;
-use platform_version::version::v7::PLATFORM_V7;
+use platform_version::version::v12::PLATFORM_V12;
 use platform_version::version::v9::PLATFORM_V9;
 use tokio::runtime::{Builder, Runtime};
 use crate::config::{Config, EntryPoint};
@@ -147,9 +147,9 @@ pub fn create_dash_sdk_with_context(
             Config::new_mainnet()
         };
         let version: &'static PlatformVersion = if is_testnet {
-            &PLATFORM_V9
+            &PLATFORM_V12
         } else {
-            &PLATFORM_V9
+            &PLATFORM_V12
         };
         tracing::info!("configuring for testnet={} using platform port={}", cfg.is_testnet, cfg.platform_port);
         tracing::info!("configuring platform version {:?}", version);
@@ -182,6 +182,7 @@ pub fn create_dash_sdk_with_context(
                 timeout: Some(Duration::from_secs(timeout as u64)),
                 retries: Some(retries),
                 ban_failed_address: Some(true),
+                max_decoding_message_size: None,
             }
         }
     })
@@ -210,9 +211,9 @@ pub fn create_dash_sdk_using_single_evonode(
             Config::new_mainnet()
         };
         let version: &'static PlatformVersion = if is_testnet {
-            &PLATFORM_V9
+            &PLATFORM_V12
         } else {
-            &PLATFORM_V7
+            &PLATFORM_V12
         };
         let data_contract_cache = Arc::new(Cache::new(NonZeroUsize::new(100).expect("Non Zero")));
         let sdk = if quorum_public_key_callback != 0 {
@@ -234,6 +235,7 @@ pub fn create_dash_sdk_using_single_evonode(
                 timeout: Some(Duration::from_secs(10)),
                 retries: Some(0),
                 ban_failed_address: Some(false),
+                max_decoding_message_size: None,
             }
         }
     })

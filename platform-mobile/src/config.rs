@@ -7,7 +7,7 @@ use std::sync::Arc;
 use std::str::FromStr;
 use dpp::data_contract::DataContract;
 use drive_proof_verifier::ContextProvider;
-use drive_proof_verifier::error::ContextProviderError;
+use drive_proof_verifier::error::Error::ContextProviderError;
 use serde::Deserialize;
 use std::collections::BTreeMap;
 use std::time::Duration;
@@ -275,10 +275,10 @@ impl Config {
             let builder = dash_sdk::SdkBuilder::new(self.address_list())
                 .with_version(version)
                 .with_core(
-                &self.core_ip,
+                &self.core_ip.as_str(),
                 self.core_port,
-                &self.core_user,
-                &self.core_password,
+                &self.core_user.as_str(),
+                &self.core_password.as_str(),
             );
 
             builder
@@ -294,10 +294,10 @@ impl Config {
         let sdk = {
             // Dump all traffic to disk
             let builder = dash_sdk::SdkBuilder::new(self.new_address_list(address_list)).with_core(
-                &self.core_ip,
+                &self.core_ip.as_str(),
                 self.core_port,
-                &self.core_user,
-                &self.core_password,
+                &self.core_user.as_str(),
+                &self.core_password.as_str(),
             );
 
             builder
@@ -366,6 +366,7 @@ impl Config {
                         timeout: Some(Duration::from_secs(timeout as u64)),
                         retries: Some(retries),
                         ban_failed_address: Some(true),
+                        max_decoding_message_size: Some(16 * 1024 * 1024)
                     }
                 )
                 .with_version(&version)

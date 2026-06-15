@@ -17,12 +17,11 @@ dpp = { path = "../../../../../platform/packages/rs-dpp" }
 #rs-dapi-client = { path = "../../../../../platform/packages/rs-dapi-client" }
 #platform-version = { path = "../../../../../platform/packages/rs-platform-version" }
 dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
-    "std",
     "secp-recovery",
     "rand",
     "signer",
     "serde",
-], default-features = false, tag = "v0.39.6" }
+], default-features = false, rev = "981e97f1015960ae5d277afdabcba1cbbc0b3a63" }
 drive = { path = "../../../../../platform/packages/rs-drive", default-features = false, features = [
     "verify",
     "serde",

@@ -10,13 +10,13 @@ use dapi_grpc::tonic::codegen::Body;
 
 use dpp::data_contract::{DataContract, TokenConfiguration};
 use platform_value::types::identifier::Identifier;
-use drive_proof_verifier::error::ContextProviderError;
+use drive_proof_verifier::ContextProviderError;
 use drive_proof_verifier::ContextProvider;
 use platform_value::converter::serde_json;
 use dash_sdk::platform::Fetch;
 use dash_sdk::{Sdk, Error};
+use dashcore::prelude::CoreBlockHeight;
 use dpp::identity::IdentityPublicKey;
-use dpp::prelude::CoreBlockHeight;
 use platform_value::types::binary_data::BinaryData;
 use platform_version::version::PlatformVersion;
 use tokio::runtime::{Handle, Runtime};

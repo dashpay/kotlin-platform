@@ -32,7 +32,7 @@ use platform_value::types::identifier::Identifier;
 use platform_value::{IdentifierBytes32, Value};
 use platform_value::string_encoding::Encoding;
 use platform_version::version::PlatformVersion;
-use simple_signer::signer::SimpleSigner;
+use simple_signer::single_key_signer::SingleKeySigner;
 use tracing::trace;
 use crate::config::{Config, EntryPoint};
 use crate::fetch_document::fetch_documents_with_query_and_sdk;

@@ -45,7 +45,7 @@ use platform_value::{Identifier, IdentifierBytes32, Value};
 use platform_value::string_encoding::Encoding;
 use platform_value::types::binary_data::BinaryData;
 use platform_version::version::PlatformVersion;
-use simple_signer::signer::SimpleSigner;
+use simple_signer::single_key_signer::SingleKeySigner;
 use serde::{Deserialize, Serialize};
 use tokio::runtime::Builder;
 use tracing::trace;
@@ -216,9 +216,10 @@ impl CallbackSigner {
 
 
 
-impl Signer for CallbackSigner {
+#[async_trait::async_trait]
+impl Signer<IdentityPublicKey> for CallbackSigner {
     /// the public key bytes are only used to look up the private key
-    fn sign(
+    async fn sign(
         &self,
         identity_public_key: &IdentityPublicKey,
         data: &[u8],
@@ -238,6 +239,10 @@ impl Signer for CallbackSigner {
             // Handle error scenario, for example by converting 'length' to an error code
             Err(ProtocolError::InvalidSigningKeyTypeError("something is wrong.  signer callback returned 0".to_string())) // Assuming there is a way to convert to ProtocolError
         }
+    }
+
+    async fn sign_create_witness(&self, key: &IdentityPublicKey, data: &[u8]) -> Result<AddressWitness, ProtocolError> {
+        todo!()
     }
 
     // todo: add a new call back to the client?
@@ -303,6 +308,8 @@ pub fn ChainAssetLockProofFFI_clone(a: ChainAssetLockProofFFI) -> ChainAssetLock
 }
 
 use dashcore_hashes::Hash as dashcore_hashes_hash;
+use dpp::address_funds::AddressWitness;
+
 impl From<ChainAssetLockProofFFI> for ChainAssetLockProof {
     fn from(value: ChainAssetLockProofFFI) -> Self {
         let outpoint = dpp::dashcore::OutPoint {
@@ -385,7 +392,7 @@ pub fn put_identity_sdk(
         let network = if is_testnet {
             Network::Testnet
         } else {
-            Network::Dash
+            Network::Mainnet
         };
         let private_key = match PrivateKey::from_slice(asset_lock_proof_private_key.as_slice(), network) {
             Ok(pk) => pk,
@@ -412,8 +419,7 @@ pub fn put_identity_sdk(
             state_transition_creation_options: None
         };
 
-        let state_transition_result = Identity::put_to_platform(
-            &identity,
+        let state_transition_result = identity.put_to_platform_with_private_key(
             &sdk,
             asset_lock_proof.into(),
             &private_key,
@@ -528,7 +534,7 @@ pub fn topup_identity_sdk(
         let network = if is_testnet {
             Network::Testnet
         } else {
-            Network::Dash
+            Network::Mainnet
         };
         let private_key = match PrivateKey::from_slice(asset_lock_proof_private_key.as_slice(), network) {
             Ok(pk) => pk,
@@ -546,11 +552,10 @@ pub fn topup_identity_sdk(
             wait_timeout: None,
             state_transition_creation_options: None
         };
-        let identity_result = identity.top_up_identity(
+        let identity_result = identity.top_up_identity_with_private_key(
             &sdk,
             asset_lock_proof.into(),
             &private_key,
-            Some(user_fee_increase),
             Some(put_settings)
         ).await;
 

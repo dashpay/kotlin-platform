@@ -101,7 +101,7 @@ object PlatformExplorer {
     @JvmStatic
     fun main(args: Array<String>) {
         // This line makes the log output more compact and easily read, especially when using the JDK log adapter.
-        BriefLogFormatter.initWithSilentBitcoinJ()
+        BriefLogFormatter.initVerbose()
         if (args.isEmpty()) {
             System.err.println("Usage: [regtest|testnet|333|devnet]")
             return
