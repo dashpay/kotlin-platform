@@ -79,7 +79,7 @@ class TxMetadataItem(
         rawObject["barcodeFormat"] as? String,
         rawObject["merchantUrl"] as? String,
         rawObject["otherData"] as? Map<String, String>,
-        rawObject["note"] as? String,
+        rawObject["order"] as? String,
         rawObject["giftCardChallenge"] as? String,
         index = rawObject["index"] as? Int
     ) {
@@ -173,7 +173,7 @@ class TxMetadataItem(
         }
 
         order?.let {
-            map["note"] = it
+            map["order"] = it
         }
 
         giftCardChallenge?.let {
@@ -254,7 +254,7 @@ class TxMetadataItem(
         }
 
         order?.let {
-            map["note"] = it
+            map["order"] = it
         }
 
         giftCardChallenge?.let {
