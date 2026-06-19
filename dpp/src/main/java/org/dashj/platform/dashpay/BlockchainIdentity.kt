@@ -2491,7 +2491,7 @@ class BlockchainIdentity {
             log.info("publish: determine how items can go in the next txmetadata document: $currentIndex")
             while (currentIndex < txMetadataItems.size) {
                 lastItem = txMetadataItems[currentIndex]
-                val estimatedItemSize = lastItem.getSize() + 4
+                val estimatedItemSize = lastItem.getSize(TxMetadataDocument.VERSION_PROTOBUF) + 4
                 if ((estimatedDocSize + estimatedItemSize) < TxMetadataDocument.MAX_ENCRYPTED_SIZE) {
                     estimatedDocSize += estimatedItemSize
                     currentMetadataItems.add(lastItem)
