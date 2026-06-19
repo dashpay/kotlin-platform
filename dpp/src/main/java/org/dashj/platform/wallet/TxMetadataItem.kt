@@ -10,6 +10,7 @@ package org.dashj.platform.wallet
 import com.google.common.primitives.Ints
 import com.google.protobuf.ByteString
 import org.bitcoinj.core.Sha256Hash
+import org.dashj.platform.contracts.wallet.TxMetadataDocument
 import org.dashj.platform.dpp.util.Cbor
 import java.text.DecimalFormat
 
@@ -268,8 +269,14 @@ class TxMetadataItem(
         return map
     }
 
-    fun getSize(): Int {
-        return Cbor.encode(toObject()).size
+    fun getSize(version: Int): Int {
+        return if (version == TxMetadataDocument.VERSION_CBOR) {
+            Cbor.encode(toObject()).size
+        } else if (version == TxMetadataDocument.VERSION_PROTOBUF) {
+            toProtobuf().serializedSize
+        } else {
+            error("unknown version $version")
+        }
     }
 
     // does not compare timestamp
