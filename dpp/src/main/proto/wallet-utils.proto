@@ -19,6 +19,9 @@ message TxMetadataItem {
   optional string barcodeFormat = 14;
   optional string merchantUrl = 15;
   map<string, string> otherData = 16;
+  optional string order = 17;
+  optional string giftCardChallenge = 18;
+  optional uint32 index = 19;
 }
 
 message TxMetadataBatch {

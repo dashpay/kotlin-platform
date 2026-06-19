@@ -39,4 +39,6 @@ struct InstantLock {
 
 struct platform_mobile_config_EntryPoint;
 
+#define Value platform_value_Value
+
 #endif

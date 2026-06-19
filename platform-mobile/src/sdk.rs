@@ -9,7 +9,7 @@ use ferment::{boxed, unbox_any};
 use platform_value::Identifier;
 use platform_version::version::PlatformVersion;
 use platform_version::version::v12::PLATFORM_V12;
-use platform_version::version::v9::PLATFORM_V9;
+use platform_version::version::v11::PLATFORM_V11;
 use tokio::runtime::{Builder, Runtime};
 use crate::config::{Config, EntryPoint};
 use crate::logs::setup_logs;
@@ -149,7 +149,7 @@ pub fn create_dash_sdk_with_context(
         let version: &'static PlatformVersion = if is_testnet {
             &PLATFORM_V12
         } else {
-            &PLATFORM_V12
+            &PLATFORM_V11
         };
         tracing::info!("configuring for testnet={} using platform port={}", cfg.is_testnet, cfg.platform_port);
         tracing::info!("configuring platform version {:?}", version);
@@ -213,7 +213,7 @@ pub fn create_dash_sdk_using_single_evonode(
         let version: &'static PlatformVersion = if is_testnet {
             &PLATFORM_V12
         } else {
-            &PLATFORM_V12
+            &PLATFORM_V11
         };
         let data_contract_cache = Arc::new(Cache::new(NonZeroUsize::new(100).expect("Non Zero")));
         let sdk = if quorum_public_key_callback != 0 {

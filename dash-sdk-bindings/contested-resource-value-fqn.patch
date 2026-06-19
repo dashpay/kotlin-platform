@@ -1,0 +1,56 @@
+Subject: [PATCH] fix(fermented): use FFI type platform_value_Value for ContestedResource
+
+Ferment 0.2.3 resolves `platform_value::Value` (imported in
+rs-drive-proof-verifier's ContestedResource) through the re-export path
+`dpp::platform_value::Value`, which does not match its FFI-type registry
+(keyed on `platform_value::Value`). It therefore emits the raw Rust type plus
+a clone-based conversion. cbindgen then renders the raw enum as a bare
+`Value *` in the generated .h, not matching the actual `platform_value_Value`
+FFI struct.
+
+This rewrites the ContestedResource block to use the FFI type and proper
+FFIConversionFrom/To indirection, mirroring WhereClause.value. Re-apply after
+any full (non-cbindgen_only) ferment regeneration of src/fermented.rs.
+
+--- a/dash-sdk-bindings/src/fermented.rs
++++ b/dash-sdk-bindings/src/fermented.rs
+@@ -4778,16 +4778,16 @@
+             #[doc = "FFI-representation of the [`ContestedResource`]"]
+             #[repr(C)]
+             #[derive(Clone)]
+-            pub struct drive_proof_verifier_types_ContestedResource(*mut dpp::platform_value::Value);
++            pub struct drive_proof_verifier_types_ContestedResource(*mut crate::fermented::types::platform_value::platform_value_Value);
+ 
+             impl ferment::FFIConversionFrom<drive_proof_verifier::types::ContestedResource> for drive_proof_verifier_types_ContestedResource {
+                 unsafe fn ffi_from_const(ffi: *const drive_proof_verifier_types_ContestedResource) -> drive_proof_verifier::types::ContestedResource {
+                     let ffi_ref = &*ffi;
+-                    drive_proof_verifier::types::ContestedResource((&*ffi_ref.0).clone())
++                    drive_proof_verifier::types::ContestedResource(<crate::fermented::types::platform_value::platform_value_Value as ferment::FFIConversionFrom<platform_value::Value>>::ffi_from(ffi_ref.0))
+                 }
+             }
+ 
+-            impl ferment::FFIConversionTo<drive_proof_verifier::types::ContestedResource> for drive_proof_verifier_types_ContestedResource { unsafe fn ffi_to_const(obj: drive_proof_verifier::types::ContestedResource) -> *const drive_proof_verifier_types_ContestedResource { ferment::boxed(drive_proof_verifier_types_ContestedResource(ferment::boxed(obj.0))) } }
++            impl ferment::FFIConversionTo<drive_proof_verifier::types::ContestedResource> for drive_proof_verifier_types_ContestedResource { unsafe fn ffi_to_const(obj: drive_proof_verifier::types::ContestedResource) -> *const drive_proof_verifier_types_ContestedResource { ferment::boxed(drive_proof_verifier_types_ContestedResource(<crate::fermented::types::platform_value::platform_value_Value as ferment::FFIConversionTo<platform_value::Value>>::ffi_to(obj.0))) } }
+ 
+             impl Drop for drive_proof_verifier_types_ContestedResource {
+                 fn drop(&mut self) {
+@@ -4799,16 +4799,16 @@
+             }
+ 
+             #[no_mangle]
+-            pub unsafe extern "C" fn drive_proof_verifier_types_ContestedResource_ctor<>(o_0: *mut dpp::platform_value::Value) -> *mut drive_proof_verifier_types_ContestedResource { ferment::boxed(drive_proof_verifier_types_ContestedResource(o_0)) }
++            pub unsafe extern "C" fn drive_proof_verifier_types_ContestedResource_ctor<>(o_0: *mut crate::fermented::types::platform_value::platform_value_Value) -> *mut drive_proof_verifier_types_ContestedResource { ferment::boxed(drive_proof_verifier_types_ContestedResource(o_0)) }
+ 
+             #[no_mangle]
+             pub unsafe extern "C" fn drive_proof_verifier_types_ContestedResource_destroy<>(ffi: *mut drive_proof_verifier_types_ContestedResource) { ferment::unbox_any(ffi); }
+ 
+             #[no_mangle]
+-            pub unsafe extern "C" fn drive_proof_verifier_types_ContestedResource_get_0<>(obj: *const drive_proof_verifier_types_ContestedResource) -> *mut dpp::platform_value::Value { (*obj).0 }
++            pub unsafe extern "C" fn drive_proof_verifier_types_ContestedResource_get_0<>(obj: *const drive_proof_verifier_types_ContestedResource) -> *mut crate::fermented::types::platform_value::platform_value_Value { (*obj).0 }
+ 
+             #[no_mangle]
+-            pub unsafe extern "C" fn drive_proof_verifier_types_ContestedResource_set_0<>(obj: *const drive_proof_verifier_types_ContestedResource) -> *mut dpp::platform_value::Value { (*obj).0 }
++            pub unsafe extern "C" fn drive_proof_verifier_types_ContestedResource_set_0<>(obj: *const drive_proof_verifier_types_ContestedResource) -> *mut crate::fermented::types::platform_value::platform_value_Value { (*obj).0 }
+         }
+ 
+         pub mod verify { use crate as dash_sdk_bindings; }
