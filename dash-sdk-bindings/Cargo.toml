@@ -36,7 +36,7 @@ toml = "0.8.8"
 
 [patch.crates-io]
 rs-x11-hash = { git = "https://github.com/hashengineering/rs-x11-hash", branch = "feat/add-android-support" }
-elliptic-curve-tools = { git = "https://github.com/mikelodder7/elliptic-curve-tools", rev = "5789c0491252d5af8add829348af9dd6ac09d8f6" }
+elliptic-curve-tools = { git = "https://github.com/mikelodder7/elliptic-curve-tools", rev = "8cbae416458565faac21d3452fbc6d80b324f6d3" }
 
 [lib]
 crate-type = ["staticlib"]
