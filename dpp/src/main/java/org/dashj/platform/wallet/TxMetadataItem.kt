@@ -10,6 +10,7 @@ package org.dashj.platform.wallet
 import com.google.common.primitives.Ints
 import com.google.protobuf.ByteString
 import org.bitcoinj.core.Sha256Hash
+import org.dashj.platform.contracts.wallet.TxMetadataDocument
 import org.dashj.platform.dpp.util.Cbor
 import java.text.DecimalFormat
 
@@ -31,6 +32,9 @@ import java.text.DecimalFormat
  * @property barcodeFormat
  * @property merchantUrl
  * @property otherData Additional key-value string data
+ * @property order order number related to this tx
+ * @property giftCardChallenge
+ * @property index
  * @constructor Create empty Tx metadata item
  */
 
@@ -51,6 +55,9 @@ class TxMetadataItem(
     val barcodeFormat: String? = null,
     val merchantUrl: String? = null,
     val otherData: Map<String, String>? = null,
+    val order: String? = null,
+    val giftCardChallenge: String? = null,
+    val index: Int? = null
 ) {
     val data = hashMapOf<String, Any?>()
 
@@ -72,7 +79,10 @@ class TxMetadataItem(
         rawObject["barcodeValue"] as? String,
         rawObject["barcodeFormat"] as? String,
         rawObject["merchantUrl"] as? String,
-        rawObject["otherData"] as? Map<String, String>
+        rawObject["otherData"] as? Map<String, String>,
+        rawObject["order"] as? String,
+        rawObject["giftCardChallenge"] as? String,
+        index = rawObject["index"] as? Int
     ) {
         data.putAll(rawObject)
     }
@@ -93,7 +103,10 @@ class TxMetadataItem(
         if (protoTxMetadata.barcodeValue != "") protoTxMetadata.barcodeValue else null,
         if (protoTxMetadata.barcodeFormat != "") protoTxMetadata.barcodeFormat else null,
         if (protoTxMetadata.merchantUrl != "") protoTxMetadata.merchantUrl else null,
-        protoTxMetadata.otherDataMap.ifEmpty { null }
+        protoTxMetadata.otherDataMap.ifEmpty { null },
+        if (protoTxMetadata.order != "") protoTxMetadata.order else null,
+        if (protoTxMetadata.giftCardChallenge != "") protoTxMetadata.giftCardChallenge else null,
+        if (protoTxMetadata.index != 0) protoTxMetadata.index else null
     )
 
     fun toObject(): Map<String, Any?> {
@@ -160,11 +173,23 @@ class TxMetadataItem(
             map["otherData"] = it
         }
 
+        order?.let {
+            map["order"] = it
+        }
+
+        giftCardChallenge?.let {
+            map["giftCardChallenge"] = it
+        }
+
+        index?.let {
+            map["index"] = it
+        }
+
         return map
     }
 
     fun toJson(): Map<String, Any?> {
-        val map = hashMapOf<String, String?>(
+        val map = hashMapOf<String, Any?>(
             "txId" to Sha256Hash.wrap(txId).toString()
         )
         timestamp?.let {
@@ -229,11 +254,29 @@ class TxMetadataItem(
             map.putAll(it)
         }
 
+        order?.let {
+            map["order"] = it
+        }
+
+        giftCardChallenge?.let {
+            map["giftCardChallenge"] = it
+        }
+
+        index?.let {
+            map["index"] = it
+        }
+
         return map
     }
 
-    fun getSize(): Int {
-        return Cbor.encode(toObject()).size
+    fun getSize(version: Int): Int {
+        return if (version == TxMetadataDocument.VERSION_CBOR) {
+            Cbor.encode(toObject()).size
+        } else if (version == TxMetadataDocument.VERSION_PROTOBUF) {
+            toProtobuf().serializedSize
+        } else {
+            error("unknown version $version")
+        }
     }
 
     // does not compare timestamp
@@ -255,7 +298,10 @@ class TxMetadataItem(
                 barcodeValue == other.barcodeValue &&
                 barcodeFormat == other.barcodeFormat &&
                 merchantUrl == other.merchantUrl &&
-                otherData == other.otherData
+                otherData == other.otherData &&
+                order == other.order &&
+                giftCardChallenge == other.giftCardChallenge &&
+                index == other.index
         }
         return false
     }
@@ -288,6 +334,9 @@ class TxMetadataItem(
         barcodeFormat?.let { builder.barcodeFormat = it }
         merchantUrl?.let { builder.merchantUrl = it }
         otherData?.let { builder.putAllOtherData(it) }
+        order?.let { builder.order = it }
+        giftCardChallenge?.let { builder.giftCardChallenge = it }
+        index?.let { builder.index = it }
         return builder.build()
     }
 
@@ -299,7 +348,7 @@ class TxMetadataItem(
         return (timestamp != null && timestamp != 0L) || taxCategory != null || memo != null ||
             currencyCode != null || exchangeRate != null || service != null || customIconUrl != null ||
             giftCardNumber != null || giftCardPin != null || merchantName != null || originalPrice != null ||
-            barcodeValue != null || barcodeFormat != null || merchantUrl != null ||
-            (otherData != null && otherData.isNotEmpty())
+            barcodeValue != null || barcodeFormat != null || merchantUrl != null || order != null ||
+            giftCardChallenge != null || index != null || (otherData != null && otherData.isNotEmpty())
     }
 }
