@@ -182,7 +182,7 @@ pub fn create_dash_sdk_with_context(
                 timeout: Some(Duration::from_secs(timeout as u64)),
                 retries: Some(retries),
                 ban_failed_address: Some(true),
-                max_decoding_message_size: None,
+                max_decoding_message_size: Some(16 * 1024 * 1024),
             }
         }
     })
@@ -235,7 +235,7 @@ pub fn create_dash_sdk_using_single_evonode(
                 timeout: Some(Duration::from_secs(10)),
                 retries: Some(0),
                 ban_failed_address: Some(false),
-                max_decoding_message_size: None,
+                max_decoding_message_size: Some(16 * 1024 * 1024),
             }
         }
     })
