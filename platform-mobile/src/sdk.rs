@@ -147,7 +147,7 @@ pub fn create_dash_sdk_with_context(
             Config::new_mainnet()
         };
         let version: &'static PlatformVersion = if is_testnet {
-            &PLATFORM_V12
+            &PLATFORM_V11
         } else {
             &PLATFORM_V11
         };
@@ -211,7 +211,7 @@ pub fn create_dash_sdk_using_single_evonode(
             Config::new_mainnet()
         };
         let version: &'static PlatformVersion = if is_testnet {
-            &PLATFORM_V12
+            &PLATFORM_V11
         } else {
             &PLATFORM_V11
         };
