@@ -1237,7 +1237,7 @@ dependencies = [
  "grovedb-costs",
  "grovedb-epoch-based-storage-flags",
  "grovedb-path",
- "grovedb-version 5.0.0",
+ "grovedb-version",
  "hex",
  "indexmap 2.14.0",
  "integer-encoding",
@@ -1685,7 +1685,7 @@ dependencies = [
  "grovedb-merkle-mountain-range",
  "grovedb-path",
  "grovedb-query",
- "grovedb-version 5.0.0",
+ "grovedb-version",
  "hex",
  "indexmap 2.14.0",
  "integer-encoding",
@@ -1737,7 +1737,7 @@ dependencies = [
  "bincode",
  "bincode_derive",
  "grovedb-path",
- "grovedb-version 5.0.0",
+ "grovedb-version",
  "hex",
  "integer-encoding",
  "thiserror 2.0.18",
@@ -1769,7 +1769,7 @@ dependencies = [
  "grovedb-element",
  "grovedb-path",
  "grovedb-query",
- "grovedb-version 5.0.0",
+ "grovedb-version",
  "grovedb-visualize",
  "hex",
  "indexmap 2.14.0",
@@ -1807,15 +1807,6 @@ dependencies = [
  "indexmap 2.14.0",
  "integer-encoding",
  "thiserror 2.0.18",
-]
-
-[[package]]
-name = "grovedb-version"
-version = "4.0.0"
-source = "git+https://github.com/dashpay/grovedb?rev=fc814983d4d36c6ea049642556b9a31ab8d4dfaa#fc814983d4d36c6ea049642556b9a31ab8d4dfaa"
-dependencies = [
- "thiserror 2.0.18",
- "versioned-feature-core 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2927,7 +2918,7 @@ version = "4.0.0"
 dependencies = [
  "bincode",
  "ferment-macro",
- "grovedb-version 4.0.0",
+ "grovedb-version",
  "once_cell",
  "thiserror 2.0.18",
  "versioned-feature-core 1.0.0 (git+https://github.com/dashpay/versioned-feature-core)",
