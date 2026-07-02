@@ -89,24 +89,24 @@ class TxMetadataItem(
 
     constructor(protoTxMetadata: WalletUtils.TxMetadataItem) : this(
         protoTxMetadata.txId.toByteArray(),
-        if (protoTxMetadata.timestamp != 0L) protoTxMetadata.timestamp else null,
-        if (protoTxMetadata.memo != "") protoTxMetadata.memo else null,
-        if (protoTxMetadata.exchangeRate != 0.0) protoTxMetadata.exchangeRate else null,
-        if (protoTxMetadata.currencyCode != "") protoTxMetadata.currencyCode else null,
-        if (protoTxMetadata.taxCategory != "") protoTxMetadata.taxCategory else null,
-        if (protoTxMetadata.service != "") protoTxMetadata.service else null,
-        if (protoTxMetadata.customIconUrl != "") protoTxMetadata.customIconUrl else null,
-        if (protoTxMetadata.giftCardNumber != "") protoTxMetadata.giftCardNumber else null,
-        if (protoTxMetadata.giftCardPin != "") protoTxMetadata.giftCardPin else null,
-        if (protoTxMetadata.merchantName != "") protoTxMetadata.merchantName else null,
-        if (protoTxMetadata.originalPrice != 0.00) protoTxMetadata.originalPrice else null,
-        if (protoTxMetadata.barcodeValue != "") protoTxMetadata.barcodeValue else null,
-        if (protoTxMetadata.barcodeFormat != "") protoTxMetadata.barcodeFormat else null,
-        if (protoTxMetadata.merchantUrl != "") protoTxMetadata.merchantUrl else null,
+        if (protoTxMetadata.hasTimestamp()) protoTxMetadata.timestamp else null,
+        if (protoTxMetadata.hasMemo()) protoTxMetadata.memo else null,
+        if (protoTxMetadata.hasExchangeRate()) protoTxMetadata.exchangeRate else null,
+        if (protoTxMetadata.hasCurrencyCode()) protoTxMetadata.currencyCode else null,
+        if (protoTxMetadata.hasTaxCategory()) protoTxMetadata.taxCategory else null,
+        if (protoTxMetadata.hasService()) protoTxMetadata.service else null,
+        if (protoTxMetadata.hasCustomIconUrl()) protoTxMetadata.customIconUrl else null,
+        if (protoTxMetadata.hasGiftCardNumber()) protoTxMetadata.giftCardNumber else null,
+        if (protoTxMetadata.hasGiftCardPin()) protoTxMetadata.giftCardPin else null,
+        if (protoTxMetadata.hasMerchantName()) protoTxMetadata.merchantName else null,
+        if (protoTxMetadata.hasOriginalPrice()) protoTxMetadata.originalPrice else null,
+        if (protoTxMetadata.hasBarcodeValue()) protoTxMetadata.barcodeValue else null,
+        if (protoTxMetadata.hasBarcodeFormat()) protoTxMetadata.barcodeFormat else null,
+        if (protoTxMetadata.hasMerchantUrl()) protoTxMetadata.merchantUrl else null,
         protoTxMetadata.otherDataMap.ifEmpty { null },
-        if (protoTxMetadata.order != "") protoTxMetadata.order else null,
-        if (protoTxMetadata.giftCardChallenge != "") protoTxMetadata.giftCardChallenge else null,
-        if (protoTxMetadata.index != 0) protoTxMetadata.index else null
+        if (protoTxMetadata.hasOrder()) protoTxMetadata.order else null,
+        if (protoTxMetadata.hasGiftCardChallenge()) protoTxMetadata.giftCardChallenge else null,
+        if (protoTxMetadata.hasIndex()) protoTxMetadata.index else null
     )
 
     fun toObject(): Map<String, Any?> {

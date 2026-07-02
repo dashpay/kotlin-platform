@@ -28,6 +28,7 @@ use platform_value::{BinaryData, Identifier, Value};
 use platform_value::string_encoding::Encoding;
 use platform_version::version::{LATEST_PLATFORM_VERSION, PlatformVersion};
 use rand::random;
+use simple_signer::single_key_signer::SingleKeySigner;
 use simple_signer::signer::SimpleSigner;
 use tokio::runtime::Builder;
 use tracing::trace;
@@ -99,6 +100,7 @@ fn test_put_documents_for_username() {
             created_at_core_block_height: None,
             updated_at_core_block_height: None,
             transferred_at_core_block_height: None,
+            creator_id: None,
         }
     );
     // data = {HashMap@3953}  size = 7
@@ -145,6 +147,7 @@ fn test_put_documents_for_username() {
             created_at_core_block_height: None,
             updated_at_core_block_height: None,
             transferred_at_core_block_height: None,
+            creator_id: None,
         }
     );
 
@@ -171,7 +174,7 @@ fn test_put_documents_for_username() {
         let hex_private_key = "a7285a6108fcd2a7b64060cbec68dddaf70c2d0514d8e0a447c8c933aef11b81";
         let private_key = hex::decode(hex_private_key).expect("Decoding failed");
         let mut signer = SimpleSigner::default();
-        signer.add_key(identity_public_key.clone(), vec_to_array(private_key).expect("reason"));
+        signer.add_identity_public_key(identity_public_key.clone(), vec_to_array(private_key).expect("reason"));
         let entropy = entropy_generator.generate().unwrap();
         trace!("document_entropy: {:?}", entropy);
 
@@ -191,6 +194,7 @@ fn test_put_documents_for_username() {
                 timeout: None,
                 retries: Some(2),
                 ban_failed_address: Some(true),
+                max_decoding_message_size: None,
             },
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,
@@ -309,7 +313,7 @@ fn test_put_txmetadata_contract() {
         let hex_private_key = if testnet { testnet_private_key } else { mainnet_private_key };
         let private_key = hex::decode(hex_private_key).expect("Decoding failed");
         let mut signer = SimpleSigner::default();
-        signer.add_key(identity_public_key.clone(), vec_to_array(private_key).expect("reason"));
+        signer.add_identity_public_key(identity_public_key.clone(), vec_to_array(private_key).expect("reason"));
         let entropy = entropy_generator.generate().unwrap();
         trace!("document_entropy: {:?}", entropy);
 
@@ -319,6 +323,7 @@ fn test_put_txmetadata_contract() {
                 timeout: None,
                 retries: Some(2),
                 ban_failed_address: Some(true),
+                max_decoding_message_size: None,
             },
             identity_nonce_stale_time_s: None,
             user_fee_increase: None,

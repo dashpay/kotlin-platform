@@ -1,0 +1,3 @@
+[toolchain]
+# Keep in sync with ../../platform/rust-toolchain.toml
+channel = "1.92"
