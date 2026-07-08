@@ -141,6 +141,27 @@ class Identity : BaseObject {
         }
     }
 
+    /**
+     * Finds the first public key that matches [purpose], [securityLevel] and [type] and whose
+     * [IdentityPublicKey.contractBounds] is scoped to [contractId] (contract bounds rules).
+     * Both [SingleContractBounds] and [SingleContractDocumentType] match on their identifier.
+     */
+    fun getFirstPublicKey(
+        purpose: Purpose,
+        securityLevel: SecurityLevel,
+        type: KeyType,
+        contractId: Identifier
+    ): IdentityPublicKey? {
+        return try {
+            publicKeys.first {
+                it.purpose == purpose && it.securityLevel == securityLevel && it.type == type &&
+                    it.disabledAt == null && it.contractBounds?.identifier == contractId
+            }
+        } catch (_: NoSuchElementException) {
+            null
+        }
+    }
+
     fun toNative(): RustIdentity {
         val identityV0 = IdentityV0(
             id.toNative(),

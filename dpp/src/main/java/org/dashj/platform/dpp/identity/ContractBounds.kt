@@ -25,6 +25,18 @@ abstract class ContractBounds(val type: String, val identifier: Identifier)
                 from(rustContractBounds)
             }
         }
+
+        fun from(rawContractBounds: Map<String, Any?>): ContractBounds {
+            val identifier = Identifier.from(rawContractBounds["identifier"])
+            return when (val type = rawContractBounds["type"]) {
+                "singleContract" -> SingleContractBounds(identifier)
+                "documentType" -> SingleContractDocumentType(
+                    identifier,
+                    rawContractBounds["documentType"] as String
+                )
+                else -> error("Unknown ContractBounds type: $type")
+            }
+        }
     }
 
     open fun toJSON(): Map<String, Any> {
@@ -40,12 +52,23 @@ abstract class ContractBounds(val type: String, val identifier: Identifier)
             "identifier" to identifier
         )
     }
+
+    /** Convert to the native (Rust SDK) representation. */
+    abstract fun toNative(): RustContractBounds
 }
 
-class SingleContractBounds(identifier: Identifier) : ContractBounds("singleContract", identifier)
+class SingleContractBounds(identifier: Identifier) : ContractBounds("singleContract", identifier) {
+    override fun toNative(): RustContractBounds {
+        return RustContractBounds(identifier.toNative())
+    }
+}
 
 
 class SingleContractDocumentType(identifier: Identifier, val documentType: String) : ContractBounds("documentType", identifier) {
+    override fun toNative(): RustContractBounds {
+        return RustContractBounds(identifier.toNative(), documentType)
+    }
+
     override fun toJSON(): Map<String, Any> {
         val json = super.toJSON().toMutableMap()
         json["documentType"] = documentType

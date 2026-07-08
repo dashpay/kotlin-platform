@@ -153,8 +153,9 @@ class IdentityPublicKey(
                 is Int -> SecurityLevel.swigToEnum(rawIdentityPublicKey["securityLevel"] as Int)
                 else -> SecurityLevel.CRITICAL
             },
-            when (rawIdentityPublicKey["contractBounds"]) {
-                is ContractBounds -> rawIdentityPublicKey["contractBounds"] as ContractBounds
+            when (val contractBounds = rawIdentityPublicKey["contractBounds"]) {
+                is ContractBounds -> contractBounds
+                is Map<*, *> -> ContractBounds.from(contractBounds as Map<String, Any?>)
                 else -> null
             },
             when (rawIdentityPublicKey["data"]) {
@@ -191,7 +192,7 @@ class IdentityPublicKey(
             objMap.put("disabledAt", this)
         }
         contractBounds?.run {
-            objMap.put("contractBounds", this)
+            objMap.put("contractBounds", this.toObject())
         }
         if (signature != null && !skipSignature) {
             objMap["signature"] = signature!!
@@ -217,7 +218,7 @@ class IdentityPublicKey(
                 KeyID(id),
                 purpose,
                 securityLevel,
-                null,
+                contractBounds?.toNative(),
                 type,
                 readOnly,
                 BinaryData(data),
