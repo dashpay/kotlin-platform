@@ -62,8 +62,12 @@ class Document : BaseObject {
         this.data = data
     }
 
-    constructor(document: RustDocument, dataContractId: Identifier) {
+    constructor(document: RustDocument, dataContractId: Identifier, type: String? = null) {
         this.dataContractId = dataContractId
+        // The native document does not carry its document-type name, so the caller (which
+        // queried by type) supplies it. Leaving it null breaks any later replace/put, since
+        // the native put/replace calls require a non-null type string.
+        this.type = type
         when (document.tag) {
             V0 -> {
                 val doc = document.v0._0
