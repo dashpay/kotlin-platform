@@ -13,6 +13,7 @@ pub mod core;
 mod logs;
 pub mod voting;
 pub mod sdk;
+pub mod state_transition;
 
 extern crate ferment_macro;
 
