@@ -43,30 +43,23 @@ object NativeStateTransition {
      */
     @JvmStatic
     fun deserialize(bytes: ByteArray): StateTransitionInfo {
-        val result = dashsdk.platformMobileStateTransitionDeserializeStateTransition(bytes)
-        val info = result.ok
-            ?: throw IllegalArgumentException("could not deserialize state transition: ${result.error}")
+        // base.Result.unwrap() returns a Java-owned StateTransitionInfo (or throws on error).
+        val info = dashsdk.platformMobileStateTransitionDeserializeStateTransition(bytes).unwrap()
 
-        val type: Int
-        val name: String
-        val ownerId: Identifier?
-        val revision: Long
-        val identityNonce: Long
-        try {
-            type = dashsdk.platformMobileStateTransitionStateTransitionInfoGetTransitionType(info).toInt()
-            name = dashsdk.platformMobileStateTransitionStateTransitionInfoGetName(info)
-            val ownerBytes = dashsdk.platformMobileStateTransitionStateTransitionInfoGetOwnerId(info)
-            ownerId = if (ownerBytes != null && ownerBytes.isNotEmpty()) Identifier.from(ownerBytes) else null
-            revision = dashsdk.platformMobileStateTransitionStateTransitionInfoGetRevision(info).toLong()
-            identityNonce = dashsdk.platformMobileStateTransitionStateTransitionInfoGetIdentityNonce(info).toLong()
-        } finally {
-            dashsdk.platformMobileStateTransitionStateTransitionInfoDestroy(info)
-        }
+        val ownerBytes = dashsdk.platformMobileStateTransitionStateTransitionInfoGetOwnerId(info)
+        val ownerId = if (ownerBytes != null && ownerBytes.isNotEmpty()) Identifier.from(ownerBytes) else null
 
         val addPublicKeys = dashsdk.platformMobileStateTransitionIdentityUpdatePublicKeysToAdd(bytes)
             .unwrap()
             .map { IdentityPublicKey.from(it) }
 
-        return StateTransitionInfo(type, name, ownerId, revision, identityNonce, addPublicKeys)
+        return StateTransitionInfo(
+            type = dashsdk.platformMobileStateTransitionStateTransitionInfoGetTransitionType(info).toInt(),
+            name = dashsdk.platformMobileStateTransitionStateTransitionInfoGetName(info),
+            ownerId = ownerId,
+            revision = dashsdk.platformMobileStateTransitionStateTransitionInfoGetRevision(info).toLong(),
+            identityNonce = dashsdk.platformMobileStateTransitionStateTransitionInfoGetIdentityNonce(info).toLong(),
+            addPublicKeys = addPublicKeys
+        )
     }
 }

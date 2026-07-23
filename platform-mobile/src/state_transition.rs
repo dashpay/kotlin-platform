@@ -11,6 +11,7 @@ use dpp::state_transition::identity_update_transition::accessors::IdentityUpdate
 /// when [`transition_type`](Self::transition_type) is IdentityUpdate (5); the keys an
 /// identity-update adds are fetched via [`identity_update_public_keys_to_add`] (a `Vec` maps to a
 /// usable list only as a function return, not as a struct field).
+#[derive(Clone)]
 #[ferment_macro::export]
 pub struct StateTransitionInfo {
     /// The [`StateTransitionType`](dpp::state_transition::state_transition_types::StateTransitionType)
