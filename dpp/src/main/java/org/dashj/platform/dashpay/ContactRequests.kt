@@ -50,7 +50,8 @@ class ContactRequests(val platform: Platform) {
         ) ?: toUser.getFirstPublicKey(
             Purpose.ENCRYPTION,
             SecurityLevel.MEDIUM,
-            KeyType.ECDSA_SECP256K1
+            KeyType.ECDSA_SECP256K1,
+            null
         ) ?: toUser.getFirstPublicKey(
             Purpose.AUTHENTICATION,
             SecurityLevel.HIGH,

@@ -106,6 +106,25 @@ class IdentitySelectKeyTest {
     }
 
     @Test
+    fun nullContractIdMatchesOnlyUnboundKeys() {
+        // A null contractId is the "no contract scope" fallback: it must skip a key bound to
+        // some other contract and select the truly unbound key that follows it.
+        val identity = identityWith(
+            encryptionKey(0, SingleContractBounds(otherContractId)),
+            encryptionKey(1, null)
+        )
+
+        val selected = identity.getFirstPublicKey(
+            Purpose.ENCRYPTION,
+            SecurityLevel.MEDIUM,
+            KeyType.ECDSA_SECP256K1,
+            null
+        )
+
+        assertEquals(1, selected?.id, "should skip the other-contract-bound key and select the unbound key")
+    }
+
+    @Test
     fun skipsDisabledKeysBoundToTheContract() {
         val identity = identityWith(
             encryptionKey(0, SingleContractDocumentType(dashpayContractId, "contactRequest"), disabledAt = 1L),

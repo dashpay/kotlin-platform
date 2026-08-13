@@ -145,12 +145,13 @@ class Identity : BaseObject {
      * Finds the first public key that matches [purpose], [securityLevel] and [type] and whose
      * [IdentityPublicKey.contractBounds] is scoped to [contractId] (contract bounds rules).
      * Both [SingleContractBounds] and [SingleContractDocumentType] match on their identifier.
+     * Pass `null` for [contractId] to match only keys with no contract bounds at all.
      */
     fun getFirstPublicKey(
         purpose: Purpose,
         securityLevel: SecurityLevel,
         type: KeyType,
-        contractId: Identifier
+        contractId: Identifier?
     ): IdentityPublicKey? {
         return try {
             publicKeys.first {
