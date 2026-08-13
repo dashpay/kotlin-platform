@@ -1206,7 +1206,8 @@ class DapiClient(
                 dataContractId.toNative(),
                 documentType
             ).unwrap(),
-            dataContractId
+            dataContractId,
+            documentType
         )
     }
 

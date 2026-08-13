@@ -76,7 +76,7 @@ class IdentityVerify(
         )
         val domain = documentResult.unwrap()
 
-        return IdentityVerifyDocument(Document(domain, identityVerifyDocument.dataContractId!!))
+        return IdentityVerifyDocument(Document(domain, identityVerifyDocument.dataContractId!!, identityVerifyDocument.type!!))
     }
 
     fun createDocument(

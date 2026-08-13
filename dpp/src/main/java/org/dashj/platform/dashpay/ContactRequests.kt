@@ -81,7 +81,9 @@ class ContactRequests(val platform: Platform) {
             )
             val publishedContactRequest = documentResult.unwrap()
 
-            return ContactRequest(Document(publishedContactRequest, contactRequestDocument.dataContractId!!))
+            return ContactRequest(
+                Document(publishedContactRequest, contactRequestDocument.dataContractId!!, contactRequestDocument.type!!)
+            )
         }
         throw IllegalArgumentException("No valid keys to use in toUser's identity")
     }

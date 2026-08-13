@@ -63,7 +63,7 @@ class TxMetadata(
         )
         val domain = documentResult.unwrap()
 
-        return Document(domain, profileDocument.dataContractId!!)
+        return Document(domain, profileDocument.dataContractId!!, profileDocument.type!!)
     }
 
     fun publish(
@@ -87,7 +87,7 @@ class TxMetadata(
         )
         val domain = documentResult.unwrap()
 
-        return Document(domain, txMetadataDocument.dataContractId!!)
+        return Document(domain, txMetadataDocument.dataContractId!!, txMetadataDocument.type!!)
     }
 
     fun createDocument(
