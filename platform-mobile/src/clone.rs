@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 use dpp::document::Document;
+use crate::state_transition::StateTransitionInfo;
 use dpp::document::v0::DocumentV0;
 use dpp::identity::identity_public_key::TimestampMillis;
 use dpp::identity::identity_public_key::KeyID;
@@ -230,4 +231,9 @@ pub fn Tuple_dpp_prelude_TimestampMillis_Vec_dpp_voting_vote_polls_VotePoll_clon
 #[ferment_macro::export]
 pub fn ResourceVotesByIdentity_clone(o: ResourceVotesByIdentity) -> ResourceVotesByIdentity {
     o.clone()
+}
+#[allow(non_snake_case)]
+#[ferment_macro::export]
+pub fn StateTransitionInfo_clone(info: StateTransitionInfo) -> StateTransitionInfo {
+    info.clone()
 }

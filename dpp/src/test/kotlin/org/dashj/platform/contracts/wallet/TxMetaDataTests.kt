@@ -99,6 +99,7 @@ class TxMetaDataTests : PlatformNetwork() {
         assertMapEquals(
             mapOf(
                 "txId" to txId,
+                "timestamp" to txMetadataItem.timestamp,
                 "memo" to "Alice's Pizza Party",
                 "exchangeRate" to 51.00,
                 "currencyCode" to "USD",
@@ -115,9 +116,19 @@ class TxMetaDataTests : PlatformNetwork() {
 
     @Test
     fun toCborTestForOneItemTest() {
+        // use a fixed timestamp so the CBOR encoding is deterministic
+        val item = TxMetadataItem(
+            Converters.fromHex("c44d1077cd4628d0ac06e22032a4e8458f9d01be6342453de3eef88657b193ce"),
+            1738177719,
+            "Bob's Burger Joint",
+            52.23,
+            "USD",
+            "expense",
+            "DashDirect"
+        )
         assertArrayEquals(
-            Converters.fromHex("A6646D656D6F72426F62277320427572676572204A6F696E7464747849645820C44D1077CD4628D0AC06E22032A4E8458F9D01BE6342453DE3EEF88657B193CE67736572766963656A446173684469726563746B74617843617465676F727967657870656E73656C63757272656E6379436F6465635553446C65786368616E676552617465FB404A1D70A3D70A3D".lowercase()),
-            Cbor.encode(txMetadataItemTwo.toObject())
+            Converters.fromHex("A7646D656D6F72426F62277320427572676572204A6F696E7464747849645820C44D1077CD4628D0AC06E22032A4E8458F9D01BE6342453DE3EEF88657B193CE67736572766963656A446173684469726563746974696D657374616D701A679A7CB76B74617843617465676F727967657870656E73656C63757272656E6379436F6465635553446C65786368616E676552617465FB404A1D70A3D70A3D".lowercase()),
+            Cbor.encode(item.toObject())
         )
     }
 

@@ -627,7 +627,7 @@ class DapiClient(
             )
             try {
                 return result.unwrap().map {
-                    Document(it, contractIdentifier)
+                    Document(it, contractIdentifier, type)
                 }
             } catch (e: Exception) {
                 if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true ||
@@ -1206,7 +1206,8 @@ class DapiClient(
                 dataContractId.toNative(),
                 documentType
             ).unwrap(),
-            dataContractId
+            dataContractId,
+            documentType
         )
     }
 

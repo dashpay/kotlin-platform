@@ -4,6 +4,7 @@ import java.util.Date
 import java.util.Timer
 import kotlin.concurrent.timerTask
 import org.bouncycastle.crypto.params.KeyParameter
+import org.dashj.platform.dapiclient.SystemIds
 import org.dashj.platform.dapiclient.model.DocumentQuery
 import org.dashj.platform.dashpay.BlockchainIdentity.KeyIndexPurpose
 import org.dashj.platform.dashpay.callback.SendContactRequestCallback
@@ -37,11 +38,20 @@ class ContactRequests(val platform: Platform) {
         val contactKey = contactKeyChain.watchingKey
         val contactPub = contactKey.serializeContactPub()
 
-        // The key must be ESCDA_SECP256K1 for ECDH
+        // The key must be ESCDA_SECP256K1 for ECDH.
+        // Prefer an encryption key whose contract bounds are scoped to the DashPay contract,
+        // then fall back to any encryption key, then to a high-security authentication key.
+        val dashpayContractId = platform.apps["dashpay"]?.contractId ?: SystemIds.dashpayDataContractId
         val toUserPublicKey = toUser.getFirstPublicKey(
             Purpose.ENCRYPTION,
             SecurityLevel.MEDIUM,
-            KeyType.ECDSA_SECP256K1
+            KeyType.ECDSA_SECP256K1,
+            dashpayContractId
+        ) ?: toUser.getFirstPublicKey(
+            Purpose.ENCRYPTION,
+            SecurityLevel.MEDIUM,
+            KeyType.ECDSA_SECP256K1,
+            null
         ) ?: toUser.getFirstPublicKey(
             Purpose.AUTHENTICATION,
             SecurityLevel.HIGH,
@@ -71,7 +81,9 @@ class ContactRequests(val platform: Platform) {
             )
             val publishedContactRequest = documentResult.unwrap()
 
-            return ContactRequest(Document(publishedContactRequest, contactRequestDocument.dataContractId!!))
+            return ContactRequest(
+                Document(publishedContactRequest, contactRequestDocument.dataContractId!!, contactRequestDocument.type!!)
+            )
         }
         throw IllegalArgumentException("No valid keys to use in toUser's identity")
     }

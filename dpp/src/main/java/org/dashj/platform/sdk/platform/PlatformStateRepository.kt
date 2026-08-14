@@ -121,7 +121,11 @@ open class PlatformStateRepository(val platform: Platform) : StateRepository {
                 }
             }
         )
-        log.info("store identity: {}", identity.toBuffer().toHex())
+        try {
+            log.info("store identity: {}", identity.toBuffer().toHex())
+        } catch (e: Exception) {
+            log.info("store identity: {} (cannot serialize: {})", identity.id, e.message)
+        }
     }
 
     override fun storeIdentityPublicKeyHashes(identity: Identifier, publicKeyHashes: List<ByteArray>) {

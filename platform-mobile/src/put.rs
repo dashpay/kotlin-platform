@@ -645,11 +645,15 @@ pub fn put_document_sdk(
             }
         };
 
-        let document_type = data_contract
-            .document_type_for_name(&document_type_str)
-            .expect("expected a profile document type");
+        let document_type = match data_contract.document_type_for_name(&document_type_str) {
+            Ok(document_type) => document_type,
+            Err(e) => return Err(format!("document type '{}' not found in contract: {}", document_type_str, e))
+        };
 
-        let signer = CallbackSigner::new(signer_context, signer_callback).expect("signer");
+        let signer = match CallbackSigner::new(signer_context, signer_callback) {
+            Ok(signer) => signer,
+            Err(e) => return Err(format!("invalid signer: {}", e))
+        };
         let entropy_generator = DefaultEntropyGenerator;
         let entropy = entropy_generator.generate().unwrap();
         trace!("document_entropy: {:?}", entropy);
@@ -788,11 +792,15 @@ pub fn replace_document_sdk(
             }
         };
 
-        let document_type = data_contract
-            .document_type_for_name(&document_type_str)
-            .expect("expected a profile document type");
+        let document_type = match data_contract.document_type_for_name(&document_type_str) {
+            Ok(document_type) => document_type,
+            Err(e) => return Err(format!("document type '{}' not found in contract: {}", document_type_str, e))
+        };
 
-        let signer = CallbackSigner::new(signer_context, signer_callback).expect("signer");
+        let signer = match CallbackSigner::new(signer_context, signer_callback) {
+            Ok(signer) => signer,
+            Err(e) => return Err(format!("invalid signer: {}", e))
+        };
 
         trace!("IdentityPublicKey: {:?}", identity_public_key);
         let request_settings = unsafe { (*rust_sdk).get_request_settings() };

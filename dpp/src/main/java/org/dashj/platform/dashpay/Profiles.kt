@@ -63,7 +63,7 @@ class Profiles(
             signer.nativeContext,
             BigInteger.valueOf(signer.signerCallback)
         )
-        return Document(profileResult.unwrap(), profileDocument.dataContractId!!)
+        return Document(profileResult.unwrap(), profileDocument.dataContractId!!, profileDocument.type!!)
     }
 
     fun replace(
@@ -120,7 +120,7 @@ class Profiles(
             signer.nativeContext,
             BigInteger.valueOf(signer.signerCallback)
         )
-        return Document(profileResult.unwrap(), profileDocument.dataContractId!!)
+        return Document(profileResult.unwrap(), profileDocument.dataContractId!!, profileDocument.type!!)
     }
 
     fun createProfileDocument(
