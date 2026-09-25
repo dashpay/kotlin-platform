@@ -13,7 +13,6 @@ use rs_dapi_client::transport::BoxFuture;
 use tokio::runtime::Builder;
 use crate::config::{Config, EntryPoint};
 use crate::logs::setup_logs;
-use crate::provider::Cache;
 use crate::sdk::{
     create_dash_sdk_using_core_mainnet,
     create_dash_sdk_using_core_testnet,

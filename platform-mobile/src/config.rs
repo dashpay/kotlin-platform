@@ -24,7 +24,7 @@ use platform_version::version::PlatformVersion;
 use platform_version::version::v7::PLATFORM_V7;
 use tokio::runtime::{Builder, Runtime};
 use crate::logs::setup_logs;
-use crate::provider::{Cache, CallbackContextProvider};
+use crate::provider::{CallbackContextProvider, DataContractCache};
 use crate::sdk::DashSdk;
 
 pub const TESTNET_ADDRESS_LIST: [&str; 29] = [
@@ -314,7 +314,7 @@ impl Config {
             q,
             d,
             None,
-            Arc::new(Cache::new(NonZeroUsize::new(100).expect("Non Zero"))),
+            Arc::new(DataContractCache::new(NonZeroUsize::new(100).expect("Non Zero"))),
             NonZeroUsize::new(100).expect("Non Zero"),
         ).expect("context provider");
         let mut sdk = {
@@ -328,12 +328,12 @@ impl Config {
         sdk.into()
     }
 
-    pub async fn setup_api_with_callbacks_cache(
+    pub(crate) async fn setup_api_with_callbacks_cache(
         &self,
         context_provider_context: * const c_void,
         q: u64,
         d: u64,
-        data_contract_cache: Arc<Cache<Identifier, DataContract>>,
+        data_contract_cache: Arc<DataContractCache>,
         connect_timeout: usize,
         timeout: usize,
         retries: usize,
@@ -379,12 +379,12 @@ impl Config {
         sdk.into()
     }
 
-    pub async fn setup_api_with_callbacks_cache_list(
+    pub(crate) async fn setup_api_with_callbacks_cache_list(
         &self,
         context: * const c_void,
         q: u64,
         d: u64,
-        data_contract_cache: Arc<Cache<Identifier, DataContract>>,
+        data_contract_cache: Arc<DataContractCache>,
         address_list: Vec<String>,
         version: &'static PlatformVersion
     ) -> Arc<Sdk> {
@@ -420,5 +420,3 @@ impl Config {
         true
     }
 }
-
-

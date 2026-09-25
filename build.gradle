@@ -1,7 +1,7 @@
 buildscript {
-    ext.version = '4.0.1'
+    ext.version = '4.2.0-SNAPSHOT'
     ext.kotlin_version = '2.1.20'
-    ext.dashj_version = '22.0.1'
+    ext.dashj_version = '22.0.5'
     repositories {
         google()  // Required for Android library and application projects
         mavenCentral()

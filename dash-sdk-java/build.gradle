@@ -24,6 +24,11 @@ cmake {
     sourceFolder=file("$projectDir/src/main/cpp")
 }
 
+task generateSWIGMetadata(type: Exec) {
+    workingDir projectDir
+    commandLine 'python3', 'ignore.py'
+}
+
 // TODO: move this to the cmake project
 task generateSWIG(type: Exec) {
     // Define the input directory where your .i files are located
@@ -37,8 +42,11 @@ task generateSWIG(type: Exec) {
     file(javaOutputDir).mkdirs()
     file(cppOutputDir).mkdirs()
 
-    // execute ignore.py
-    commandLine 'python3', 'ignore.py'
+    doFirst {
+        delete javaOutputDir, cppOutputDir
+        file(javaOutputDir).mkdirs()
+        file(cppOutputDir).mkdirs()
+    }
 
     // Command to execute SWIG
     // Make sure to adjust the parameters according to your needs
@@ -53,6 +61,7 @@ task generateSWIG(type: Exec) {
     // Ensure that this task is run before compiling the sources
     tasks.compileJava.dependsOn generateSWIG
 }
+generateSWIG.dependsOn generateSWIGMetadata
 
 // Ensure that the generated Java sources are included in compilation
 sourceSets {
@@ -63,7 +72,11 @@ sourceSets {
     }
 }
 tasks.named('compileJava').configure { dependsOn 'cmakeBuild' }
-//tasks.named('cmakeBuild').configure { dependsOn 'generateSWIG' }
+tasks.configureEach {
+    if (name == 'cmakeBuild') {
+        dependsOn generateSWIG
+    }
+}
 //compileJava.dependsOn cmakeBuild
 //cmakeBuild.dependsOn generateSWIG
 

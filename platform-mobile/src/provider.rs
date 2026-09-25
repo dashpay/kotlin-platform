@@ -1,6 +1,5 @@
 //! Example ContextProvider that uses the Core gRPC API to fetch data from the platform.
 
-use std::hash::Hash;
 use std::num::NonZeroUsize;
 use std::os::raw::c_void;
 use std::ptr::null;
@@ -35,7 +34,7 @@ type DataContractCallback = extern "C" fn(id: &Identifier) -> DataContract;
 ///
 /// Example [ContextProvider] used by the Sdk for testing purposes.
 ///
-pub struct CallbackContextProvider {
+pub(crate) struct CallbackContextProvider {
     pub context: * const c_void,
     pub quorum_public_key_callback: QuorumPublicKeyCallback,
     pub data_contract_callback: DataContractCallback,
@@ -49,15 +48,16 @@ pub struct CallbackContextProvider {
 
     /// Data contracts cache.
     ///
-    /// Users can insert new data contracts into the cache using [`Cache::put`].
-    pub data_contracts_cache: Arc<Cache<Identifier, DataContract>>,
+    /// Data contracts fetched through this provider are stored here.
+    data_contracts_cache: Arc<DataContractCache>,
 
     /// Quorum public keys cache.
     ///
     /// Key is a tuple of quorum hash and quorum type. Value is a quorum public key.
     ///
-    /// Users can insert new quorum public keys into the cache using [`Cache::put`].
-    pub quorum_public_keys_cache: Cache<([u8; 32], u32), [u8; 48]>,
+    /// Quorum public keys fetched through this provider are stored here.
+    quorum_public_keys_cache:
+        std::sync::RwLock<lru::LruCache<([u8; 32], u32), Arc<[u8; 48]>>>,
 
     /// Directory where to store dumped data.
     ///
@@ -73,12 +73,12 @@ impl CallbackContextProvider {
     /// values set by the user in the caches: `data_contracts_cache`, `quorum_public_keys_cache`.
     ///
     /// Sdk can be set later with [`CallbackContextProvider::set_sdk`].
-    pub fn new(
+    pub(crate) fn new(
         context: * const c_void,
         quorum_public_key_callback: u64,
         data_contract_callback: u64,
         sdk: Option<Arc<Sdk>>,
-        data_contract_cache: Arc<Cache<Identifier, DataContract>>,
+        data_contract_cache: Arc<DataContractCache>,
         quorum_public_keys_cache_size: NonZeroUsize,
     ) -> Result<Self, Error> {
         unsafe {
@@ -90,7 +90,9 @@ impl CallbackContextProvider {
                 data_contract_callback: callback2,
                 sdk,
                 data_contracts_cache: data_contract_cache,
-                quorum_public_keys_cache: Cache::new(quorum_public_keys_cache_size),
+                quorum_public_keys_cache: std::sync::RwLock::new(lru::LruCache::new(
+                    quorum_public_keys_cache_size,
+                )),
                 #[cfg(feature = "mocks")]
                 dump_dir: None,
             })
@@ -102,7 +104,7 @@ impl CallbackContextProvider {
     ///
     /// Note that if the `sdk` is `None`, the context provider will not be able to fetch data itself and will rely on
     /// values set by the user in the caches: `data_contracts_cache`, `quorum_public_keys_cache`.
-    pub fn set_sdk(&mut self, sdk: Option<Arc<Sdk>>) {
+    pub(crate) fn set_sdk(&mut self, sdk: Option<Arc<Sdk>>) {
         self.sdk = sdk;
     }
 }
@@ -116,7 +118,10 @@ impl ContextProvider for CallbackContextProvider {
     ) -> Result<[u8; 48], ContextProviderError> {
         if let Some(key) = self
             .quorum_public_keys_cache
+            .write()
+            .expect("cache lock poisoned")
             .get(&(quorum_hash, quorum_type))
+            .map(Arc::clone)
         {
             tracing::info!("get_quorum_public_key: returning from Cache");
             return Ok(*key);
@@ -133,7 +138,9 @@ impl ContextProvider for CallbackContextProvider {
         } else {
             // store key in cache and return Ok
             self.quorum_public_keys_cache
-                .put((quorum_hash, quorum_type), key);
+                .write()
+                .expect("cache lock poisoned")
+                .put((quorum_hash, quorum_type), Arc::new(key));
 
             Ok(key)
         }
@@ -186,34 +193,31 @@ unsafe impl Send for CallbackContextProvider {}
 unsafe impl Sync for CallbackContextProvider {}
 
 
-/// Thread-safe cache of various objects inside the SDK.
-///
-/// This is used to cache objects that are expensive to fetch from the platform, like data contracts.
-pub struct Cache<K: Hash + Eq, V> {
-    // We use a Mutex to allow access to the cache when we don't have mutable &self
-    // And we use Arc to allow multiple threads to access the cache without having to clone it
-    inner: std::sync::RwLock<lru::LruCache<K, Arc<V>>>,
+/// Thread-safe data contract cache kept internal to the mobile SDK.
+pub(crate) struct DataContractCache {
+    inner: std::sync::RwLock<lru::LruCache<Identifier, Arc<DataContract>>>,
 }
 
-impl<K: Hash + Eq, V> Cache<K, V> {
-    /// Create new cache
-    pub fn new(capacity: NonZeroUsize) -> Self {
+impl DataContractCache {
+    pub(crate) fn new(capacity: NonZeroUsize) -> Self {
         Self {
-            // inner: std::sync::Mutex::new(lru::LruCache::new(capacity)),
             inner: std::sync::RwLock::new(lru::LruCache::new(capacity)),
         }
     }
 
-    /// Get a reference to the value stored under `k`.
-    pub fn get(&self, k: &K) -> Option<Arc<V>> {
-        let mut guard = self.inner.write().expect("cache lock poisoned");
-        guard.get(k).map(Arc::clone)
+    pub(crate) fn get(&self, id: &Identifier) -> Option<Arc<DataContract>> {
+        self.inner
+            .write()
+            .expect("cache lock poisoned")
+            .get(id)
+            .map(Arc::clone)
     }
 
-    /// Insert a new value into the cache.
-    pub fn put(&self, k: K, v: V) {
-        let mut guard = self.inner.write().expect("cache lock poisoned");
-        guard.put(k, Arc::new(v));
+    pub(crate) fn put(&self, id: Identifier, data_contract: DataContract) {
+        self.inner
+            .write()
+            .expect("cache lock poisoned")
+            .put(id, Arc::new(data_contract));
     }
 }
 

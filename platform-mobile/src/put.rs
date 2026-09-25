@@ -52,7 +52,7 @@ use tracing::trace;
 use rand::random;
 use crate::config::{Config, EntryPoint};
 use crate::logs::setup_logs;
-use crate::provider::Cache;
+use crate::provider::DataContractCache;
 use dapi_grpc::platform::v0::{StateTransitionBroadcastError, WaitForStateTransitionResultResponse};
 use dapi_grpc::platform::v0::wait_for_state_transition_result_response::{Version, wait_for_state_transition_result_response_v0};
 use dashcore::blockdata::transaction::outpoint::OutPoint;
@@ -568,7 +568,7 @@ pub fn topup_identity_sdk(
 
 fn put_document_with_retry(
     sdk: Arc<Sdk>,
-    data_contract_cache: Arc<Cache<Identifier, DataContract>>,
+    data_contract_cache: Arc<DataContractCache>,
     new_document: Document,
     document_type: DocumentType,
     entropy: [u8; 32],
@@ -684,11 +684,11 @@ pub fn put_document_sdk(
         };
 
         trace!("call Document::put_to_platform & wait_for_response");
-        let data_contract_cache = unsafe {&(*rust_sdk).data_contract_cache.clone() };
+        let data_contract_cache = unsafe { (*rust_sdk).data_contract_cache.clone() };
         let extra_retries = settings.request_settings.retries.unwrap_or_else(|| 5usize);
         let transition = put_document_with_retry(
             sdk.clone(),
-            data_contract_cache.clone(),
+            data_contract_cache,
             new_document.clone(),
             document_type.to_owned_document_type(),
             entropy.clone(),
@@ -715,7 +715,7 @@ pub fn put_document_sdk(
 
 fn replace_document_with_retry(
     sdk: Arc<Sdk>,
-    data_contract_cache: Arc<Cache<Identifier, DataContract>>,
+    data_contract_cache: Arc<DataContractCache>,
     new_document: Document,
     document_type: DocumentType,
     identity_public_key: IdentityPublicKey,
@@ -815,11 +815,11 @@ pub fn replace_document_sdk(
 
         trace!("call Document::replace_on_platform & wait_for_response");
 
-        let data_contract_cache = unsafe {&(*rust_sdk).data_contract_cache.clone() };
+        let data_contract_cache = unsafe { (*rust_sdk).data_contract_cache.clone() };
         let extra_retries = settings.request_settings.retries.unwrap_or_else(|| 5usize);
         let transition = replace_document_with_retry(
             sdk.clone(),
-            data_contract_cache.clone(),
+            data_contract_cache,
             document.clone(),
             document_type.to_owned_document_type(),
             identity_public_key.clone(),

@@ -13,7 +13,7 @@ use platform_version::version::v11::PLATFORM_V11;
 use tokio::runtime::{Builder, Runtime};
 use crate::config::{Config, EntryPoint};
 use crate::logs::setup_logs;
-use crate::provider::Cache;
+use crate::provider::DataContractCache;
 
 #[ferment_macro::opaque]
 pub struct DashSdk {
@@ -21,7 +21,7 @@ pub struct DashSdk {
     pub runtime: Arc<Runtime>,
     pub sdk: Arc<Sdk>,
     pub context_provider_context: * const c_void,
-    pub data_contract_cache: Arc<Cache<Identifier, DataContract>>,
+    pub(crate) data_contract_cache: Arc<DataContractCache>,
     pub request_settings: RequestSettings
 }
 
@@ -29,9 +29,6 @@ impl DashSdk {
 
     pub fn get_config(&self) -> Arc<Config> {
         self.config.clone()
-    }
-    pub fn get_data_contract_cache(&self) -> Arc<Cache<Identifier, DataContract>> {
-        self.data_contract_cache.clone()
     }
 }
 
@@ -79,7 +76,7 @@ pub fn update_sdk_with_address_list(
             unsafe { (*rust_sdk).context_provider_context },
             quorum_public_key_callback,
             data_contract_callback,
-            unsafe { (*rust_sdk).get_data_contract_cache() },
+            unsafe { (*rust_sdk).data_contract_cache.clone() },
             address_list,
             version
         ).await;
@@ -153,7 +150,7 @@ pub fn create_dash_sdk_with_context(
         };
         tracing::info!("configuring for testnet={} using platform port={}", cfg.is_testnet, cfg.platform_port);
         tracing::info!("configuring platform version {:?}", version);
-        let data_contract_cache = Arc::new(Cache::new(NonZeroUsize::new(100).expect("Non Zero")));
+        let data_contract_cache = Arc::new(DataContractCache::new(NonZeroUsize::new(100).expect("Non Zero")));
         let sdk = if quorum_public_key_callback != 0 {
             // use the callbacks to obtain quorum public keys
             cfg.setup_api_with_callbacks_cache(
@@ -215,7 +212,7 @@ pub fn create_dash_sdk_using_single_evonode(
         } else {
             &PLATFORM_V11
         };
-        let data_contract_cache = Arc::new(Cache::new(NonZeroUsize::new(100).expect("Non Zero")));
+        let data_contract_cache = Arc::new(DataContractCache::new(NonZeroUsize::new(100).expect("Non Zero")));
         let sdk = if quorum_public_key_callback != 0 {
             // use the callbacks to obtain quorum public keys
             cfg.setup_api_with_callbacks_cache_list(std::ptr::null(), quorum_public_key_callback, data_contract_callback, data_contract_cache.clone(), vec![evonode], version).await

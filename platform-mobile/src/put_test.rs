@@ -87,6 +87,7 @@ fn test_put_documents_for_username() {
     );
     let preorder_document = Document::V0(
         DocumentV0 {
+            contract_version: None,
             id: Default::default(),
             owner_id: owner_id,
             properties: preorder_props,
@@ -134,6 +135,7 @@ fn test_put_documents_for_username() {
 
     let domain_document = Document::V0(
         DocumentV0 {
+            contract_version: None,
             id: Default::default(),
             owner_id: owner_id,
             properties: domain_props,
