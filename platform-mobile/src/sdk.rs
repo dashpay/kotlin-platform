@@ -226,6 +226,31 @@ pub fn destroy_dash_sdk(rust_sdk: * mut DashSdk) {
     unsafe  { unbox_any(rust_sdk) };
 }
 
+/// The highest Platform protocol version this SDK has learned from proof-verified
+/// response metadata. No network request is made; before any Platform query has
+/// completed this is the per-network floor.
+#[ferment_macro::export]
+pub fn get_protocol_version_with_sdk(rust_sdk: * mut DashSdk) -> Result<u64, String> {
+    let sdk = unsafe { (*rust_sdk).get_sdk() };
+    Ok(sdk.protocol_version_number() as u64)
+}
+
+/// Queries the network (a proven getEpochsInfo request) and ratchets the SDK up to
+/// the Platform protocol version it currently runs, then returns that version.
+/// A failed query is non-fatal inside dash-sdk: the version already learned is kept
+/// and returned, so an error here means only that the refresh itself failed.
+#[ferment_macro::export]
+pub fn refresh_protocol_version_with_sdk(rust_sdk: * mut DashSdk) -> Result<u64, String> {
+    let rt = unsafe { (*rust_sdk).get_runtime() };
+    let sdk = unsafe { (*rust_sdk).get_sdk() };
+    rt.block_on(async {
+        sdk.refresh_protocol_version()
+            .await
+            .map(|version| version as u64)
+            .map_err(|err| err.to_string())
+    })
+}
+
 #[test]
 fn test_dash_sdk() {
     let my_sdk = create_dash_sdk_using_core_testnet();
