@@ -44,7 +44,6 @@ use dpp::util::entropy_generator::{DefaultEntropyGenerator, EntropyGenerator};
 use platform_value::{Identifier, IdentifierBytes32, Value};
 use platform_value::string_encoding::Encoding;
 use platform_value::types::binary_data::BinaryData;
-use platform_version::version::PlatformVersion;
 use simple_signer::single_key_signer::SingleKeySigner;
 use serde::{Deserialize, Serialize};
 use tokio::runtime::Builder;
@@ -666,7 +665,7 @@ pub fn put_document_sdk(
             block_height,
             core_block_height,
             entropy,
-            PlatformVersion::latest()
+            sdk.version()
         );
 
         let new_document = match new_document_result {
