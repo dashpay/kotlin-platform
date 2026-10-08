@@ -6,6 +6,18 @@ tab_width = 4
 documentation_style = "c"
 style = "tag"
 include_guard = "dash_sdk_bindings_h"
+after_includes = """
+#ifndef SWIG
+struct dpp_identity_identity_public_key_KeyID;
+enum class dpp_identity_identity_public_key_purpose_Purpose;
+enum class dpp_identity_identity_public_key_security_level_SecurityLevel;
+enum class dpp_identity_identity_public_key_key_type_KeyType;
+using KeyID = dpp_identity_identity_public_key_KeyID;
+using Purpose = dpp_identity_identity_public_key_purpose_Purpose;
+using SecurityLevel = dpp_identity_identity_public_key_security_level_SecurityLevel;
+using KeyType = dpp_identity_identity_public_key_key_type_KeyType;
+#endif
+"""
 
 [parse]
 parse_deps = true

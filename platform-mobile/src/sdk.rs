@@ -7,13 +7,10 @@ use dpp::data_contract::accessors::v0::DataContractV0Getters;
 use dpp::data_contract::DataContract;
 use ferment::{boxed, unbox_any};
 use platform_value::Identifier;
-use platform_version::version::PlatformVersion;
-use platform_version::version::v12::PLATFORM_V12;
-use platform_version::version::v11::PLATFORM_V11;
 use tokio::runtime::{Builder, Runtime};
 use crate::config::{Config, EntryPoint};
 use crate::logs::setup_logs;
-use crate::provider::Cache;
+use crate::provider::DataContractCache;
 
 #[ferment_macro::opaque]
 pub struct DashSdk {
@@ -21,7 +18,7 @@ pub struct DashSdk {
     pub runtime: Arc<Runtime>,
     pub sdk: Arc<Sdk>,
     pub context_provider_context: * const c_void,
-    pub data_contract_cache: Arc<Cache<Identifier, DataContract>>,
+    pub(crate) data_contract_cache: Arc<DataContractCache>,
     pub request_settings: RequestSettings
 }
 
@@ -29,9 +26,6 @@ impl DashSdk {
 
     pub fn get_config(&self) -> Arc<Config> {
         self.config.clone()
-    }
-    pub fn get_data_contract_cache(&self) -> Arc<Cache<Identifier, DataContract>> {
-        self.data_contract_cache.clone()
     }
 }
 
@@ -65,7 +59,6 @@ pub fn update_sdk_with_address_list(
     quorum_public_key_callback: u64,
     data_contract_callback: u64,
     address_list: Vec<String>,
-    version: &'static PlatformVersion
 ) {
 
     let rt = unsafe { (*rust_sdk).get_runtime() };
@@ -79,9 +72,8 @@ pub fn update_sdk_with_address_list(
             unsafe { (*rust_sdk).context_provider_context },
             quorum_public_key_callback,
             data_contract_callback,
-            unsafe { (*rust_sdk).get_data_contract_cache() },
+            unsafe { (*rust_sdk).data_contract_cache.clone() },
             address_list,
-            version
         ).await;
 
         tracing::info!("sdk created");
@@ -146,14 +138,8 @@ pub fn create_dash_sdk_with_context(
         } else {
             Config::new_mainnet()
         };
-        let version: &'static PlatformVersion = if is_testnet {
-            &PLATFORM_V11
-        } else {
-            &PLATFORM_V11
-        };
         tracing::info!("configuring for testnet={} using platform port={}", cfg.is_testnet, cfg.platform_port);
-        tracing::info!("configuring platform version {:?}", version);
-        let data_contract_cache = Arc::new(Cache::new(NonZeroUsize::new(100).expect("Non Zero")));
+        let data_contract_cache = Arc::new(DataContractCache::new(NonZeroUsize::new(100).expect("Non Zero")));
         let sdk = if quorum_public_key_callback != 0 {
             // use the callbacks to obtain quorum public keys
             cfg.setup_api_with_callbacks_cache(
@@ -164,11 +150,10 @@ pub fn create_dash_sdk_with_context(
                 connect_timeout,
                 timeout,
                 retries,
-                &version
             ).await
         } else {
             // use Dash Core for quorum public keys
-            cfg.setup_api(version).await
+            cfg.setup_api().await
         };
         tracing::info!("Sdk version {:?}", sdk.version());
         DashSdk {
@@ -210,18 +195,13 @@ pub fn create_dash_sdk_using_single_evonode(
         } else {
             Config::new_mainnet()
         };
-        let version: &'static PlatformVersion = if is_testnet {
-            &PLATFORM_V11
-        } else {
-            &PLATFORM_V11
-        };
-        let data_contract_cache = Arc::new(Cache::new(NonZeroUsize::new(100).expect("Non Zero")));
+        let data_contract_cache = Arc::new(DataContractCache::new(NonZeroUsize::new(100).expect("Non Zero")));
         let sdk = if quorum_public_key_callback != 0 {
             // use the callbacks to obtain quorum public keys
-            cfg.setup_api_with_callbacks_cache_list(std::ptr::null(), quorum_public_key_callback, data_contract_callback, data_contract_cache.clone(), vec![evonode], version).await
+            cfg.setup_api_with_callbacks_cache_list(std::ptr::null(), quorum_public_key_callback, data_contract_callback, data_contract_cache.clone(), vec![evonode]).await
         } else {
             // use Dash Core for quorum public keys
-            cfg.setup_api_list(vec![evonode], version).await
+            cfg.setup_api_list(vec![evonode]).await
         };
         tracing::info!("Sdk version {:?}", sdk.version());
         DashSdk {
@@ -244,6 +224,31 @@ pub fn create_dash_sdk_using_single_evonode(
 #[ferment_macro::export]
 pub fn destroy_dash_sdk(rust_sdk: * mut DashSdk) {
     unsafe  { unbox_any(rust_sdk) };
+}
+
+/// The highest Platform protocol version this SDK has learned from proof-verified
+/// response metadata. No network request is made; before any Platform query has
+/// completed this is the per-network floor.
+#[ferment_macro::export]
+pub fn get_protocol_version_with_sdk(rust_sdk: * mut DashSdk) -> Result<u64, String> {
+    let sdk = unsafe { (*rust_sdk).get_sdk() };
+    Ok(sdk.protocol_version_number() as u64)
+}
+
+/// Queries the network (a proven getEpochsInfo request) and ratchets the SDK up to
+/// the Platform protocol version it currently runs, then returns that version.
+/// A failed query is non-fatal inside dash-sdk: the version already learned is kept
+/// and returned, so an error here means only that the refresh itself failed.
+#[ferment_macro::export]
+pub fn refresh_protocol_version_with_sdk(rust_sdk: * mut DashSdk) -> Result<u64, String> {
+    let rt = unsafe { (*rust_sdk).get_runtime() };
+    let sdk = unsafe { (*rust_sdk).get_sdk() };
+    rt.block_on(async {
+        sdk.refresh_protocol_version()
+            .await
+            .map(|version| version as u64)
+            .map_err(|err| err.to_string())
+    })
 }
 
 #[test]

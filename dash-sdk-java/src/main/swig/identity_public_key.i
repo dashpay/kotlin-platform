@@ -1,6 +1,9 @@
 %ignore dpp_identity_identity_public_key_v0_IdentityPublicKeyV0::key_type;
 %ignore dpp_identity_identity_public_key_v0_IdentityPublicKeyV0::purpose;
 %ignore dpp_identity_identity_public_key_v0_IdentityPublicKeyV0::security_level;
+%ignore dpp_identity_identity_public_key_v1_IdentityPublicKeyV1::key_type;
+%ignore dpp_identity_identity_public_key_v1_IdentityPublicKeyV1::purpose;
+%ignore dpp_identity_identity_public_key_v1_IdentityPublicKeyV1::security_level;
 %rename(IdentityPublicKeyV0) dpp_identity_identity_public_key_v0_IdentityPublicKeyV0;
 %extend dpp_identity_identity_public_key_v0_IdentityPublicKeyV0 {
     dpp_identity_identity_public_key_v0_IdentityPublicKeyV0(dpp_identity_identity_public_key_KeyID * keyId,
@@ -59,6 +62,52 @@
         return *self->security_level;
     }
 }
+
+%rename(IdentityPublicKeyV1) dpp_identity_identity_public_key_v1_IdentityPublicKeyV1;
+%extend dpp_identity_identity_public_key_v1_IdentityPublicKeyV1 {
+    dpp_identity_identity_public_key_v1_IdentityPublicKeyV1(
+        dpp_identity_identity_public_key_KeyID * keyId,
+        dpp_identity_identity_public_key_purpose_Purpose purpose,
+        dpp_identity_identity_public_key_security_level_SecurityLevel securityLevel,
+        dpp_identity_identity_public_key_contract_bounds_ContractBounds * contract_bounds,
+        dpp_identity_identity_public_key_key_type_KeyType key_type,
+        bool read_only,
+        platform_value_types_binary_data_BinaryData * data,
+        dpp_identity_identity_public_key_TimestampMillis * disabled_at,
+        dpp_balances_credits_Credits * total_budget,
+        dpp_identity_identity_public_key_TimestampMillis * expires_at) {
+        dpp_identity_identity_public_key_purpose_Purpose * purposeObject = intToPurpose(purpose);
+        dpp_identity_identity_public_key_key_type_KeyType * keyTypeObject = intToKeyType(key_type);
+        dpp_identity_identity_public_key_security_level_SecurityLevel * securityLevelObject = intToSecurityLevel(securityLevel);
+        dpp_identity_identity_public_key_KeyID * keyIdObject = dpp_identity_identity_public_key_KeyID_ctor(keyId->_0);
+
+        return dpp_identity_identity_public_key_v1_IdentityPublicKeyV1_ctor(
+            keyIdObject,
+            purposeObject,
+            securityLevelObject,
+            clone(contract_bounds),
+            keyTypeObject,
+            read_only,
+            clone(data),
+            clone(disabled_at),
+            clone(total_budget),
+            clone(expires_at)
+        );
+    }
+    ~dpp_identity_identity_public_key_v1_IdentityPublicKeyV1() {
+        dpp_identity_identity_public_key_v1_IdentityPublicKeyV1_destroy($self);
+    }
+    enum dpp_identity_identity_public_key_key_type_KeyType getKeyType() {
+        return *$self->key_type;
+    }
+    enum dpp_identity_identity_public_key_purpose_Purpose getPurpose() {
+        return *$self->purpose;
+    }
+    enum dpp_identity_identity_public_key_security_level_SecurityLevel getSecurityLevel() {
+        return *$self->security_level;
+    }
+}
+
 %rename(IdentityPublicKey) dpp_identity_identity_public_key_IdentityPublicKey;
 %rename(IdentityPublicKey_Tag) dpp_identity_identity_public_key_IdentityPublicKey_Tag;
 
@@ -67,6 +116,9 @@
         return dpp_identity_identity_public_key_IdentityPublicKey_V0_ctor(
             platform_mobile_identity_IdentityPublicKeyV0_clone(ipkv0)
         );
+    }
+    dpp_identity_identity_public_key_IdentityPublicKey(dpp_identity_identity_public_key_v1_IdentityPublicKeyV1 * ipkv1) {
+        return dpp_identity_identity_public_key_IdentityPublicKey_V1_ctor(clone(ipkv1));
     }
     ~dpp_identity_identity_public_key_IdentityPublicKey() {
         dpp_identity_identity_public_key_IdentityPublicKey_destroy($self);

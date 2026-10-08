@@ -1132,6 +1132,24 @@ class DapiClient(
         throw MaxRetriesReachedException(exceptionList)
     }
 
+    /**
+     * The highest Platform protocol version learned from proof-verified response
+     * metadata so far. Makes no network request.
+     */
+    fun getProtocolVersion(): Int {
+        return dashsdk.platformMobileSdkGetProtocolVersionWithSdk(rustSdk).unwrap().toInt()
+    }
+
+    /**
+     * Asks the network for the Platform protocol version it currently runs (a proven
+     * getEpochsInfo query) and returns it. If the query fails, the highest version
+     * already learned is returned instead, so the result never goes down.
+     */
+    fun refreshProtocolVersion(): Int {
+        logger.info("refreshProtocolVersion()")
+        return dashsdk.platformMobileSdkRefreshProtocolVersionWithSdk(rustSdk).unwrap().toInt()
+    }
+
     fun getVoteContenders(
         dataContractId: Identifier,
         documentType: String,
