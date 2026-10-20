@@ -69,7 +69,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
-class DapiClient(
+class DapiClient @JvmOverloads constructor(
     var dapiAddressListProvider: DAPIAddressListProvider,
     val dpp: DashPlatformProtocol,
     val useContextProvider: Boolean,
@@ -78,6 +78,7 @@ class DapiClient(
     private var retries: Int = DEFAULT_RETRY_COUNT,
     private var banBaseTime: Int = DEFAULT_BASE_BAN_TIME,
     private var waitForNodes: Int = DEFAULT_WAIT_FOR_NODES,
+    val networkConfiguration: org.dashj.platform.sdk.client.NetworkConfiguration? = null,
 ) {
 
     // gRPC properties
@@ -156,6 +157,14 @@ class DapiClient(
     var rustSdk: SWIGTYPE_p_DashSdk
 
     init {
+        networkConfiguration?.let {
+            it.validate(dpp.params)
+            require(isTestnet == (it.network != "mainnet")) { "Conflicting network selectors" }
+            dapiAddressListProvider = it.addressProvider(banBaseTime)
+        }
+        require(dpp.params !is DevNetParams || networkConfiguration != null) {
+            "Devnets require an explicit NetworkConfiguration; a testnet boolean cannot select a devnet"
+        }
         val loggingInterceptor = HttpLoggingInterceptor { msg: String? -> logger.info(msg) }
         loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
 
@@ -176,7 +185,13 @@ class DapiClient(
             false
         }
 
-        rustSdk = dashsdk.platformMobileSdkCreateDashSdkWithContext(
+        rustSdk = if (networkConfiguration != null) {
+            dashsdk.platformMobileSdkCreateDashSdkWithNetwork(
+                contextProviderContext, BigInteger.valueOf(contextProviderFunction), BigInteger.ZERO,
+                networkConfiguration.network, networkConfiguration.endpoints,
+                timeOut * 2, timeOut, retries.toLong()
+            )
+        } else dashsdk.platformMobileSdkCreateDashSdkWithContext(
             contextProviderContext,
             BigInteger.valueOf(contextProviderFunction),
             BigInteger.ZERO,
@@ -494,11 +509,8 @@ class DapiClient(
                 identityId.toNative()
             )
             try {
-                return try {
-                    Identity(result.unwrap().get())
-                } catch (e: Exception) {
-                    null
-                }
+                val identity = result.unwrap()
+                return if (identity.isPresent) Identity(identity.get()) else null
             } catch (e: Exception) {
                 if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true ||
                     e.message?.contains("invalid peer certificate: certificate expired") == true) {
@@ -784,7 +796,7 @@ class DapiClient(
             retriesLeft // if called recursively
         }
         val address = dapiAddress ?: dapiAddressListProvider.getLiveAddress()
-        val allowSelfSignedCertificate = dpp.params is DevNetParams
+        val allowSelfSignedCertificate = dpp.params is DevNetParams && networkConfiguration == null
         val grpcMasternode = DAPIGrpcMasternode(address, timeOut, allowSelfSignedCertificate)
         lastUsedAddress = address
 
@@ -1036,13 +1048,14 @@ class DapiClient(
             return dapiService
         }
 
-        val mnIP = dapiAddressListProvider.getLiveAddress().host
+        val address = dapiAddressListProvider.getLiveAddress()
+        val mnIP = address.host
 
-        logger.info("Connecting to GRPC host: $mnIP:${DAPIAddress.DEFAULT_JRPC_PORT}")
+        logger.info("Connecting to JSON-RPC host: $mnIP:${address.httpPort}")
 
         retrofit = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl("https://$mnIP:${DAPIAddress.DEFAULT_JRPC_PORT}/")
+            .baseUrl(java.net.URI("https", null, mnIP, address.httpPort, "/", null, null).toString())
             .client(if (debugJrpc) debugOkHttpClient else OkHttpClient())
             .build()
         dapiService = retrofit.create(DapiService::class.java)
@@ -1138,6 +1151,25 @@ class DapiClient(
      */
     fun getProtocolVersion(): Int {
         return dashsdk.platformMobileSdkGetProtocolVersionWithSdk(rustSdk).unwrap().toInt()
+    }
+
+    /** A proof-verified group owner; null only when the group does not exist. */
+    fun getContractGroupOwner(groupId: Identifier): Identifier? {
+        return dashsdk.fetchContractGroupOwnerWithSdk(rustSdk, groupId.toNative())
+            .unwrap().map { Identifier.from(it) }.orElse(null)
+    }
+
+    /** Fresh Platform block time in milliseconds, from a proof-verified identity query. */
+    fun getPlatformTime(identityId: Identifier): Long {
+        return dashsdk.fetchPlatformTimeWithSdk(rustSdk, identityId.toNative()).unwrap()
+    }
+
+    /** Null denotes no stored budget; callers should first verify the key exists. */
+    fun getIdentityKeyRemainingBudget(identityId: Identifier, keyId: Int): java.math.BigInteger? {
+        val budget = dashsdk.fetchIdentityKeyRemainingBudgetWithSdk(
+            rustSdk, identityId.toNative(), keyId.toLong() and 0xffffffffL
+        ).unwrap()
+        return if (budget.has_remaining_budget) budget.remaining_budget else null
     }
 
     /**

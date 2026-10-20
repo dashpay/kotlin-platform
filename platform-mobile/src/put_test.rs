@@ -102,6 +102,8 @@ fn test_put_documents_for_username() {
             updated_at_core_block_height: None,
             transferred_at_core_block_height: None,
             creator_id: None,
+            moderated_at: None,
+            moderated_by: None,
         }
     );
     // data = {HashMap@3953}  size = 7
@@ -150,6 +152,8 @@ fn test_put_documents_for_username() {
             updated_at_core_block_height: None,
             transferred_at_core_block_height: None,
             creator_id: None,
+            moderated_at: None,
+            moderated_by: None,
         }
     );
 

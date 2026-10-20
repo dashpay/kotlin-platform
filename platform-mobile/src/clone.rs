@@ -19,6 +19,7 @@ use drive::query::{OrderClause, WhereClause, WhereOperator};
 use drive_proof_verifier::types::{Contenders, ContestedResource, ContestedResources, ResourceVotesByIdentity, VotePollsGroupedByTimestamp, Voter, Voters};
 use platform_value::types::binary_data::BinaryData;
 use platform_value::{Hash256, Value, ValueMap};
+use crate::fetch_identity::IdentityKeyRemainingBudget;
 
 #[allow(non_snake_case)]
 #[ferment_macro::export]
@@ -263,5 +264,11 @@ pub fn ResourceVotesByIdentity_clone(o: ResourceVotesByIdentity) -> ResourceVote
 #[allow(non_snake_case)]
 #[ferment_macro::export]
 pub fn StateTransitionInfo_clone(info: StateTransitionInfo) -> StateTransitionInfo {
+    info.clone()
+}
+
+#[allow(non_snake_case)]
+#[ferment_macro::export]
+pub fn IdentityKeyRemainingBudget_clone(info: IdentityKeyRemainingBudget) -> IdentityKeyRemainingBudget {
     info.clone()
 }

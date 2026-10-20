@@ -10,9 +10,55 @@ use platform_value::Identifier;
 use tokio::runtime::{Builder, Runtime};
 use crate::config::{Config, EntryPoint};
 use crate::logs::setup_logs;
-use crate::provider::DataContractCache;
+use crate::provider::{CallbackContextProvider, DataContractCache};
+
+/// Creates a client with explicit endpoints; invalid configuration is returned across FFI.
+#[ferment_macro::export]
+pub fn create_dash_sdk_with_network(
+    context_provider_context: usize,
+    quorum_public_key_callback: u64,
+    data_contract_callback: u64,
+    network: String,
+    endpoints: Vec<String>,
+    connect_timeout: usize,
+    timeout: usize,
+    retries: usize,
+) -> Result<DashSdk, String> {
+    let config = Config::for_network(&network, endpoints)?;
+    if quorum_public_key_callback == 0 {
+        return Err("Explicit network clients require a quorum public key callback".to_owned());
+    }
+    setup_logs();
+    let runtime = Arc::new(Builder::new_multi_thread().enable_all().build().map_err(|e| e.to_string())?);
+    let cache = Arc::new(DataContractCache::new(NonZeroUsize::new(100).unwrap()));
+    let context = context_provider_context as *const c_void;
+    let settings = RequestSettings {
+        connect_timeout: Some(Duration::from_secs(connect_timeout as u64)),
+        timeout: Some(Duration::from_secs(timeout as u64)),
+        retries: Some(retries), ban_failed_address: Some(true),
+        max_decoding_message_size: Some(16 * 1024 * 1024),
+    };
+    let sdk = runtime.block_on(async {
+        let mut provider = CallbackContextProvider::new(context, quorum_public_key_callback,
+            data_contract_callback, None, cache.clone(), NonZeroUsize::new(100).unwrap())
+            .map_err(|e| e.to_string())?;
+        let bootstrap_provider = CallbackContextProvider::new(context, quorum_public_key_callback,
+            data_contract_callback, None, cache.clone(), NonZeroUsize::new(100).unwrap())
+            .map_err(|e| e.to_string())?;
+        let mut sdk = dash_sdk::SdkBuilder::new(config.address_list())
+            .with_network(config.network()).with_settings(settings)
+            .with_context_provider(bootstrap_provider)
+            .build().map_err(|e| e.to_string())?;
+        provider.set_sdk(Some(Arc::new(sdk.clone())));
+        sdk.set_context_provider(provider);
+        Ok::<_, String>(sdk)
+    })?;
+    Ok(DashSdk { config: Arc::new(config), runtime, sdk: Arc::new(sdk),
+        context_provider_context: context, data_contract_cache: cache, request_settings: settings })
+}
 
 #[ferment_macro::opaque]
+#[derive(Clone)]
 pub struct DashSdk {
     pub config: Arc<Config>,
     pub runtime: Arc<Runtime>,

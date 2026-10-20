@@ -29,8 +29,8 @@ dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
 ], default-features = false, rev = "981e97f1015960ae5d277afdabcba1cbbc0b3a63" }
 [build-dependencies]
 cbindgen = "0.26.0"
-ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys", features = ["cbindgen_only"] }
-#ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys"}
+#ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys", features = ["cbindgen_only"] }
+ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys"}
 toml = "0.8.8"
 
 [patch.crates-io]

@@ -12,6 +12,7 @@ use dash_sdk::platform::transition::put_identity::PutIdentity;
 use dash_sdk::platform::transition::put_identity_update::PutIdentityUpdate;
 use dash_sdk::platform::transition::put_settings::PutSettings;
 use dash_sdk::platform::transition::TxId;
+use dash_sdk::platform::transition::waitable::wait_for_document_and_owner_balance;
 use dashcore::hashes::{Hash, sha256};
 use dashcore::key::Secp256k1;
 use dashcore::secp256k1::{Message, SecretKey};
@@ -56,8 +57,8 @@ use dapi_grpc::platform::v0::{StateTransitionBroadcastError, WaitForStateTransit
 use dapi_grpc::platform::v0::wait_for_state_transition_result_response::{Version, wait_for_state_transition_result_response_v0};
 use dashcore::blockdata::transaction::outpoint::OutPoint;
 use dash_sdk::platform::transition::top_up_identity::TopUpIdentity;
-use dpp::data_contract::document_type::accessors::DocumentTypeV0Getters;
-use dpp::state_transition::StateTransition;
+use dpp::data_contract::document_type::accessors::{DocumentTypeV0Getters, DocumentTypeV2Getters};
+use dpp::state_transition::{StateTransition, StateTransitionLike};
 use crate::sdk::DashSdk;
 use dpp::serialization::Signable;
 use dpp::serialization::PlatformSerializable;
@@ -135,6 +136,138 @@ pub async fn wait_for_response_concurrent(
     tracing::warn!("wait_for_response_concurrent, all requests failed");
 
     Err(last_error.unwrap_or(Error::Generic("All requests failed".to_string())))
+}
+
+fn validate_created_document_snapshot(
+    expected: &Document,
+    submitted_id: Identifier,
+    actual: &Document,
+) -> Result<(), Error> {
+    if actual.id() != submitted_id {
+        return Err(Error::InvalidProvedResponse(
+            "index-only snapshot ID does not match the submitted transition".to_string(),
+        ));
+    }
+    if actual.owner_id() != expected.owner_id() {
+        return Err(Error::InvalidProvedResponse(
+            "index-only snapshot owner does not match the submitted document".to_string(),
+        ));
+    }
+    if actual.properties() != expected.properties() {
+        return Err(Error::InvalidProvedResponse(
+            "index-only snapshot properties do not match the submitted document".to_string(),
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod index_only_snapshot_tests {
+    use super::*;
+    use dpp::document::DocumentV0Setters;
+
+    fn response(id: u8, owner: u8, ciphertext: u8) -> Document {
+        Document::V0(DocumentV0 {
+            id: Identifier::from([id; 32]),
+            owner_id: Identifier::from([owner; 32]),
+            properties: BTreeMap::from([
+                ("appEphemeralPubKeyHash".to_string(), Value::Bytes(vec![3; 20])),
+                ("walletEphemeralPubKey".to_string(), Value::Bytes(vec![2; 33])),
+                ("encryptedPayload".to_string(), Value::Bytes(vec![ciphertext; 60])),
+            ]),
+            ..Default::default()
+        })
+    }
+
+    #[test]
+    fn accepts_exact_snapshot() {
+        let expected = response(1, 2, 4);
+        assert!(validate_created_document_snapshot(&expected, expected.id(), &expected.clone()).is_ok());
+    }
+
+    #[test]
+    fn accepts_nonce_derived_id_instead_of_placeholder() {
+        let contract = Identifier::from([8; 32]);
+        let owner = Identifier::from([2; 32]);
+        let entropy = [7; 32];
+        let mut expected = response(1, 2, 4);
+        expected.set_id(Document::generate_document_id_v0(&contract, &owner, "loginKeyResponse", &entropy));
+        let submitted_id = Document::generate_document_id_v1(&contract, &owner, "loginKeyResponse", &entropy, 42);
+        assert_ne!(expected.id(), submitted_id);
+        let mut snapshot = expected.clone();
+        snapshot.set_id(submitted_id);
+        assert!(validate_created_document_snapshot(&expected, submitted_id, &snapshot).is_ok());
+        assert!(validate_created_document_snapshot(&expected, submitted_id, &expected).is_err());
+    }
+
+    #[tokio::test]
+    async fn accepts_id_from_real_connect_creation_transition() {
+        use dpp::data_contract::config::DataContractConfig;
+        use dpp::dashcore::secp256k1::{PublicKey, Secp256k1, SecretKey};
+        use dpp::state_transition::batch_transition::BatchTransition;
+        use dpp::state_transition::batch_transition::methods::v0::DocumentsBatchTransitionMethodsV0;
+        use platform_version::version::PlatformVersion;
+        use simple_signer::signer::SimpleSigner;
+
+        let version = PlatformVersion::latest();
+        let config = DataContractConfig::default_for_version(version).unwrap();
+        let schemas: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../platform/packages/app-connect-contract/schema/v1/app-connect-contract-documents.json"
+        )).unwrap();
+        let contract = Identifier::from([8; 32]);
+        let document_type = DocumentType::try_from_schema(
+            contract, 1, config.version(), "loginKeyResponse",
+            Value::from(schemas["loginKeyResponse"].clone()), None,
+            &BTreeMap::new(), &config, false, &mut Vec::new(), version,
+        ).unwrap();
+        assert!(document_type.index_only());
+        let entropy = [7; 32];
+        let mut expected = response(1, 2, 4);
+        expected.set_id(Document::generate_document_id_v0(
+            &contract, &expected.owner_id(), "loginKeyResponse", &entropy,
+        ));
+        document_type.as_ref().sanitize_document_properties(expected.properties_mut());
+        let secret = [1; 32];
+        let public = PublicKey::from_secret_key(&Secp256k1::new(), &SecretKey::from_slice(&secret).unwrap());
+        let key = IdentityPublicKey::V0(IdentityPublicKeyV0 {
+            id: 1, purpose: Purpose::AUTHENTICATION, security_level: SecurityLevel::HIGH,
+            contract_bounds: None, key_type: KeyType::ECDSA_SECP256K1, read_only: false,
+            data: public.serialize().to_vec().into(), disabled_at: None,
+        });
+        let mut signer = SimpleSigner::default();
+        signer.add_identity_public_key(key.clone(), secret);
+        let transition = BatchTransition::new_document_creation_transition_from_document(
+            expected.clone(), document_type.as_ref(), entropy, &key, 42, 0, None,
+            &signer, version, None,
+        ).await.unwrap();
+        let StateTransition::Batch(batch) = transition else { panic!("expected document batch") };
+        let submitted_id = batch.modified_data_ids()[0];
+        assert_ne!(expected.id(), submitted_id);
+        assert_eq!(submitted_id, Document::generate_document_id_v1(
+            &contract, &expected.owner_id(), "loginKeyResponse", &entropy, 42,
+        ));
+        let mut snapshot = expected.clone();
+        snapshot.set_id(submitted_id);
+        assert!(validate_created_document_snapshot(&expected, submitted_id, &snapshot).is_ok());
+    }
+
+    #[test]
+    fn rejects_different_document_id() {
+        let expected = response(1, 2, 4);
+        assert!(validate_created_document_snapshot(&expected, expected.id(), &response(9, 2, 4)).is_err());
+    }
+
+    #[test]
+    fn rejects_different_owner() {
+        let expected = response(1, 2, 4);
+        assert!(validate_created_document_snapshot(&expected, expected.id(), &response(1, 9, 4)).is_err());
+    }
+
+    #[test]
+    fn rejects_different_response_fields() {
+        let expected = response(1, 2, 4);
+        assert!(validate_created_document_snapshot(&expected, expected.id(), &response(1, 2, 9)).is_err());
+    }
 }
 
 pub async fn wait_for_response_concurrent_identity(
@@ -388,11 +521,8 @@ pub fn put_identity_sdk(
         trace!("Finished SDK, {:?}", sdk);
         trace!("Set up network, private key and signer");
 
-        let network = if is_testnet {
-            Network::Testnet
-        } else {
-            Network::Mainnet
-        };
+        // Keep the legacy argument for ABI compatibility; the SDK owns network selection.
+        let network = sdk.network;
         let private_key = match PrivateKey::from_slice(asset_lock_proof_private_key.as_slice(), network) {
             Ok(pk) => pk,
             Err(e) => return Err(e.to_string())
@@ -530,11 +660,7 @@ pub fn topup_identity_sdk(
         // Your async code here
         let sdk = unsafe { (*rust_sdk).get_sdk() };
 
-        let network = if is_testnet {
-            Network::Testnet
-        } else {
-            Network::Mainnet
-        };
+        let network = sdk.network;
         let private_key = match PrivateKey::from_slice(asset_lock_proof_private_key.as_slice(), network) {
             Ok(pk) => pk,
             Err(e) => return Err(e.to_string())
@@ -668,10 +794,11 @@ pub fn put_document_sdk(
             sdk.version()
         );
 
-        let new_document = match new_document_result {
+        let mut new_document = match new_document_result {
             Ok(doc) => doc,
             Err(e) => return Err(e.to_string())
         };
+        document_type.sanitize_document_properties(new_document.properties_mut());
         let request_settings = unsafe { (*rust_sdk).get_request_settings() };
 
         let settings = PutSettings {
@@ -700,13 +827,35 @@ pub fn put_document_sdk(
             "state transition (hash): {}",
             hex::encode(hash_double_to_vec(transition.serialize_to_bytes().unwrap()))
         );
-        let result_document = wait_for_response_concurrent(
-            &new_document,
-            &sdk,
-            transition.clone(),
-            data_contract.clone(),
-            settings
-        ).await.or_else(|err|Err(err.to_string()))?;
+        // Index-only proofs authenticate the resulting entry, not this create's execution.
+        // Match the SDK's PutDocument behavior and retain strict waits for stored documents.
+        let result_document = if document_type.index_only() {
+            // PV14 replaces the document's placeholder ID with a nonce-derived ID.
+            let submitted_id = match &transition {
+                StateTransition::Batch(batch) => {
+                    let ids = batch.modified_data_ids();
+                    if ids.len() != 1 {
+                        return Err("expected one submitted document ID".to_string());
+                    }
+                    ids[0]
+                }
+                _ => return Err("expected a document batch transition".to_string()),
+            };
+            let (snapshot, _owner_balance) = wait_for_document_and_owner_balance(
+                &sdk, transition, Some(settings)
+            ).await.map_err(|err| err.to_string())?;
+            validate_created_document_snapshot(&new_document, submitted_id, &snapshot)
+                .map_err(|err| err.to_string())?;
+            snapshot
+        } else {
+            wait_for_response_concurrent(
+                &new_document,
+                &sdk,
+                transition.clone(),
+                data_contract.clone(),
+                settings
+            ).await.map_err(|err| err.to_string())?
+        };
 
         Ok(result_document)
     })

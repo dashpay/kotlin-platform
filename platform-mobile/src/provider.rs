@@ -37,7 +37,7 @@ type DataContractCallback = extern "C" fn(id: &Identifier) -> DataContract;
 pub(crate) struct CallbackContextProvider {
     pub context: * const c_void,
     pub quorum_public_key_callback: QuorumPublicKeyCallback,
-    pub data_contract_callback: DataContractCallback,
+    pub data_contract_callback: Option<DataContractCallback>,
     /// [Sdk] to use when fetching data from Platform
     ///
     /// Note that if the `sdk` is `None`, the context provider will not be able to fetch data itself and will rely on
@@ -83,7 +83,11 @@ impl CallbackContextProvider {
     ) -> Result<Self, Error> {
         unsafe {
             let callback1: QuorumPublicKeyCallback = std::mem::transmute(quorum_public_key_callback as usize);
-            let callback2: DataContractCallback = std::mem::transmute(data_contract_callback as usize);
+            let callback2: Option<DataContractCallback> = if data_contract_callback == 0 {
+                None
+            } else {
+                Some(std::mem::transmute(data_contract_callback as usize))
+            };
             Ok(Self {
                 context,
                 quorum_public_key_callback: callback1,

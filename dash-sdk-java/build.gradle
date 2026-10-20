@@ -24,7 +24,16 @@ cmake {
     sourceFolder=file("$projectDir/src/main/cpp")
 }
 
+def macosDeploymentTarget = providers.gradleProperty('macosDeploymentTarget').orElse('14.5').get()
+
+task buildRustBindings(type: Exec) {
+    workingDir "${rootProject.projectDir}/dash-sdk-bindings"
+    environment "MACOSX_DEPLOYMENT_TARGET", macosDeploymentTarget
+    commandLine 'cargo', 'build'
+}
+
 task generateSWIGMetadata(type: Exec) {
+    dependsOn buildRustBindings
     workingDir projectDir
     commandLine 'python3', 'ignore.py'
 }
@@ -73,8 +82,11 @@ sourceSets {
 }
 tasks.named('compileJava').configure { dependsOn 'cmakeBuild' }
 tasks.configureEach {
+    if (name == 'cmakeConfigure') {
+        dependsOn buildRustBindings, generateSWIG
+    }
     if (name == 'cmakeBuild') {
-        dependsOn generateSWIG
+        dependsOn buildRustBindings, generateSWIG
     }
 }
 //compileJava.dependsOn cmakeBuild

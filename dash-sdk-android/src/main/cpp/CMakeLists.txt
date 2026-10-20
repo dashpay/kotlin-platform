@@ -60,6 +60,10 @@ file(
     RUST_PROJECT_FILES "${RUST_SOURCE_DIR}/build.rs"
                        "${RUST_SOURCE_DIR}/src/*.rs"
                        "${RUST_SOURCE_DIR}/Cargo.toml"
+                       "${RUST_SOURCE_DIR}/Cargo.lock"
+                       "${CMAKE_SOURCE_DIR}/../../../../platform-mobile/src/*.rs"
+                       "${CMAKE_SOURCE_DIR}/../../../../platform-mobile/Cargo.toml"
+                       "${CMAKE_SOURCE_DIR}/../../../../rust-toolchain.toml"
 )
 # Set RUSTFLAGS for 16KB page alignment
 set(RUSTFLAGS_16KB "-C link-arg=-Wl,-z,max-page-size=16384")
@@ -68,7 +72,7 @@ set(RUSTFLAGS_16KB "-C link-arg=-Wl,-z,max-page-size=16384")
 add_custom_command(
     OUTPUT ${RUST_LIB_OUTPUT_PATH}
     COMMAND ${CMAKE_COMMAND} -E touch ${RUST_SOURCE_DIR}/Cargo.toml
-    COMMAND ${CMAKE_COMMAND} -E env RUSTFLAGS=${RUSTFLAGS_16KB} cargo +nightly ndk -t ${RUST_TARGET_TRIPLE} --platform ${ANDROID_API_LEVEL} build --release -Zbuild-std
+    COMMAND ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${CARGO_TARGET_DIR} RUSTFLAGS=${RUSTFLAGS_16KB} cargo +nightly ndk -t ${RUST_TARGET_TRIPLE} --platform ${ANDROID_API_LEVEL} build --release -Zbuild-std
     WORKING_DIRECTORY ${RUST_SOURCE_DIR}
     COMMENT "Building Rust library with cargo ndk"
     DEPENDS ${RUST_PROJECT_FILES}

@@ -23,13 +23,13 @@ import org.dashj.platform.sdk.client.ClientOptions
 import org.dashj.platform.sdk.platform.Platform
 
 class Client(private val clientOptions: ClientOptions) {
-    val params = when (clientOptions.network) {
+    val params = clientOptions.networkParameters ?: when (clientOptions.network) {
         "testnet" -> TestNet3Params.get()
         "bintang" -> BinTangDevNetParams.get()
         "mainnet" -> MainNetParams.get()
         else -> throw IllegalArgumentException("network ${clientOptions.network} is not valid")
     }
-    val platform = Platform(params)
+    val platform = Platform(params, clientOptions.networkConfiguration)
 
     val dapiClient: DapiClient
         get() = platform.client
@@ -81,6 +81,12 @@ class Client(private val clientOptions: ClientOptions) {
         // Create the DapiClient with parameters
         val isTestnet = params.id != MainNetParams.ID_MAINNET
         platform.client = when {
+            clientOptions.networkConfiguration != null -> {
+                val config = clientOptions.networkConfiguration
+                DapiClient(config.addressProvider(clientOptions.banBaseTime), platform.dpp, true, isTestnet,
+                    clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime,
+                    networkConfiguration = config)
+            }
             clientOptions.dapiAddressListProvider != null -> {
                 DapiClient(clientOptions.dapiAddressListProvider, platform.dpp, true, isTestnet, clientOptions.timeout, clientOptions.retries, clientOptions.banBaseTime)
             }

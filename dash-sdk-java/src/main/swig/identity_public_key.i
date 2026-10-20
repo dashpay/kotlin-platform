@@ -4,6 +4,7 @@
 %ignore dpp_identity_identity_public_key_v1_IdentityPublicKeyV1::key_type;
 %ignore dpp_identity_identity_public_key_v1_IdentityPublicKeyV1::purpose;
 %ignore dpp_identity_identity_public_key_v1_IdentityPublicKeyV1::security_level;
+%ignore dpp_identity_identity_public_key_v1_IdentityPublicKeyV1::id;
 %rename(IdentityPublicKeyV0) dpp_identity_identity_public_key_v0_IdentityPublicKeyV0;
 %extend dpp_identity_identity_public_key_v0_IdentityPublicKeyV0 {
     dpp_identity_identity_public_key_v0_IdentityPublicKeyV0(dpp_identity_identity_public_key_KeyID * keyId,
@@ -25,15 +26,7 @@
         printf("  ->data(%lx)\n", (long)binaryData);
         printf("  ->data->_0(%lx)\n", (long)binaryData->_0);
         printf("  ->data->_0->values(%lx)\n", (long)binaryData->_0->values);
-        dpp_identity_identity_public_key_contract_bounds_ContractBounds * contract_bounds_copy = nullptr;
-        if (contract_bounds != nullptr) {
-            if (contract_bounds->tag == dpp_identity_identity_public_key_contract_bounds_ContractBounds::Tag::SingleContract) {
-                contract_bounds_copy = dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContract_ctor(platform_mobile_identity_Identifier_clone(contract_bounds->single_contract.id));
-            } else if (contract_bounds->tag == dpp_identity_identity_public_key_contract_bounds_ContractBounds::Tag::SingleContractDocumentType) {
-                char * typeCopy = memoryFactory.clone(contract_bounds->single_contract_document_type.document_type_name);
-                contract_bounds_copy = dpp_identity_identity_public_key_contract_bounds_ContractBounds_SingleContractDocumentType_ctor(platform_mobile_identity_Identifier_clone(contract_bounds->single_contract_document_type.id), typeCopy);
-            }
-        }
+        dpp_identity_identity_public_key_contract_bounds_ContractBounds * contract_bounds_copy = clone(contract_bounds);
         //printf("  ->contract_bounds(%lx): %d\n", (long)contract_bounds, contract_bounds != nullptr ? contract_bounds->tag : -1);
         printf("  ->contract_bounds_copy(%lx)\n", (long)contract_bounds_copy);
         dpp_identity_identity_public_key_KeyID * keyIdObject = dpp_identity_identity_public_key_KeyID_ctor(keyId->_0);
@@ -64,7 +57,11 @@
 }
 
 %rename(IdentityPublicKeyV1) dpp_identity_identity_public_key_v1_IdentityPublicKeyV1;
+%newobject dpp_identity_identity_public_key_v1_IdentityPublicKeyV1::getId;
 %extend dpp_identity_identity_public_key_v1_IdentityPublicKeyV1 {
+    dpp_identity_identity_public_key_KeyID * getId() {
+        return dpp_identity_identity_public_key_KeyID_ctor(*$self->id);
+    }
     dpp_identity_identity_public_key_v1_IdentityPublicKeyV1(
         dpp_identity_identity_public_key_KeyID * keyId,
         dpp_identity_identity_public_key_purpose_Purpose purpose,
@@ -76,35 +73,36 @@
         dpp_identity_identity_public_key_TimestampMillis * disabled_at,
         dpp_balances_credits_Credits * total_budget,
         dpp_identity_identity_public_key_TimestampMillis * expires_at) {
-        dpp_identity_identity_public_key_purpose_Purpose * purposeObject = intToPurpose(purpose);
-        dpp_identity_identity_public_key_key_type_KeyType * keyTypeObject = intToKeyType(key_type);
-        dpp_identity_identity_public_key_security_level_SecurityLevel * securityLevelObject = intToSecurityLevel(securityLevel);
-        dpp_identity_identity_public_key_KeyID * keyIdObject = dpp_identity_identity_public_key_KeyID_ctor(keyId->_0);
-
-        return dpp_identity_identity_public_key_v1_IdentityPublicKeyV1_ctor(
-            keyIdObject,
-            purposeObject,
-            securityLevelObject,
-            clone(contract_bounds),
-            keyTypeObject,
+        uint32_t idValue = keyId->_0;
+        uint8_t purposeValue = static_cast<uint8_t>(purpose);
+        uint8_t securityLevelValue = static_cast<uint8_t>(securityLevel);
+        uint8_t keyTypeValue = static_cast<uint8_t>(key_type);
+        // Clone through Rust so raw Rust enums receive correctly sized Rust allocations.
+        dpp_identity_identity_public_key_v1_IdentityPublicKeyV1 view {
+            &idValue,
+            &purposeValue,
+            &securityLevelValue,
+            contract_bounds,
+            &keyTypeValue,
             read_only,
-            clone(data),
-            clone(disabled_at),
-            clone(total_budget),
-            clone(expires_at)
-        );
+            data,
+            disabled_at,
+            total_budget,
+            expires_at
+        };
+        return clone(&view);
     }
     ~dpp_identity_identity_public_key_v1_IdentityPublicKeyV1() {
         dpp_identity_identity_public_key_v1_IdentityPublicKeyV1_destroy($self);
     }
     enum dpp_identity_identity_public_key_key_type_KeyType getKeyType() {
-        return *$self->key_type;
+        return identityPublicKeyV1KeyType($self);
     }
     enum dpp_identity_identity_public_key_purpose_Purpose getPurpose() {
-        return *$self->purpose;
+        return identityPublicKeyV1Purpose($self);
     }
     enum dpp_identity_identity_public_key_security_level_SecurityLevel getSecurityLevel() {
-        return *$self->security_level;
+        return identityPublicKeyV1SecurityLevel($self);
     }
 }
 

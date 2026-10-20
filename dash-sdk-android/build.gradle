@@ -17,6 +17,14 @@ android {
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+        def cargoTargetDir = System.getenv('CARGO_TARGET_DIR')
+        if (cargoTargetDir) {
+            externalNativeBuild {
+                cmake {
+                    arguments "-DCARGO_TARGET_DIR=${rootProject.file(cargoTargetDir).absolutePath}"
+                }
+            }
+        }
     }
 
     buildTypes {

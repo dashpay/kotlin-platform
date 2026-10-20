@@ -1,0 +1,3 @@
+%rename(fetchContractGroupOwnerWithSdk) platform_mobile_app_connect_fetch_contract_group_owner_with_sdk;
+%rename(fetchPlatformTimeWithSdk) platform_mobile_app_connect_fetch_platform_time_with_sdk;
+%rename(deleteDocumentSdk) platform_mobile_app_connect_delete_document_sdk;

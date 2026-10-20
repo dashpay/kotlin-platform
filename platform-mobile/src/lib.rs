@@ -14,6 +14,7 @@ mod logs;
 pub mod voting;
 pub mod sdk;
 pub mod state_transition;
+pub mod key_wallet;
+pub mod app_connect;
 
 extern crate ferment_macro;
-
