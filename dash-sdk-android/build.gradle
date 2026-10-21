@@ -85,7 +85,7 @@ task buildRustRelease() {
                 workingDir 'src/main/rust' // Adjust to the path of your Rust project relative to your Android project
                 environment "CARGO_TARGET_DIR", "target"
                 //environment "CARGO_FEATURE_STD", 1 // this is to trick indexmap v1.9.3, among others
-                commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '--platform', '24', 'build', '--release', '-Zbuild-std'
+                commandLine 'cargo', '+nightly-2026-09-24', 'ndk', '-t', abi, '--platform', '24', 'build', '--release', '-Zbuild-std'
                 // Uncomment the next line if you need verbose output for debugging
                 // commandLine 'cargo', '+nightly', 'ndk', '-t', abi, '-o', outputPath, '--platform', '24', 'build', '--release', '-Zbuild-std', '-vv'
             }

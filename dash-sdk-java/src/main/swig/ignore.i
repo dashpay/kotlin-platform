@@ -98,6 +98,8 @@
 %ignore drive_query_conditions_WhereOperator_BetweenExcludeRight_ctor();
 %ignore drive_query_conditions_WhereOperator_In_ctor();
 %ignore drive_query_conditions_WhereOperator_StartsWith_ctor();
+%ignore drive_query_conditions_WhereOperator_Contains_ctor();
+%ignore drive_query_conditions_WhereOperator_ContainsAny_ctor();
 %ignore drive_query_conditions_WhereOperator_destroy(drive_query_conditions_WhereOperator *ffi);
 %ignore drive_query_conditions_WhereClause_ctor(char *field, drive_query_conditions_WhereOperator *operator_, platform_value_Value *value);
 %ignore drive_query_conditions_WhereClause_destroy(drive_query_conditions_WhereClause *ffi);

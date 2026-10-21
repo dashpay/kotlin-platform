@@ -740,6 +740,15 @@ class BlockchainIdentity {
             contractBounds = null,
             byteArrayOf(),
             false
+        ),
+        IdentityPublicKey(
+            4,
+            KeyType.ECDSA_SECP256K1,
+            Purpose.AUTHENTICATION,
+            SecurityLevel.CRITICAL,
+            contractBounds = null,
+            byteArrayOf(),
+            false
         )
     )
 
@@ -756,9 +765,9 @@ class BlockchainIdentity {
             privateKeyAtIndex(2, KeyType.ECDSA_SECP256K1, keyParameter)
         ) { "key must exist" }
 
-//        val criticalAuthenticationKey = checkNotNull(
-//            privateKeyAtIndex(4, KeyType.ECDSA_SECP256K1, keyParameter)
-//        ) { "key must exist" }
+        val criticalAuthenticationKey = checkNotNull(
+            privateKeyAtIndex(4, KeyType.ECDSA_SECP256K1, keyParameter)
+        ) { "key must exist" }
 
         val criticalTransferKey = checkNotNull(
             privateKeyAtIndex(3, KeyType.ECDSA_SECP256K1, keyParameter)
@@ -804,18 +813,14 @@ class BlockchainIdentity {
             false
         )
 
-//        val criticalAuthKey = IdentityPublicKey(
-//            4,
-//            KeyType.ECDSA_SECP256K1,
-//            Purpose.AUTHENTICATION,
-//            SecurityLevel.CRITICAL,
-//            criticalAuthenticationKey.pubKey,
-//            false
-//        )
+        val criticalAuthKey = IdentityPublicKey(
+            4, KeyType.ECDSA_SECP256K1, Purpose.AUTHENTICATION, SecurityLevel.CRITICAL,
+            contractBounds = null, criticalAuthenticationKey.pubKey, false
+        )
 
         return Pair(
-            listOf(masterPrivateKey, highPrivateKey, encryptionPrivateKey/*, criticalAuthenticationKey,*/, criticalTransferKey),
-            listOf(masterKey, highKey, encryptionKey/*, criticalAuthKey*/, transferKey)
+            listOf(masterPrivateKey, highPrivateKey, encryptionPrivateKey, criticalTransferKey, criticalAuthenticationKey),
+            listOf(masterKey, highKey, encryptionKey, transferKey, criticalAuthKey)
         )
     }
 
@@ -829,11 +834,36 @@ class BlockchainIdentity {
 
     fun hasEncryptionKey() = getIdentityPublicKey(Purpose.ENCRYPTION, SecurityLevel.MEDIUM) != null
 
+    fun hasCriticalAuthenticationKey() = identity?.publicKeys?.any {
+        it.purpose == Purpose.AUTHENTICATION && it.securityLevel == SecurityLevel.CRITICAL &&
+            it.contractBounds == null && it.disabledAt == null && it.expiresAt == null && controlsIdentityKey(it)
+    } == true
+
+    private fun controlsIdentityKey(key: IdentityPublicKey): Boolean =
+        if (key.type == KeyType.ECDSA_HASH160) authenticationGroup?.identityKeyChain?.findKeyFromPubHash(key.data) != null
+        else authenticationGroup?.identityKeyChain?.findKeyFromPubKey(key.data) != null
+
+    /** Constructs a wallet-only key at an unused Platform ID to fence a delayed registration. */
+    fun createRevocationFenceKey(keyId: Int, keyParameter: KeyParameter?, reserved: List<IdentityPublicKey> = emptyList()): IdentityPublicKey {
+        val current = checkNotNull(identity)
+        require(current.publicKeys.none { it.id == keyId }) { "Fence ID is already occupied" }
+        // Preserve the wallet's identity-ID -> derivation-index mapping for seed recovery.
+        val key = checkNotNull(maybeDecryptKey(keyId, KeyType.ECDSA_SECP256K1, keyParameter))
+        require((current.publicKeys + reserved).none { it.data.contentEquals(key.pubKey) || it.data.contentEquals(key.pubKeyHash) }) {
+            "Wallet key is already in use. The pending registration was not fenced."
+        }
+        return IdentityPublicKey(keyId, KeyType.ECDSA_SECP256K1, Purpose.AUTHENTICATION,
+            SecurityLevel.HIGH, null, key.pubKey, false)
+    }
+
     private fun determineMissingKeys(): List<IdentityPublicKey> {
         checkState(identity != null)
         return defaultKeyList.filter { defaultKey ->
             identity!!.publicKeys.find {
-                it.type == defaultKey.type && it.purpose == defaultKey.purpose
+                it.type == defaultKey.type && it.purpose == defaultKey.purpose &&
+                    it.securityLevel == defaultKey.securityLevel && it.contractBounds == null &&
+                    it.disabledAt == null && it.expiresAt == null &&
+                    (defaultKey.purpose != Purpose.AUTHENTICATION || defaultKey.securityLevel != SecurityLevel.CRITICAL || controlsIdentityKey(it))
             } == null
         }
     }
@@ -842,10 +872,13 @@ class BlockchainIdentity {
         signer: WalletSignerCallback
     ) {
         platform.identities.get(uniqueIdentifier)?.let { updatedIdentity ->
+            identity = updatedIdentity
             val missingKeys = determineMissingKeys()
-            val addPublicKeys = missingKeys.map {
-                createIdentityPublicKey(updatedIdentity, it, signer.keyParameter) ?:
-                    error("missing private key for ${it.id} when determining missing keys")
+            if (missingKeys.isEmpty()) return
+            val firstId = updatedIdentity.publicKeys.maxOf { it.id } + 1
+            val addPublicKeys = missingKeys.mapIndexed { index, template ->
+                createIdentityPublicKey(updatedIdentity, template, signer.keyParameter, firstId + index) ?:
+                    error("missing private key for ${template.id} when determining missing keys")
             }
             addPublicKeys.forEach {
                 it.validate()
@@ -872,10 +905,10 @@ class BlockchainIdentity {
     private fun createIdentityPublicKey(
         updatedIdentity: Identity,
         template: IdentityPublicKey,
-        keyParameter: KeyParameter?
+        keyParameter: KeyParameter?,
+        nextKeyId: Int = updatedIdentity.publicKeys.maxOf { it.id } + 1
     ): IdentityPublicKey? {
         checkArgument(updatedIdentity.publicKeys.isNotEmpty())
-        val nextKeyId = updatedIdentity.publicKeys.maxOf { it.id } + 1
         return maybeDecryptKey(nextKeyId, KeyType.ECDSA_SECP256K1, keyParameter)?.let { privateKey ->
             IdentityPublicKey(
                id = nextKeyId,
@@ -1492,6 +1525,11 @@ class BlockchainIdentity {
                         encryptedKey
                     )
                     encryptedKey
+                }
+                // getKeyByPath can populate the hierarchy without importing the child
+                // into the signer lookup. Newly provisioned keys must be signable now.
+                if (authenticationChain.findKeyFromPubKey(key.pubKey) == null) {
+                    authenticationGroup!!.addNewKey(AuthenticationKeyChain.KeyChainType.BLOCKCHAIN_IDENTITY, key)
                 }
                 return key as ECKey?
             }

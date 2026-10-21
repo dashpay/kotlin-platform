@@ -5,6 +5,20 @@ import static org.junit.Assert.*;
 
 public class TokenPurchaseBridgeTest extends BaseTest {
     @Test
+    public void currentContractKeyQueryRejectsNonEncryptionPurposesBeforeSdkAccess() {
+        Identifier owner = new Identifier(identifier);
+        try {
+            for (long purpose : new long[]{0, 3, 0xffffffffL}) {
+                Result_ok_Vec_u8_err_String result = dashsdk.fetchCurrentContractKeyIdWithSdk(null, owner, owner, purpose);
+                try {
+                    assertNotNull(result.getError());
+                    assertNull(result.getOk());
+                } finally { result.delete(); }
+            }
+        } finally { owner.delete(); }
+    }
+
+    @Test
     public void rejectsMalformedOperationBytesAcrossJniWithoutNetworkAccess() {
         Identifier owner = new Identifier(identifier);
         try {

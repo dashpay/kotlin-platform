@@ -1164,6 +1164,16 @@ class DapiClient @JvmOverloads constructor(
         return dashsdk.fetchPlatformTimeWithSdk(rustSdk, identityId.toNative()).unwrap()
     }
 
+    /** The proved current contract-key ID, not a guess based on identity key order. */
+    fun getCurrentContractKeyId(identityId: Identifier, contractId: Identifier, purpose: org.dashj.platform.sdk.Purpose): Int? {
+        val result = dashsdk.fetchCurrentContractKeyIdWithSdk(rustSdk, identityId.toNative(), contractId.toNative(), purpose.swigValue().toLong())
+        try {
+            check(result.error == null) { result.error.orEmpty() }
+            val bytes = checkNotNull(result.ok)
+            return if (bytes.isEmpty()) null else String(bytes, Charsets.UTF_8).toInt()
+        } finally { result.delete() }
+    }
+
     /** Null denotes no stored budget; callers should first verify the key exists. */
     fun getIdentityKeyRemainingBudget(identityId: Identifier, keyId: Int): java.math.BigInteger? {
         val budget = dashsdk.fetchIdentityKeyRemainingBudgetWithSdk(

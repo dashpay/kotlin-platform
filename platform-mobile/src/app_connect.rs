@@ -12,6 +12,37 @@ use dpp::identity::identity_public_key::IdentityPublicKey;
 use platform_value::types::identifier::Identifier;
 use std::sync::Arc;
 
+/// Reads Platform's proof-verified current contract-key index, including disabled entries.
+/// Empty bytes mean the index has no key; errors are never converted into absence.
+#[ferment_macro::export]
+pub fn fetch_current_contract_key_id_with_sdk(
+    rust_sdk: *mut DashSdk,
+    identity_id: Identifier,
+    contract_id: Identifier,
+    purpose: u32,
+) -> Result<Vec<u8>, String> {
+    use dash_sdk::platform::identities_contract_keys_query::IdentitiesContractKeysQuery;
+    use dpp::identity::identity_public_key::accessors::v0::IdentityPublicKeyGettersV0;
+    use dpp::identity::identities_contract_keys::IdentitiesContractKeys;
+    use dpp::identity::Purpose;
+    let purpose = match purpose {
+        1 => Purpose::ENCRYPTION,
+        2 => Purpose::DECRYPTION,
+        _ => return Err("Current contract-key lookup requires encryption or decryption".into()),
+    };
+    let handle = unsafe { &*rust_sdk };
+    handle.get_runtime().block_on(async {
+        let query = IdentitiesContractKeysQuery::new(vec![identity_id], contract_id, None, vec![purpose])
+            .map_err(|e| e.to_string())?;
+        let found = IdentitiesContractKeys::fetch_with_settings(
+            &handle.get_sdk(), query, handle.get_request_settings(),
+        ).await.map_err(|e| e.to_string())?;
+        let key = found.and_then(|mut identities| identities.remove(&identity_id))
+            .and_then(|mut keys| keys.remove(&purpose)).flatten();
+        Ok(key.map(|key| key.id().to_string().into_bytes()).unwrap_or_default())
+    })
+}
+
 /// Fetches a group's owner through the SDK's proof-verifying query path.
 /// `None` means the group does not exist; transport/proof failures remain errors.
 #[ferment_macro::export]

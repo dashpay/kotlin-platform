@@ -41,7 +41,7 @@ set(RUST_SOURCE_DIR "${CMAKE_SOURCE_DIR}/../rust")
 # Override with -DCARGO_TARGET_DIR=/path if needed.
 if(NOT DEFINED CARGO_TARGET_DIR)
     execute_process(
-        COMMAND cargo +nightly metadata --format-version 1 --no-deps
+        COMMAND cargo +nightly-2026-09-24 metadata --format-version 1 --no-deps
         WORKING_DIRECTORY ${RUST_SOURCE_DIR}
         OUTPUT_VARIABLE CARGO_METADATA
         RESULT_VARIABLE CARGO_METADATA_RESULT
@@ -72,7 +72,7 @@ set(RUSTFLAGS_16KB "-C link-arg=-Wl,-z,max-page-size=16384")
 add_custom_command(
     OUTPUT ${RUST_LIB_OUTPUT_PATH}
     COMMAND ${CMAKE_COMMAND} -E touch ${RUST_SOURCE_DIR}/Cargo.toml
-    COMMAND ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${CARGO_TARGET_DIR} RUSTFLAGS=${RUSTFLAGS_16KB} cargo +nightly ndk -t ${RUST_TARGET_TRIPLE} --platform ${ANDROID_API_LEVEL} build --release -Zbuild-std
+    COMMAND ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${CARGO_TARGET_DIR} RUSTFLAGS=${RUSTFLAGS_16KB} cargo +nightly-2026-09-24 ndk -t ${RUST_TARGET_TRIPLE} --platform ${ANDROID_API_LEVEL} build --release -Zbuild-std
     WORKING_DIRECTORY ${RUST_SOURCE_DIR}
     COMMENT "Building Rust library with cargo ndk"
     DEPENDS ${RUST_PROJECT_FILES}
