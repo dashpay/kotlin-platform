@@ -14,6 +14,9 @@ abstract class ContractBounds(val type: String, val identifier: Identifier)
                     Identifier(rustContractBounds.single_contract_document_type.id),
                     rustContractBounds.single_contract_document_type.document_type_name
                 )
+                org.dashj.platform.sdk.ContractBounds.Tag.ContractGroup -> ContractGroupBounds(
+                    Identifier(rustContractBounds.contract_group.id)
+                )
                 else -> error("Unknown ContractBounds tag: ${rustContractBounds.tag}")
             }
         }
@@ -30,6 +33,7 @@ abstract class ContractBounds(val type: String, val identifier: Identifier)
             val identifier = Identifier.from(rawContractBounds["identifier"])
             return when (val type = rawContractBounds["type"]) {
                 "singleContract" -> SingleContractBounds(identifier)
+                "contractGroup" -> ContractGroupBounds(identifier)
                 "documentType" -> SingleContractDocumentType(
                     identifier,
                     rawContractBounds["documentType"] as String
@@ -61,6 +65,10 @@ class SingleContractBounds(identifier: Identifier) : ContractBounds("singleContr
     override fun toNative(): RustContractBounds {
         return RustContractBounds(identifier.toNative())
     }
+}
+
+class ContractGroupBounds(identifier: Identifier) : ContractBounds("contractGroup", identifier) {
+    override fun toNative(): RustContractBounds = RustContractBounds.forContractGroup(identifier.toNative())
 }
 
 

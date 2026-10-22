@@ -14,6 +14,7 @@ import org.dashj.platform.dpp.identity.errors.EmptyPublicKeyDataException
 import org.dashj.platform.dpp.toBase64
 import org.dashj.platform.dpp.util.Converters
 import org.dashj.platform.sdk.*
+import java.math.BigInteger
 
 typealias RustIdentityPublicKey = org.dashj.platform.sdk.IdentityPublicKey
 
@@ -36,7 +37,17 @@ class IdentityPublicKey(
     val readOnly: Boolean,
     var disabledAt: Long? = null,
     var signature: ByteArray? = null,
+    val totalBudget: BigInteger? = null,
+    val expiresAt: Long? = null,
+    val version: Int = if (totalBudget != null || expiresAt != null) 1 else 0,
 ) : BaseObject() {
+    init {
+        require(version in 0..1) { "Unsupported identity public key version: $version" }
+        require(version == 1 || (totalBudget == null && expiresAt == null)) { "Key limits require V1" }
+        require(totalBudget == null || (totalBudget.signum() >= 0 && totalBudget.bitLength() <= 64)) {
+            "Budget must fit an unsigned 64-bit value"
+        }
+    }
 
 //    enum class Type(val value: Int) {
 //        ECDSA_SECP256K1(0),
@@ -104,21 +115,33 @@ class IdentityPublicKey(
         )
 
         fun from(identityPublicKey: RustIdentityPublicKey) : IdentityPublicKey {
-            return when (identityPublicKey.tag) {
-                org.dashj.platform.sdk.IdentityPublicKey.Tag.V0 -> {
-                    val ipk = identityPublicKey.v0._0
-                    IdentityPublicKey(
-                        ipk.id.toInt(),
-                        ipk.keyType,
-                        ipk.purpose,
-                        ipk.securityLevel,
-                        ContractBounds.tryFrom(ipk.contract_bounds),
-                        ipk.data._0,
-                        ipk.read_only,
-                        ipk.disabled_at?.toLong()
-                    )
+            // Keep the owning key alive while reading its borrowed SWIG fields.
+            return synchronized(identityPublicKey) {
+                when (identityPublicKey.tag) {
+                    org.dashj.platform.sdk.IdentityPublicKey.Tag.V0 -> {
+                        val ipk = identityPublicKey.v0._0
+                        IdentityPublicKey(
+                            ipk.id.toInt(),
+                            ipk.keyType,
+                            ipk.purpose,
+                            ipk.securityLevel,
+                            ContractBounds.tryFrom(ipk.contract_bounds),
+                            ipk.data._0,
+                            ipk.read_only,
+                            ipk.disabled_at?.toLong()
+                        )
+                    }
+                    org.dashj.platform.sdk.IdentityPublicKey.Tag.V1 -> {
+                        val ipk = identityPublicKey.v1._0
+                        IdentityPublicKey(
+                            ipk.id.toInt(), ipk.keyType, ipk.purpose, ipk.securityLevel,
+                            ContractBounds.tryFrom(ipk.contract_bounds), ipk.data._0, ipk.read_only,
+                            ipk.disabled_at?.toLong(), totalBudget = ipk.total_budget?.toBigInteger(),
+                            expiresAt = ipk.expires_at?.toLong(), version = 1
+                        )
+                    }
+                    else -> error("Unsupported identity public key tag: ${identityPublicKey.tag}")
                 }
-                else -> error("Identity ")
             }
         }
     }
@@ -166,7 +189,12 @@ class IdentityPublicKey(
             when (rawIdentityPublicKey["readOnly"]) {
                 is Boolean -> rawIdentityPublicKey["readOnly"] as Boolean
                 else -> false
-            }
+            },
+            disabledAt = (rawIdentityPublicKey["disabledAt"] as? Number)?.toLong(),
+            totalBudget = rawIdentityPublicKey["totalBudget"]?.toString()?.let { BigInteger(it) },
+            expiresAt = (rawIdentityPublicKey["expiresAt"] as? Number)?.toLong(),
+            version = (rawIdentityPublicKey["version"] as? Number)?.toInt()
+                ?: if (rawIdentityPublicKey["totalBudget"] != null || rawIdentityPublicKey["expiresAt"] != null) 1 else 0
         ) {
             signature = when (rawIdentityPublicKey["signature"]) {
                 is String -> Converters.fromBase64(rawIdentityPublicKey["signature"] as String)
@@ -191,6 +219,9 @@ class IdentityPublicKey(
         disabledAt?.run {
             objMap.put("disabledAt", this)
         }
+        if (version == 1) objMap["version"] = version
+        totalBudget?.let { objMap["totalBudget"] = it }
+        expiresAt?.let { objMap["expiresAt"] = it }
         contractBounds?.run {
             objMap.put("contractBounds", this.toObject())
         }
@@ -213,6 +244,13 @@ class IdentityPublicKey(
     }
 
     fun toNative(): RustIdentityPublicKey {
+        if (version == 1) {
+            return RustIdentityPublicKey(IdentityPublicKeyV1(
+                KeyID(id), purpose, securityLevel, contractBounds?.toNative(), type, readOnly,
+                BinaryData(data), disabledAt?.let { TimestampMillis(it) },
+                totalBudget?.let { Credits.fromBigInteger(it) }, expiresAt?.let { TimestampMillis(it) }
+            ))
+        }
         return RustIdentityPublicKey(
             IdentityPublicKeyV0(
                 KeyID(id),
@@ -267,7 +305,8 @@ class IdentityPublicKey(
     }
 
     fun copy(skipSignature: Boolean): IdentityPublicKey {
-        return IdentityPublicKey(id, type, purpose, securityLevel, contractBounds, data, readOnly, disabledAt, if (skipSignature) null else signature)
+        return IdentityPublicKey(id, type, purpose, securityLevel, contractBounds, data, readOnly, disabledAt,
+            if (skipSignature) null else signature, totalBudget, expiresAt, version)
     }
 
     fun validate() {

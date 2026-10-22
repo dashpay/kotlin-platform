@@ -93,6 +93,10 @@ sourceSets {
     }
 }
 
+tasks.named('compileKotlin').configure {
+    dependsOn tasks.named('generateProto')
+}
+
 test {
     useJUnitPlatform()
     systemProperty "java.library.path", "../dash-sdk-java/build/cmake"
