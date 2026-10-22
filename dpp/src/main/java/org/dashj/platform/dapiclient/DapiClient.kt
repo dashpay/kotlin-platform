@@ -69,6 +69,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
+internal fun decodeDataContractResult(
+    result: org.dashj.platform.sdk.base.Result<java.util.Optional<org.dashj.platform.sdk.DataContract>, String>
+): DataContract? = result.unwrap().map { DataContract.from(it) }.orElse(null)
+
 class DapiClient @JvmOverloads constructor(
     var dapiAddressListProvider: DAPIAddressListProvider,
     val dpp: DashPlatformProtocol,
@@ -561,8 +565,7 @@ class DapiClient @JvmOverloads constructor(
      * Fetch Data Contract by id
      * @param contractId String
      * @param prove Whether to return the proof
-     * @return GetDataContractResponse
-     * @throws NotFoundException if the contract is not found
+     * @return null only for a successfully proved absent contract; query and conversion errors propagate
      */
     fun getDataContract(
         contractIdByteArray: ByteArray,
@@ -580,11 +583,7 @@ class DapiClient @JvmOverloads constructor(
                 contractId.toNative()
             )
             try {
-                return try {
-                    DataContract.from(dataContractResult.unwrap().get())
-                } catch (e: Exception) {
-                    null
-                }
+                return decodeDataContractResult(dataContractResult)
             } catch (e: Exception) {
                 if (e.message?.contains("context provider error: invalid quorum: quorum not found") == true ||
                     e.message?.contains("invalid peer certificate: certificate expired") == true) {
@@ -592,7 +591,7 @@ class DapiClient @JvmOverloads constructor(
                     retriesLeft--
                 } else {
                     logger.error("get data contract error", e)
-                    throw NotFoundException("DataContract ${contractIdByteArray.toBase58()} not found")
+                    throw e
                 }
                 logger.error("get data contract error", e)
             }
