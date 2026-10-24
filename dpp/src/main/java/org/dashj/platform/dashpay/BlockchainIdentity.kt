@@ -856,9 +856,11 @@ class BlockchainIdentity {
             SecurityLevel.HIGH, null, key.pubKey, false)
     }
 
-    private fun determineMissingKeys(): List<IdentityPublicKey> {
+    private fun determineMissingKeys(includeCriticalAuthenticationKey: Boolean): List<IdentityPublicKey> {
         checkState(identity != null)
         return defaultKeyList.filter { defaultKey ->
+            (includeCriticalAuthenticationKey || defaultKey.purpose != Purpose.AUTHENTICATION ||
+                defaultKey.securityLevel != SecurityLevel.CRITICAL) &&
             identity!!.publicKeys.find {
                 it.type == defaultKey.type && it.purpose == defaultKey.purpose &&
                     it.securityLevel == defaultKey.securityLevel && it.contractBounds == null &&
@@ -868,12 +870,15 @@ class BlockchainIdentity {
         }
     }
 
+    /** CRITICAL authentication migration requires explicit consent; ordinary maintenance excludes it. */
+    @JvmOverloads
     fun addMissingKeys(
-        signer: WalletSignerCallback
+        signer: WalletSignerCallback,
+        includeCriticalAuthenticationKey: Boolean = false
     ) {
         platform.identities.get(uniqueIdentifier)?.let { updatedIdentity ->
             identity = updatedIdentity
-            val missingKeys = determineMissingKeys()
+            val missingKeys = determineMissingKeys(includeCriticalAuthenticationKey)
             if (missingKeys.isEmpty()) return
             val firstId = updatedIdentity.publicKeys.maxOf { it.id } + 1
             val addPublicKeys = missingKeys.mapIndexed { index, template ->

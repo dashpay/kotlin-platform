@@ -51,9 +51,15 @@ class AppConnectIdentityTest {
         assertTrue(identity.hasCriticalAuthenticationKey())
         identity.identity!!.publicKeys.remove(critical)
         assertFalse(identity.hasCriticalAuthenticationKey())
-        val method = BlockchainIdentity::class.java.getDeclaredMethod("determineMissingKeys").also { it.isAccessible = true }
-        @Suppress("UNCHECKED_CAST") val missing = method.invoke(identity) as List<IdentityPublicKey>
+        val method = BlockchainIdentity::class.java.getDeclaredMethod("determineMissingKeys", Boolean::class.javaPrimitiveType)
+            .also { it.isAccessible = true }
+        @Suppress("UNCHECKED_CAST") val ordinary = method.invoke(identity, false) as List<IdentityPublicKey>
+        assertTrue(ordinary.isEmpty())
+        @Suppress("UNCHECKED_CAST") val missing = method.invoke(identity, true) as List<IdentityPublicKey>
         assertEquals(listOf(SecurityLevel.CRITICAL), missing.map { it.securityLevel })
+        identity.identity!!.publicKeys.removeAll { it.purpose == Purpose.TRANSFER || it.purpose == Purpose.ENCRYPTION }
+        @Suppress("UNCHECKED_CAST") val background = method.invoke(identity, false) as List<IdentityPublicKey>
+        assertEquals(setOf(Purpose.TRANSFER, Purpose.ENCRYPTION), background.map { it.purpose }.toSet())
     }
 
     @Test fun fenceUsesMissingIdButNeverAppMaterialOrAnExistingWalletKey() {
