@@ -6,6 +6,7 @@ import org.bitcoinj.wallet.authentication.AuthenticationGroupExtension
 import org.dashj.platform.dpp.identifier.Identifier
 import org.dashj.platform.dpp.identity.Identity
 import org.dashj.platform.dpp.identity.IdentityPublicKey
+import org.dashj.platform.dpp.identity.SingleContractBounds
 import org.dashj.platform.sdk.Purpose
 import org.dashj.platform.sdk.SecurityLevel
 import org.dashj.platform.sdk.KeyType
@@ -79,5 +80,43 @@ class AppConnectIdentityTest {
             assertTrue(signer.sign(first.data, byteArrayOf(1, 2, 3)).isNotEmpty())
         }
         assertThrows(IllegalArgumentException::class.java) { identity.createRevocationFenceKey(0, null) }
+    }
+
+    @Test fun unusableCriticalKeysNeverSuppressExplicitProvisioning() {
+        val keys = newKeys()
+        val critical = keys.single { it.purpose == Purpose.AUTHENTICATION && it.securityLevel == SecurityLevel.CRITICAL }
+        val method = BlockchainIdentity::class.java.getDeclaredMethod("determineMissingKeys", Boolean::class.javaPrimitiveType)
+            .also { it.isAccessible = true }
+        val variants = listOf(
+            IdentityPublicKey(critical.id, critical.type, critical.purpose, critical.securityLevel,
+                SingleContractBounds(Identifier.from(ByteArray(32) { 2 })), critical.data, false),
+            IdentityPublicKey(critical.id, critical.type, critical.purpose, critical.securityLevel,
+                null, critical.data, false, disabledAt = 1),
+            IdentityPublicKey(critical.id, critical.type, critical.purpose, critical.securityLevel,
+                null, critical.data, false, expiresAt = 1),
+            IdentityPublicKey(critical.id, critical.type, critical.purpose, critical.securityLevel,
+                null, critical.data, false, expiresAt = Long.MAX_VALUE),
+            IdentityPublicKey(critical.id, critical.type, critical.purpose, critical.securityLevel,
+                null, org.bitcoinj.core.ECKey().pubKey, false)
+        )
+        variants.forEach { unusable ->
+            identity.identity = Identity(Identifier.from(ByteArray(32) { 1 }), keys.filter { it !== critical } + unusable, 1000000, 0, 14)
+            assertFalse(identity.hasCriticalAuthenticationKey())
+            @Suppress("UNCHECKED_CAST") val missing = method.invoke(identity, true) as List<IdentityPublicKey>
+            assertEquals(listOf(SecurityLevel.CRITICAL), missing.map { it.securityLevel })
+            @Suppress("UNCHECKED_CAST") val background = method.invoke(identity, false) as List<IdentityPublicKey>
+            assertTrue(background.isEmpty())
+        }
+    }
+
+    @Test fun capturedWalletSignerRechecksAuthorizationForEverySignature() {
+        val critical = newKeys().single { it.purpose == Purpose.AUTHENTICATION && it.securityLevel == SecurityLevel.CRITICAL }
+        var unlocked = true
+        WalletSignerCallback(wallet, null) { check(unlocked) { "Wallet locked" } }.use { signer ->
+            assertTrue(signer.sign(critical.data, byteArrayOf(1, 2, 3)).isNotEmpty())
+            unlocked = false
+            assertThrows(IllegalStateException::class.java) { signer.requireAuthorized() }
+            assertThrows(IllegalStateException::class.java) { signer.sign(critical.data, byteArrayOf(1, 2, 3)) }
+        }
     }
 }

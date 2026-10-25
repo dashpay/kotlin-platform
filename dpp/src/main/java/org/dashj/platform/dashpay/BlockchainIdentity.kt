@@ -894,6 +894,7 @@ class BlockchainIdentity {
                 ?: error("can't find a public key with MASTER security level")
             updatedIdentity.revision++
 
+            signer.requireAuthorized()
             val identityResult = dashsdk.platformMobilePutPutIdentityUpdateSdk(
                 platform.rustSdk,
                 updatedIdentity.toNative(),
