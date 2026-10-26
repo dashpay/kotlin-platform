@@ -1158,6 +1158,17 @@ class DapiClient @JvmOverloads constructor(
             .unwrap().map { Identifier.from(it) }.orElse(null)
     }
 
+    /** Complete proof-verified membership and administration at one Platform block. */
+    fun getContractGroup(groupId: Identifier): org.dashj.platform.dpp.contract.VerifiedContractGroup? {
+        val result = dashsdk.fetchContractGroupSnapshotWithSdk(rustSdk, groupId.toNative())
+        try {
+            check(result.error == null) { result.error.orEmpty() }
+            return org.dashj.platform.dpp.contract.VerifiedContractGroup.decode(checkNotNull(result.ok)).also {
+                check(it == null || it.id == groupId) { "Contract group response does not match the requested ID" }
+            }
+        } finally { result.delete() }
+    }
+
     /** Fresh Platform block time in milliseconds, from a proof-verified identity query. */
     fun getPlatformTime(identityId: Identifier): Long {
         return dashsdk.fetchPlatformTimeWithSdk(rustSdk, identityId.toNative()).unwrap()
