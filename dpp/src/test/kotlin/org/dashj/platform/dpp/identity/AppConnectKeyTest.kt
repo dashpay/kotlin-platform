@@ -78,22 +78,60 @@ class AppConnectKeyTest {
         val originalSeed = seed.copyOf()
         val identityId = ByteArray(32) { 1 }
         val contractId = ByteArray(32) { 2 }
-        val encryption = ApplicationKeyDerivation.encryption(
-            seed, identityId, contractId, Purpose.ENCRYPTION, false
-        )
+        fun derive(purpose: Purpose = Purpose.ENCRYPTION, rotation: Long = 0, isMainnet: Boolean = false) =
+            ApplicationKeyDerivation.encryption(seed, identityId, contractId, purpose, rotation, isMainnet)
+        val encryption = derive()
         assertEquals(32, encryption.size)
-        assertArrayEquals(encryption, ApplicationKeyDerivation.encryption(
-            seed, identityId, contractId, Purpose.ENCRYPTION, false
-        ))
-        assertFalse(encryption.contentEquals(ApplicationKeyDerivation.encryption(
-            seed, identityId, contractId, Purpose.DECRYPTION, false
-        )))
-        assertFalse(encryption.contentEquals(ApplicationKeyDerivation.encryption(
-            seed, identityId, contractId, Purpose.ENCRYPTION, true
-        )))
+        assertArrayEquals(encryption, derive())
+        assertFalse(encryption.contentEquals(derive(Purpose.DECRYPTION)))
+        assertFalse(encryption.contentEquals(derive(isMainnet = true)))
+        assertFalse(encryption.contentEquals(derive(rotation = 1)))
         assertFalse(encryption.contentEquals(ApplicationKeyDerivation.sessionAuthentication(
             seed, identityId, contractId, false
         )))
         assertArrayEquals(originalSeed, seed)
+    }
+
+    @Test
+    fun legacyEncryptionKeyIsTheRotationlessPathAndNeverEqualsARotatedKey() {
+        val seed = ByteArray(32) { 42 }
+        val originalSeed = seed.copyOf()
+        val identityId = ByteArray(32) { 1 }
+        val contractId = ByteArray(32) { 2 }
+        val legacy = ApplicationKeyDerivation.legacyEncryptionWithoutRotation(
+            seed, identityId, contractId, Purpose.ENCRYPTION, false
+        )
+        assertEquals(32, legacy.size)
+        assertArrayEquals(legacy, ApplicationKeyDerivation.legacyEncryptionWithoutRotation(
+            seed, identityId, contractId, Purpose.ENCRYPTION, false
+        ))
+        for (rotation in listOf(0L, 1L, (1L shl 31) - 1)) {
+            assertFalse(legacy.contentEquals(ApplicationKeyDerivation.encryption(
+                seed, identityId, contractId, Purpose.ENCRYPTION, rotation, false
+            )))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            ApplicationKeyDerivation.legacyEncryptionWithoutRotation(
+                seed, identityId, contractId, Purpose.AUTHENTICATION, false
+            )
+        }
+        assertArrayEquals(originalSeed, seed)
+    }
+
+    @Test
+    fun encryptionRotationMustFitIn31Bits() {
+        val seed = ByteArray(32) { 42 }
+        val identityId = ByteArray(32) { 1 }
+        val contractId = ByteArray(32) { 2 }
+        for (rotation in listOf(-1L, 1L shl 31, 1L shl 32)) {
+            assertThrows(IllegalArgumentException::class.java) {
+                ApplicationKeyDerivation.encryption(
+                    seed, identityId, contractId, Purpose.ENCRYPTION, rotation, false
+                )
+            }
+        }
+        assertEquals(32, ApplicationKeyDerivation.encryption(
+            seed, identityId, contractId, Purpose.ENCRYPTION, (1L shl 31) - 1, false
+        ).size)
     }
 }
