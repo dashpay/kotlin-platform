@@ -209,7 +209,9 @@ jreleaser {
 
 signing {
     required { gradle.taskGraph.hasTask("publish") }
-    sign publishing.publications.mavenJava
+    if (!project.hasProperty('skipSigning')) {
+        sign publishing.publications.mavenJava
+    }
 }
 
 javadoc {

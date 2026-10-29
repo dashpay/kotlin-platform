@@ -233,6 +233,8 @@ afterEvaluate {
     }
     signing {
         required { gradle.taskGraph.hasTask("publish") }
-        sign publishing.publications.release
+        if (!project.hasProperty('skipSigning')) {
+            sign publishing.publications.release
+        }
     }
 }

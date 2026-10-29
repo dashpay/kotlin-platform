@@ -47,7 +47,7 @@ jobs:
 
     - name: clone platform repo
       run: |
-        git clone --branch ferment-5.0 https://github.com/HashEngineering/platform.git ../platform
+        git clone --branch ferment-5.0.1 https://github.com/HashEngineering/platform.git ../platform
         git -C ../platform checkout --detach "$(cat platform-revision.txt)"
 
     - name: clone rs-x11-hash repo
@@ -133,6 +133,13 @@ jobs:
             echo "  ℹ️  No native libraries (library may be pure Java/Kotlin)"
           fi
           echo
+        done
+
+        sdk_aar=dash-sdk-android/build/outputs/aar/dash-sdk-android-release.aar
+        test -s "$sdk_aar"
+        unzip -Z1 "$sdk_aar" > "$RUNNER_TEMP/sdk-aar-entries.txt"
+        for abi in arm64-v8a x86_64; do
+          grep -Fxq "jni/$abi/libsdklib.so" "$RUNNER_TEMP/sdk-aar-entries.txt"
         done
 
     - name: Upload build artifacts

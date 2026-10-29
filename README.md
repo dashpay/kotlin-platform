@@ -14,13 +14,13 @@ kotlin-platform is the library that supports Platform functionality for the Java
 
 ## Build Instructions
 The sibling `../platform` checkout must use `HashEngineering/platform`, branch
-`ferment-5.0`, at the commit in `platform-revision.txt`. This includes upstream
-Platform `v5.0.0-rc.7` and the Ferment/JNI compatibility patches. CI uses the same
+`ferment-5.0.1`, at the commit in `platform-revision.txt`. This includes upstream
+Platform `v5.0.1` and the Ferment/JNI compatibility patches. CI uses the same
 revision; the Platform commit must be pushed before running CI for an updated pin.
 Desktop Rust uses `1.98.1`; Android uses `nightly-2026-09-24` with `rust-src`.
 
 ```bash
-git clone --branch ferment-5.0 https://github.com/HashEngineering/platform.git ../platform
+git clone --branch ferment-5.0.1 https://github.com/HashEngineering/platform.git ../platform
 git -C ../platform checkout --detach "$(cat platform-revision.txt)"
 ```
 

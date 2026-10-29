@@ -127,7 +127,7 @@ checksum = "86fdf8605db99b54d3cd748a44c6d04df638eb5dafb219b135d0149bd0db01f6"
 
 [[package]]
 name = "app-connect-contract"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -565,6 +565,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "cfg_aliases"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f079e83a288787bcd14a6aea84cee5c87a67c5a3e660c30f557a3d24761b3527"
+
+[[package]]
 name = "chrono"
 version = "0.4.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -808,7 +814,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "dash-platform-macros",
  "futures-core",
@@ -862,7 +868,7 @@ dependencies = [
 
 [[package]]
 name = "dash-async"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "futures",
  "thiserror 2.0.18",
@@ -873,7 +879,7 @@ dependencies = [
 
 [[package]]
 name = "dash-context-provider"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "dash-async",
  "dpp",
@@ -904,7 +910,7 @@ dependencies = [
 
 [[package]]
 name = "dash-platform-macros"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "heck 0.5.0",
  "quote",
@@ -913,7 +919,7 @@ dependencies = [
 
 [[package]]
 name = "dash-platform-queries"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "dapi-grpc",
  "dash-context-provider",
@@ -930,7 +936,7 @@ dependencies = [
 
 [[package]]
 name = "dash-sdk"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "arc-swap",
  "async-trait",
@@ -1057,7 +1063,7 @@ dependencies = [
 
 [[package]]
 name = "dashpay-contract"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1067,7 +1073,7 @@ dependencies = [
 
 [[package]]
 name = "data-contracts"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "app-connect-contract",
  "dashpay-contract",
@@ -1159,7 +1165,7 @@ dependencies = [
 
 [[package]]
 name = "document-history-contract"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1175,7 +1181,7 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "dpns-contract"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1185,7 +1191,7 @@ dependencies = [
 
 [[package]]
 name = "dpp"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1233,7 +1239,7 @@ dependencies = [
 
 [[package]]
 name = "dpp-json-convertible-derive"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1242,7 +1248,7 @@ dependencies = [
 
 [[package]]
 name = "drive"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "byteorder",
  "derive_more 1.0.0",
@@ -1270,7 +1276,7 @@ dependencies = [
 
 [[package]]
 name = "drive-proof-verifier"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "dapi-grpc",
  "dash-context-provider",
@@ -2383,7 +2389,7 @@ dependencies = [
 
 [[package]]
 name = "keyword-search-contract"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2405,9 +2411,9 @@ checksum = "744a4c881f502e98c2241d2e5f50040ac73b30194d64452bb6260393b53f0dc9"
 
 [[package]]
 name = "libc"
-version = "0.2.186"
+version = "0.2.191"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68ab91017fe16c622486840e4c83c9a37afeff978bd239b5293d61ece587de66"
+checksum = "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a"
 
 [[package]]
 name = "libm"
@@ -2457,7 +2463,7 @@ dependencies = [
 
 [[package]]
 name = "masternode-reward-shares-contract"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2516,7 +2522,7 @@ dependencies = [
 
 [[package]]
 name = "moderation-charters-contract"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2548,6 +2554,18 @@ name = "murmur3"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9252111cf132ba0929b6f8e030cac2a24b507f3a4d6db6fb2896f27b354c714b"
+
+[[package]]
+name = "nix"
+version = "0.31.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf20d2fde8ff38632c426f1165ed7436270b44f199fc55284c38276f9db47c3d"
+dependencies = [
+ "bitflags 2.13.0",
+ "cfg-if",
+ "cfg_aliases",
+ "libc",
+]
 
 [[package]]
 name = "nohash-hasher"
@@ -2887,7 +2905,7 @@ dependencies = [
 
 [[package]]
 name = "platform-encryption"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "aes",
  "cbc",
@@ -2945,7 +2963,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "grovedb-bincode",
  "platform-version",
@@ -2953,7 +2971,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization-derive"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2963,7 +2981,7 @@ dependencies = [
 
 [[package]]
 name = "platform-value"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "base64 0.22.1",
  "bs58",
@@ -2984,7 +3002,7 @@ dependencies = [
 
 [[package]]
 name = "platform-version"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "ferment-macro 0.2.3",
  "grovedb-bincode",
@@ -2996,7 +3014,7 @@ dependencies = [
 
 [[package]]
 name = "platform-versioning"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3268,7 +3286,7 @@ dependencies = [
 
 [[package]]
 name = "rs-dapi-client"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "backon",
  "chrono",
@@ -3661,7 +3679,7 @@ checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
 
 [[package]]
 name = "simple-signer"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -3866,8 +3884,8 @@ dependencies = [
 
 [[package]]
 name = "tenderdash-abci"
-version = "1.8.0"
-source = "git+https://github.com/dashpay/rs-tenderdash-abci?tag=v1.8.0#2e78da6f66d02f1e0b07a0c220373e5fda335fc9"
+version = "1.8.1"
+source = "git+https://github.com/dashpay/rs-tenderdash-abci?tag=v1.8.1#eebfc46cc64b27022ccbbb3924604dd87a10c340"
 dependencies = [
  "bytes",
  "hex",
@@ -3881,8 +3899,8 @@ dependencies = [
 
 [[package]]
 name = "tenderdash-proto"
-version = "1.8.0"
-source = "git+https://github.com/dashpay/rs-tenderdash-abci?tag=v1.8.0#2e78da6f66d02f1e0b07a0c220373e5fda335fc9"
+version = "1.8.1"
+source = "git+https://github.com/dashpay/rs-tenderdash-abci?tag=v1.8.1#eebfc46cc64b27022ccbbb3924604dd87a10c340"
 dependencies = [
  "bytes",
  "chrono",
@@ -3899,8 +3917,8 @@ dependencies = [
 
 [[package]]
 name = "tenderdash-proto-compiler"
-version = "1.8.0"
-source = "git+https://github.com/dashpay/rs-tenderdash-abci?tag=v1.8.0#2e78da6f66d02f1e0b07a0c220373e5fda335fc9"
+version = "1.8.1"
+source = "git+https://github.com/dashpay/rs-tenderdash-abci?tag=v1.8.1#eebfc46cc64b27022ccbbb3924604dd87a10c340"
 dependencies = [
  "fs_extra",
  "prost-build",
@@ -4033,7 +4051,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "token-history-contract"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -4604,7 +4622,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-utils-contract"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -4883,7 +4901,7 @@ checksum = "0592e1c9d151f854e6fd382574c3a0855250e1d9b2f99d9281c6e6391af352f1"
 
 [[package]]
 name = "withdrawals-contract"
-version = "5.0.0-rc.7"
+version = "5.0.1"
 dependencies = [
  "num_enum 0.5.11",
  "platform-value",
@@ -4947,14 +4965,15 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "8.6.0"
+version = "9.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d04a6b5381502aa6087c94c669499eb1602eb9c5e8198e534de571f7154809b"
+checksum = "6e04976da629d3b04204ba8105b396a193af8ad2583b2c79bfb3ab8af580a11e"
 dependencies = [
  "crc32fast",
  "flate2",
  "indexmap 2.14.0",
  "memchr",
+ "nix",
  "typed-path",
  "zopfli",
 ]

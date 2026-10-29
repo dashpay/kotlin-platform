@@ -31,5 +31,5 @@ nonce chosen by the previous SDK and need conservative legacy handling.
 
 Native regressions cover ignored key-ID mutations, nonce and price changes,
 unsigned 64-bit precision and signing/readback of all original operation fields.
-This is a security fix on the currently pinned Platform version, not a Platform
-5.0.1 upgrade.
+This security fix predates the Platform 5.0.1 upgrade and must remain intact
+through it.
