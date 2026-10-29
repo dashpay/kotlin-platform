@@ -1,26 +1,30 @@
 use crate::config::EntryPoint;
 use crate::put::CallbackSigner;
 use crate::sdk::DashSdk;
-use dash_sdk::platform::tokens::builders::purchase::TokenDirectPurchaseTransitionBuilder;
+use dash_sdk::platform::transition::broadcast::BroadcastStateTransition;
 use dash_sdk::platform::Fetch;
+use dashcore::hashes::{sha256, Hash};
 use dpp::data_contract::accessors::v1::DataContractV1Getters;
 use dpp::data_contract::associated_token::token_configuration::accessors::v0::TokenConfigurationV0Getters;
 use dpp::data_contract::associated_token::token_configuration_convention::accessors::v0::TokenConfigurationConventionV0Getters;
 use dpp::data_contract::DataContract;
 use dpp::identity::identity_public_key::accessors::v0::IdentityPublicKeyGettersV0;
 use dpp::identity::identity_public_key::IdentityPublicKey;
+use dpp::identity::signer::Signer;
 use dpp::identity::{Purpose, SecurityLevel};
 use dpp::serialization::PlatformDeserializableUntrusted;
 use dpp::state_transition::batch_transition::batched_transition::{
     token_transition::TokenTransition, BatchedTransition,
 };
+use dpp::state_transition::batch_transition::methods::v1::DocumentsBatchTransitionMethodsV1;
 use dpp::state_transition::batch_transition::token_base_transition::TokenBaseTransition;
 use dpp::state_transition::batch_transition::token_direct_purchase_transition::TokenDirectPurchaseTransition;
 use dpp::state_transition::batch_transition::BatchTransition;
+use dpp::state_transition::proof_result::StateTransitionProofResult;
 use dpp::state_transition::StateTransition;
+use dpp::version::PlatformVersion;
 use platform_value::{string_encoding::Encoding, Identifier};
 use serde_json::json;
-use std::sync::Arc;
 
 #[derive(Debug, PartialEq)]
 struct Purchase {
@@ -30,6 +34,48 @@ struct Purchase {
     position: u16,
     amount: u64,
     price: u64,
+    nonce: u64,
+}
+
+impl Purchase {
+    fn request_id(&self) -> Result<String, String> {
+        let canonical = serde_json::to_vec(&(
+            "dash-st-purchase-v2",
+            self.owner.to_string(Encoding::Base58),
+            self.contract.to_string(Encoding::Base58),
+            self.token.to_string(Encoding::Base58),
+            self.position,
+            self.amount.to_string(),
+            self.price.to_string(),
+            self.nonce.to_string(),
+        ))
+        .map_err(|e| e.to_string())?;
+        Ok(sha256::Hash::hash(&canonical).to_string())
+    }
+}
+
+async fn sign_purchase<S: Signer<IdentityPublicKey>>(
+    purchase: &Purchase,
+    key: &IdentityPublicKey,
+    signer: &S,
+    version: &PlatformVersion,
+) -> Result<StateTransition, String> {
+    BatchTransition::new_token_direct_purchase_transition(
+        purchase.token,
+        purchase.owner,
+        purchase.contract,
+        purchase.position,
+        purchase.amount,
+        purchase.price,
+        key,
+        purchase.nonce,
+        0,
+        signer,
+        version,
+        None,
+    )
+    .await
+    .map_err(|e| e.to_string())
 }
 
 fn decode(bytes: &[u8]) -> Result<Purchase, String> {
@@ -72,6 +118,7 @@ fn decode(bytes: &[u8]) -> Result<Purchase, String> {
         position: base.token_contract_position,
         amount: purchase.token_count,
         price: purchase.total_agreed_price,
+        nonce: base.identity_contract_nonce,
     })
 }
 
@@ -89,6 +136,8 @@ async fn contract_and_summary(
         .ok_or("Token not found at contract position")?;
     let conventions = token.conventions();
     let summary = json!({
+        "requestId": purchase.request_id()?,
+        "nonce": purchase.nonce.to_string(),
         "ownerId": purchase.owner.to_string(Encoding::Base58),
         "contractId": purchase.contract.to_string(Encoding::Base58),
         "tokenId": purchase.token.to_string(Encoding::Base58),
@@ -122,7 +171,7 @@ pub fn prepare_token_purchase_sdk(
     })
 }
 
-/// Rebuilds a purchase from approved values using a fresh nonce and the wallet's own key.
+/// Rebuilds the approved operation with its original nonce and the wallet's own key.
 /// Success is a proof-verified affected-state result, not necessarily proof of this operation's execution.
 #[ferment_macro::export]
 pub fn submit_token_purchase_sdk(
@@ -148,25 +197,26 @@ pub fn submit_token_purchase_sdk(
     let handle = unsafe { &*rust_sdk };
     handle.get_runtime().block_on(async {
         let sdk = handle.get_sdk();
-        let (contract, summary) = contract_and_summary(&sdk, &purchase).await?;
+        let (_, summary) = contract_and_summary(&sdk, &purchase).await?;
         if summary != approved_summary {
             return Err("Token metadata or purchase terms changed. Scan again.".into());
         }
         let signer =
             CallbackSigner::new(signer_context, signer_callback).map_err(|e| e.to_string())?;
-        sdk.token_purchase(
-            TokenDirectPurchaseTransitionBuilder::new(
-                Arc::new(contract),
-                purchase.position,
-                owner,
-                purchase.amount,
-                purchase.price,
-            ),
-            &signing_key,
-            &signer,
-        )
-        .await
-        .map_err(|e| e.to_string())?;
+        // Never replace an incoming operation's nonce: doing so would turn a replay into a new debit.
+        let transition = sign_purchase(&purchase, &signing_key, &signer, sdk.version()).await?;
+        let result = transition
+            .broadcast_and_wait_for_affected_state::<StateTransitionProofResult>(&sdk, None)
+            .await;
+        // This operation did not allocate its nonce through the SDK cache.
+        sdk.refresh_identity_nonce(&owner).await;
+        let proof = result.map_err(|e| e.to_string())?;
+        match proof {
+            StateTransitionProofResult::VerifiedTokenBalance(..)
+            | StateTransitionProofResult::VerifiedTokenActionWithDocument(..)
+            | StateTransitionProofResult::VerifiedTokenGroupActionWithDocument(..) => {}
+            _ => return Err("Unexpected token purchase proof result".into()),
+        }
         Ok(b"submitted".to_vec())
     })
 }
@@ -212,6 +262,86 @@ mod tests {
         let parsed = decode(&encode(batch())).unwrap();
         assert_eq!(parsed.amount, u64::MAX);
         assert_eq!(parsed.price, 50_000_000_000);
+        assert_eq!(parsed.nonce, 42);
+    }
+    #[test]
+    fn canonical_id_ignores_envelope_key_id_but_binds_the_signed_nonce_and_terms() {
+        let original = decode(&encode(batch())).unwrap();
+        let mut changed_key = batch();
+        changed_key.signature_public_key_id = 1234;
+        assert_eq!(
+            original.request_id().unwrap(),
+            decode(&encode(changed_key)).unwrap().request_id().unwrap()
+        );
+        let mut changed_nonce = batch();
+        let BatchedTransition::Token(TokenTransition::DirectPurchase(
+            TokenDirectPurchaseTransition::V0(p),
+        )) = &mut changed_nonce.transitions[0]
+        else {
+            unreachable!()
+        };
+        let TokenBaseTransition::V0(base) = &mut p.base;
+        base.identity_contract_nonce += 1;
+        assert_ne!(
+            original.request_id().unwrap(),
+            decode(&encode(changed_nonce))
+                .unwrap()
+                .request_id()
+                .unwrap()
+        );
+        let mut changed_terms = batch();
+        let BatchedTransition::Token(TokenTransition::DirectPurchase(
+            TokenDirectPurchaseTransition::V0(p),
+        )) = &mut changed_terms.transitions[0]
+        else {
+            unreachable!()
+        };
+        p.total_agreed_price += 1;
+        assert_ne!(
+            original.request_id().unwrap(),
+            decode(&encode(changed_terms))
+                .unwrap()
+                .request_id()
+                .unwrap()
+        );
+    }
+    #[tokio::test]
+    async fn wallet_signing_preserves_the_operation_nonce_and_all_purchase_terms() {
+        use dashcore::secp256k1::{PublicKey, Secp256k1, SecretKey};
+        use dpp::identity::identity_public_key::v0::IdentityPublicKeyV0;
+        use dpp::identity::KeyType;
+        use simple_signer::signer::SimpleSigner;
+        let secret = [1; 32];
+        let public =
+            PublicKey::from_secret_key(&Secp256k1::new(), &SecretKey::from_slice(&secret).unwrap());
+        let key = IdentityPublicKey::V0(IdentityPublicKeyV0 {
+            id: 7,
+            purpose: Purpose::AUTHENTICATION,
+            security_level: SecurityLevel::CRITICAL,
+            contract_bounds: None,
+            key_type: KeyType::ECDSA_SECP256K1,
+            read_only: false,
+            data: public.serialize().to_vec().into(),
+            disabled_at: None,
+        });
+        let mut signer = SimpleSigner::default();
+        signer.add_identity_public_key(key.clone(), secret);
+        let original = decode(&encode(batch())).unwrap();
+        let transition = sign_purchase(&original, &key, &signer, PlatformVersion::latest())
+            .await
+            .unwrap();
+        let StateTransition::Batch(BatchTransition::V1(mut signed)) = transition else {
+            panic!("Expected batch V1")
+        };
+        assert_eq!(signed.signature_public_key_id, 7);
+        assert!(!signed.signature.is_empty());
+        signed.signature = Default::default();
+        let rebuilt = decode(&encode(signed)).unwrap();
+        assert_eq!(rebuilt, original);
+        assert_eq!(
+            rebuilt.request_id().unwrap(),
+            original.request_id().unwrap()
+        );
     }
     #[test]
     fn rejects_multiple_operations_fee_increase_and_trailing_bytes() {
