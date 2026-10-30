@@ -21,7 +21,7 @@ dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
     "rand",
     "signer",
     "serde",
-], default-features = false, rev = "981e97f1015960ae5d277afdabcba1cbbc0b3a63" }
+], default-features = false, rev = "d631aaca3632cc713143476e363c9a9aca038d2e" }
 drive = { path = "../../../../../platform/packages/rs-drive", default-features = false, features = [
     "verify",
     "serde",
@@ -32,8 +32,8 @@ ferment = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package 
 [build-dependencies]
 cbindgen = "0.26.0"
 # ferment = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment" }
-ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys", features = ["cbindgen_only"] }
-#ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys" }
+#ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys", features = ["cbindgen_only"] }
+ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys" }
 
 [patch.crates-io]
 tower-service = { git = "https://github.com/QuantumExplorer/tower", branch = "fix/indexMap2OnV0413" }

@@ -1,6 +1,6 @@
 use dpp::identity::identity_public_key::IdentityPublicKey;
-use dpp::serialization::PlatformDeserializable;
-use dpp::state_transition::StateTransition;
+use dpp::serialization::PlatformSerializable;
+use dpp::state_transition::{StateTransition, StateTransitionType};
 use dpp::state_transition::identity_update_transition::accessors::IdentityUpdateTransitionAccessorsV0;
 
 /// A summary of a deserialized state transition.
@@ -35,7 +35,8 @@ pub struct StateTransitionInfo {
 #[ferment_macro::export]
 pub fn deserialize_state_transition(bytes: Vec<u8>) -> Result<StateTransitionInfo, String> {
     let state_transition =
-        StateTransition::deserialize_from_bytes(&bytes).map_err(|e| e.to_string())?;
+        StateTransition::deserialize_untagged_untrusted_exact(StateTransitionType::IdentityUpdate,
+                                                              &bytes).map_err(|e| e.to_string())?;
 
     let (revision, identity_nonce) = match &state_transition {
         StateTransition::IdentityUpdate(transition) => (transition.revision(), transition.nonce()),
@@ -61,7 +62,8 @@ pub fn identity_update_public_keys_to_add(
     bytes: Vec<u8>,
 ) -> Result<Vec<IdentityPublicKey>, String> {
     let state_transition =
-        StateTransition::deserialize_from_bytes(&bytes).map_err(|e| e.to_string())?;
+        StateTransition::deserialize_untagged_untrusted_exact(
+            StateTransitionType::IdentityUpdate, &bytes).map_err(|e| e.to_string())?;
     let keys = match state_transition {
         StateTransition::IdentityUpdate(transition) => transition
             .public_keys_to_add()

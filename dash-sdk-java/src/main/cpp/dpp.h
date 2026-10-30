@@ -95,9 +95,9 @@ public:
 
     uint8_t * cloneString(const char * str, uint32_t len) {
         if (str != nullptr) {
-            uint8_t * strClone = reinterpret_cast<uint8_t*>(alloc(len));
+            uint8_t * strClone = reinterpret_cast<uint8_t*>(alloc(static_cast<size_t>(len) + 1));
             memcpy(strClone, str, len);
-            strClone[len - 1] = 0;
+            strClone[len] = 0;
             return strClone;
         }
         return nullptr;

@@ -5,6 +5,9 @@ use dpp::errors::protocol_error::ProtocolError;
 use platform_version::version::PlatformVersion;
 use dpp::document::{Document, DocumentV0Getters};
 use dash_sdk::platform::{DocumentQuery, Fetch, FetchMany};
+use dash_sdk::platform::identity_keys_remaining_budgets::{
+    IdentityKeysRemainingBudgets, IdentityKeysRemainingBudgetsQuery,
+};
 use dash_sdk::platform::types::identity::{NonUniquePublicKeyHashQuery, PublicKeyHash};
 use dpp::data_contract::DataContract;
 use serde::Deserialize;
@@ -16,6 +19,14 @@ use platform_value::string_encoding::Encoding;
 use crate::config::{Config, EntryPoint};
 use crate::logs::setup_logs;
 use crate::sdk::{create_dash_sdk, create_dash_sdk_using_core_mainnet, create_dash_sdk_using_core_testnet, DashSdk};
+
+#[derive(Clone)]
+#[ferment_macro::export]
+pub struct IdentityKeyRemainingBudget {
+    pub key_id: u32,
+    pub has_remaining_budget: bool,
+    pub remaining_budget: u64,
+}
 
 pub fn test_identifier() -> Identifier {
     Identifier::from_string("7Yowk46VwwHqmD5yZyyygggh937aP6h2UW7aQWBdWpM5", Encoding::Base58).unwrap()
@@ -55,6 +66,40 @@ pub fn fetch_identity_balance_with_sdk(
 }
 
 #[ferment_macro::export]
+pub fn fetch_identity_keys_remaining_budgets_with_sdk(
+    rust_sdk: *mut DashSdk,
+    identifier: Identifier,
+    key_ids: Vec<u32>,
+) -> Result<Vec<IdentityKeyRemainingBudget>, String> {
+    tracing::info!("fetch_identity_keys_remaining_budgets_with_sdk");
+    unsafe {
+        match identity_keys_remaining_budgets_with_sdk(rust_sdk, &identifier, key_ids) {
+            Ok(budgets) => Ok(budgets),
+            Err(err) => Err(err.to_string()),
+        }
+    }
+}
+
+#[ferment_macro::export]
+pub fn fetch_identity_key_remaining_budget_with_sdk(
+    rust_sdk: *mut DashSdk,
+    identifier: Identifier,
+    key_id: u32,
+) -> Result<IdentityKeyRemainingBudget, String> {
+    tracing::info!("fetch_identity_key_remaining_budget_with_sdk");
+    unsafe {
+        match identity_keys_remaining_budgets_with_sdk(rust_sdk, &identifier, vec![key_id]) {
+            Ok(mut budgets) => Ok(budgets.pop().unwrap_or(IdentityKeyRemainingBudget {
+                key_id,
+                has_remaining_budget: false,
+                remaining_budget: 0,
+            })),
+            Err(err) => Err(err.to_string()),
+        }
+    }
+}
+
+#[ferment_macro::export]
 pub fn fetch_identity_with_keyhash_sdk(
     rust_sdk: *mut DashSdk,
     key_hash: [u8; 20]
@@ -82,6 +127,40 @@ pub fn fetch_identity_with_keyhash_sdk(
             }
         }
     }
+}
+
+unsafe fn identity_keys_remaining_budgets_with_sdk(
+    rust_sdk: *mut DashSdk,
+    id: &Identifier,
+    key_ids: Vec<u32>,
+) -> Result<Vec<IdentityKeyRemainingBudget>, ProtocolError> {
+    let rt = unsafe { (*rust_sdk).get_runtime() }.clone();
+
+    rt.block_on(async {
+        let sdk = unsafe { (*rust_sdk).get_sdk() };
+        let settings = unsafe { (*rust_sdk).get_request_settings() };
+        let query = IdentityKeysRemainingBudgetsQuery {
+            identity_id: id.clone(),
+            key_ids,
+        };
+        let result = IdentityKeysRemainingBudgets::fetch_with_settings(&sdk, query, settings).await;
+
+        match result {
+            Ok(Some(budgets)) => Ok(budgets
+                .iter()
+                .map(|(key_id, budget)| IdentityKeyRemainingBudget {
+                    key_id: *key_id,
+                    has_remaining_budget: budget.is_some(),
+                    remaining_budget: budget.unwrap_or(0),
+                })
+                .collect()),
+            Ok(None) => Ok(Vec::new()),
+            Err(e) => Err(ProtocolError::IdentifierError(format!(
+                "Identity key remaining budgets fetch failed: {}",
+                e
+            ))),
+        }
+    })
 }
 
 // TODO: this should return Result<Option<Identity>, String>

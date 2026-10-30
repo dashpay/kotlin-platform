@@ -1,7 +1,7 @@
 buildscript {
-    ext.version = '4.0.1'
+    ext.version = '5.0.1-SNAPSHOT'
     ext.kotlin_version = '2.1.20'
-    ext.dashj_version = '22.0.1'
+    ext.dashj_version = '24.0.0-20261024.220449-1'
     repositories {
         google()  // Required for Android library and application projects
         mavenCentral()
@@ -23,6 +23,7 @@ allprojects {
         google()  // Required for Android library and application projects
         mavenCentral()
         maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+        maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
     }
 
     group = 'org.dashj.platform'

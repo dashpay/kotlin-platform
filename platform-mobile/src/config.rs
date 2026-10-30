@@ -6,6 +6,7 @@ use dash_sdk::dapi_client::AddressList;
 use std::sync::Arc;
 use std::str::FromStr;
 use dpp::data_contract::DataContract;
+use dpp::dashcore::Network;
 use drive_proof_verifier::ContextProvider;
 use drive_proof_verifier::error::Error::ContextProviderError;
 use serde::Deserialize;
@@ -20,11 +21,10 @@ use dash_sdk::{RequestSettings, Sdk};
 use dpp::data_contract::accessors::v0::DataContractV0Getters;
 use ferment::{boxed, unbox_any};
 use dash_sdk::sdk::Uri;
-use platform_version::version::PlatformVersion;
 use platform_version::version::v7::PLATFORM_V7;
 use tokio::runtime::{Builder, Runtime};
 use crate::logs::setup_logs;
-use crate::provider::{Cache, CallbackContextProvider};
+use crate::provider::{CallbackContextProvider, DataContractCache};
 use crate::sdk::DashSdk;
 
 pub const TESTNET_ADDRESS_LIST: [&str; 29] = [
@@ -111,7 +111,13 @@ pub struct Config {
     #[serde(default = "Config::default_dump_dir")]
     pub dump_dir: PathBuf,
     #[serde(default = "Config::default_is_testnet")]
-    pub is_testnet: bool
+    pub is_testnet: bool,
+    #[serde(skip)]
+    pub explicit_network: Option<Network>,
+    #[serde(skip)]
+    pub endpoints: Vec<String>,
+    #[serde(skip)]
+    pub devnet_name: Option<String>,
 }
 
 pub trait EntryPoint {
@@ -123,6 +129,38 @@ pub trait EntryPoint {
 }
 
 impl Config {
+    /// Explicit client configuration never reads process-wide environment variables.
+    pub fn for_network(network: &str, endpoints: Vec<String>) -> Result<Self, String> {
+        let (network, devnet_name) = match network {
+            "mainnet" => (Network::Mainnet, None),
+            "testnet" => (Network::Testnet, None),
+            name if name.starts_with("devnet-") && name.len() > 7
+                && name[7..].bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-') =>
+                (Network::Devnet, Some(name.to_owned())),
+            _ => return Err("Expected mainnet, testnet, or devnet-<name>".to_owned()),
+        };
+        if endpoints.is_empty() {
+            return Err("At least one explicit DAPI endpoint is required".to_owned());
+        }
+        for endpoint in &endpoints {
+            let uri = Uri::from_str(endpoint).map_err(|e| format!("Invalid DAPI endpoint: {e}"))?;
+            if uri.scheme_str() != Some("https") || uri.host().is_none()
+                || uri.authority().map_or(true, |a| a.as_str().contains('@'))
+                || uri.path() != "/" && !uri.path().is_empty()
+                || uri.query().is_some() || endpoint.contains('#')
+                || uri.port_u16().is_none() || uri.port_u16() == Some(0) {
+                return Err("DAPI endpoints must be HTTPS URLs with an explicit port and no credentials, path, query or fragment".to_owned());
+            }
+            let _: Address = uri.try_into().map_err(|e| format!("Invalid DAPI address: {e}"))?;
+        }
+        Ok(Self {
+            platform_host: String::new(), platform_port: 0, platform_ssl: true,
+            core_ip: String::new(), core_port: 0, core_user: String::new(), core_password: String::new(),
+            dump_dir: Self::default_dump_dir(), is_testnet: network != Network::Mainnet,
+            explicit_network: Some(network), endpoints, devnet_name,
+        })
+    }
+
     /// Prefix of configuration options in the environment variables and `.env` file.
     pub const CONFIG_PREFIX: &'static str = "RS_SDK_";
     /// Load configuration from operating system environment variables and `.env` file.
@@ -218,6 +256,12 @@ impl Config {
     #[allow(unused)]
     /// Create list of Platform addresses from the configuration
     pub fn address_list(&self) -> AddressList {
+        if self.explicit_network.is_some() {
+            return AddressList::from_iter(self.endpoints.iter().map(|endpoint| {
+                let uri = Uri::from_str(endpoint).expect("validated endpoint");
+                Address::try_from(uri).expect("validated address")
+            }));
+        }
         let scheme = if self.platform_ssl { "https" } else { "http" };
 
         let white_list = if self.is_testnet {
@@ -269,11 +313,11 @@ impl Config {
     /// new test vectors during execution
     /// * `offline-testing` is set - use mock implementation and
     /// load existing test vectors from disk
-    pub async fn setup_api(&self, version: &'static PlatformVersion) -> Arc<Sdk> {
+    pub async fn setup_api(&self) -> Arc<Sdk> {
         let sdk = {
             // Dump all traffic to disk
             let builder = dash_sdk::SdkBuilder::new(self.address_list())
-                .with_version(version)
+                .with_network(self.network())
                 .with_core(
                 &self.core_ip.as_str(),
                 self.core_port,
@@ -281,28 +325,25 @@ impl Config {
                 &self.core_password.as_str(),
             );
 
-            builder
-                .with_version(version)
-                .build().expect("cannot initialize api")
+            builder.build().expect("cannot initialize api")
         };
 
         sdk.into()
     }
 
-    pub async fn setup_api_list(&self, address_list: Vec<String>,
-                                version: &'static PlatformVersion) -> Arc<Sdk> {
+    pub async fn setup_api_list(&self, address_list: Vec<String>) -> Arc<Sdk> {
         let sdk = {
             // Dump all traffic to disk
-            let builder = dash_sdk::SdkBuilder::new(self.new_address_list(address_list)).with_core(
-                &self.core_ip.as_str(),
-                self.core_port,
-                &self.core_user.as_str(),
-                &self.core_password.as_str(),
-            );
+            let builder = dash_sdk::SdkBuilder::new(self.new_address_list(address_list))
+                .with_network(self.network())
+                .with_core(
+                    &self.core_ip.as_str(),
+                    self.core_port,
+                    &self.core_user.as_str(),
+                    &self.core_password.as_str(),
+                );
 
-            builder
-                .with_version(version)
-                .build().expect("cannot initialize api")
+            builder.build().expect("cannot initialize api")
         };
 
         sdk.into()
@@ -314,12 +355,13 @@ impl Config {
             q,
             d,
             None,
-            Arc::new(Cache::new(NonZeroUsize::new(100).expect("Non Zero"))),
+            Arc::new(DataContractCache::new(NonZeroUsize::new(100).expect("Non Zero"))),
             NonZeroUsize::new(100).expect("Non Zero"),
         ).expect("context provider");
         let mut sdk = {
             // Dump all traffic to disk
-            let builder = dash_sdk::SdkBuilder::new(self.address_list());
+            let builder = dash_sdk::SdkBuilder::new(self.address_list())
+                .with_network(self.network());
             builder.build().expect("cannot initialize api")
         };
         // not ideal because context provider has a clone of the sdk
@@ -328,16 +370,15 @@ impl Config {
         sdk.into()
     }
 
-    pub async fn setup_api_with_callbacks_cache(
+    pub(crate) async fn setup_api_with_callbacks_cache(
         &self,
         context_provider_context: * const c_void,
         q: u64,
         d: u64,
-        data_contract_cache: Arc<Cache<Identifier, DataContract>>,
+        data_contract_cache: Arc<DataContractCache>,
         connect_timeout: usize,
         timeout: usize,
         retries: usize,
-        version: &'static PlatformVersion
     ) -> Arc<Sdk> {
         let mut context_provider = CallbackContextProvider::new(
             context_provider_context,
@@ -360,6 +401,7 @@ impl Config {
         let mut sdk = {
             // Dump all traffic to disk
             let builder = dash_sdk::SdkBuilder::new(self.address_list())
+                .with_network(self.network())
                 .with_settings(
                     RequestSettings {
                         connect_timeout: Some(Duration::from_secs(connect_timeout as u64)),
@@ -369,7 +411,6 @@ impl Config {
                         max_decoding_message_size: Some(16 * 1024 * 1024)
                     }
                 )
-                .with_version(&version)
                 .with_context_provider(context_provider_clone);
             builder.build().expect("cannot initialize api")
         };
@@ -379,14 +420,13 @@ impl Config {
         sdk.into()
     }
 
-    pub async fn setup_api_with_callbacks_cache_list(
+    pub(crate) async fn setup_api_with_callbacks_cache_list(
         &self,
         context: * const c_void,
         q: u64,
         d: u64,
-        data_contract_cache: Arc<Cache<Identifier, DataContract>>,
+        data_contract_cache: Arc<DataContractCache>,
         address_list: Vec<String>,
-        version: &'static PlatformVersion
     ) -> Arc<Sdk> {
         let mut context_provider = CallbackContextProvider::new(
             context,
@@ -398,11 +438,9 @@ impl Config {
         ).expect("context provider");
         let mut sdk = {
             // Dump all traffic to disk
-            let builder = dash_sdk::SdkBuilder::new(self.new_address_list(address_list));
-            builder
-                .with_version(version)
-                .build()
-                .expect("cannot initialize api")
+            let builder = dash_sdk::SdkBuilder::new(self.new_address_list(address_list))
+                .with_network(self.network());
+            builder.build().expect("cannot initialize api")
         };
         // not ideal because context provider has a clone of the sdk
         context_provider.set_sdk(Some(Arc::new(sdk.clone())));
@@ -419,6 +457,59 @@ impl Config {
     fn default_is_testnet() -> bool {
         true
     }
+
+    pub(crate) fn network(&self) -> Network {
+        if let Some(network) = self.explicit_network {
+            return network;
+        }
+        if self.is_testnet {
+            Network::Testnet
+        } else {
+            Network::Mainnet
+        }
+    }
 }
 
+#[cfg(test)]
+mod network_configuration_tests {
+    use super::*;
 
+    #[test]
+    fn explicit_devnets_do_not_fall_back_to_testnet_nodes() {
+        let cfg = Config::for_network("devnet-sakura", vec!["https://127.0.0.1:1443".into()]).unwrap();
+        assert_eq!(cfg.network(), Network::Devnet);
+        assert_eq!(cfg.devnet_name.as_deref(), Some("devnet-sakura"));
+        assert_eq!(cfg.endpoints, vec!["https://127.0.0.1:1443"]);
+        assert_eq!(cfg.address_list().len(), 1);
+    }
+
+    #[test]
+    fn explicit_mainnet_and_testnet_remain_distinct() {
+        for (name, network) in [("mainnet", Network::Mainnet), ("testnet", Network::Testnet)] {
+            let cfg = Config::for_network(name, vec!["https://127.0.0.1:443".into()]).unwrap();
+            assert_eq!(cfg.network(), network);
+        }
+    }
+
+    #[test]
+    fn sdk_constructor_preserves_devnet_network_and_endpoints() {
+        extern "C" fn quorum_callback(_: *const c_void, _: u32, _: *const u8, _: u32, _: *mut u8) {}
+        let endpoints = vec!["https://127.0.0.1:1443".to_owned()];
+        let sdk = crate::sdk::create_dash_sdk_with_network(0, quorum_callback as usize as u64, 0,
+            "devnet-sakura".into(), endpoints.clone(), 5, 5, 1).unwrap();
+        assert_eq!(sdk.sdk.network, Network::Devnet);
+        assert_eq!(sdk.config.endpoints, endpoints);
+        assert_eq!(sdk.config.devnet_name.as_deref(), Some("devnet-sakura"));
+    }
+
+    #[test]
+    fn rejects_invalid_networks_and_endpoints() {
+        assert!(Config::for_network("devnet-", vec!["https://127.0.0.1:1443".into()]).is_err());
+        assert!(Config::for_network("devnet-sakura", vec![]).is_err());
+        for endpoint in ["127.0.0.1", "http://127.0.0.1:1443", "https://127.0.0.1",
+            "https://127.0.0.1:0", "https://user@127.0.0.1:1443", "https://127.0.0.1:1443/path",
+            "https://127.0.0.1:1443?secret=x", "https://127.0.0.1:1443#fragment"] {
+            assert!(Config::for_network("devnet-sakura", vec![endpoint.into()]).is_err(), "{endpoint}");
+        }
+    }
+}

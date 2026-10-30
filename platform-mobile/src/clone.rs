@@ -1,7 +1,10 @@
 use std::collections::{BTreeMap, BTreeSet};
 use dpp::document::Document;
+use dpp::balances::credits::Credits;
 use crate::state_transition::StateTransitionInfo;
 use dpp::document::v0::DocumentV0;
+use dpp::identity::identity_public_key::contract_bounds::ContractBounds;
+use dpp::identity::identity_public_key::v1::IdentityPublicKeyV1;
 use dpp::identity::identity_public_key::TimestampMillis;
 use dpp::identity::identity_public_key::KeyID;
 use dpp::prelude::{BlockHeight, CoreBlockHeight, Revision};
@@ -14,7 +17,9 @@ use dpp::voting::votes::resource_vote::v0::ResourceVoteV0;
 use dpp::voting::votes::Vote;
 use drive::query::{OrderClause, WhereClause, WhereOperator};
 use drive_proof_verifier::types::{Contenders, ContestedResource, ContestedResources, ResourceVotesByIdentity, VotePollsGroupedByTimestamp, Voter, Voters};
+use platform_value::types::binary_data::BinaryData;
 use platform_value::{Hash256, Value, ValueMap};
+use crate::fetch_identity::IdentityKeyRemainingBudget;
 
 #[allow(non_snake_case)]
 #[ferment_macro::export]
@@ -31,6 +36,30 @@ pub fn Revision_clone(revision: Revision) -> Revision {
 #[ferment_macro::export]
 pub fn TimestampMillis_clone(time: TimestampMillis) -> TimestampMillis {
     time.clone()
+}
+
+#[allow(non_snake_case)]
+#[ferment_macro::export]
+pub fn ContractBounds_clone(contract_bounds: ContractBounds) -> ContractBounds {
+    contract_bounds.clone()
+}
+
+#[allow(non_snake_case)]
+#[ferment_macro::export]
+pub fn BinaryData_clone(data: BinaryData) -> BinaryData {
+    data.clone()
+}
+
+#[allow(non_snake_case)]
+#[ferment_macro::export]
+pub fn Credits_clone(credits: Credits) -> Credits {
+    credits
+}
+
+#[allow(non_snake_case)]
+#[ferment_macro::export]
+pub fn IdentityPublicKeyV1_clone(public_key: IdentityPublicKeyV1) -> IdentityPublicKeyV1 {
+    public_key.clone()
 }
 
 #[allow(non_snake_case)]
@@ -235,5 +264,11 @@ pub fn ResourceVotesByIdentity_clone(o: ResourceVotesByIdentity) -> ResourceVote
 #[allow(non_snake_case)]
 #[ferment_macro::export]
 pub fn StateTransitionInfo_clone(info: StateTransitionInfo) -> StateTransitionInfo {
+    info.clone()
+}
+
+#[allow(non_snake_case)]
+#[ferment_macro::export]
+pub fn IdentityKeyRemainingBudget_clone(info: IdentityKeyRemainingBudget) -> IdentityKeyRemainingBudget {
     info.clone()
 }
