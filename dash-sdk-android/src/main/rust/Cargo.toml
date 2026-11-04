@@ -1,6 +1,6 @@
 [package]
 name = "dash-sdk-bindings"
-version = "4.0.1"
+version = "5.0.1"
 edition = "2021"
 
 [dependencies]
