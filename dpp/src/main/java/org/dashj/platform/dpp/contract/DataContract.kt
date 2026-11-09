@@ -22,7 +22,9 @@ class DataContract(
     var version: Int,
     var schema: String,
     var documents: MutableMap<String, Any?>,
-    var definitions: MutableMap<String, Any?> = hashMapOf()
+    var definitions: MutableMap<String, Any?> = hashMapOf(),
+    val requiresIdentityEncryptionBoundedKey: Boolean = false,
+    val requiresIdentityDecryptionBoundedKey: Boolean = false
 ) : BaseObject(protocolVersion) {
 
     companion object DEFAULTS {
@@ -30,10 +32,12 @@ class DataContract(
             return DataContract(
                 ProtocolVersion.latestVersion,
                 Identifier.from(dataContract.id),
-                Identifier.from(dataContract.id),
-                1,
+                Identifier.from(dataContract.owner_id),
+                dataContract.version.toInt(),
                 "",
-                dataContract.doc_types.associateBy({it}, { "empty" }).toMutableMap() // dataContract.doc_types.keys()
+                dataContract.doc_types.associateBy({it}, { "empty" }).toMutableMap(),
+                requiresIdentityEncryptionBoundedKey = dataContract.requires_identity_encryption_bounded_key,
+                requiresIdentityDecryptionBoundedKey = dataContract.requires_identity_decryption_bounded_key
                 //TODO: need List<String> from Vec_String
             )
         }

@@ -47,13 +47,16 @@ class Identity : BaseObject {
     }
 
     constructor(identity: RustIdentity) : super() {
-        when (identity.tag) {
-            Identity.Tag.V0 -> {
-                val identity = identity.v0._0
-                id = Identifier(identity.id)
-                publicKeys = identity.publicKeys.values.map { IdentityPublicKey.from(it) }.toMutableList()
-                revision = identity.revision.toLong().toInt()
-                balance = identity.balance
+        // SWIG child views borrow their memory from this owning identity.
+        synchronized(identity) {
+            when (identity.tag) {
+                Identity.Tag.V0 -> {
+                    val value = identity.v0._0
+                    id = Identifier(value.id)
+                    publicKeys = value.publicKeys.values.map { IdentityPublicKey.from(it) }.toMutableList()
+                    revision = value.revision.toLong().toInt()
+                    balance = value.balance
+                }
             }
         }
     }

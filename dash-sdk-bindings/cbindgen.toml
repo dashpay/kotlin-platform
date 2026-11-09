@@ -6,6 +6,15 @@ tab_width = 4
 documentation_style = "c"
 style = "tag"
 include_guard = "dash_sdk_bindings_h"
+after_includes = """
+#ifndef SWIG
+// V1 fields point to native Rust repr(u8) enums, not Ferment's repr(C) enums.
+using KeyID = uint32_t;
+using Purpose = uint8_t;
+using SecurityLevel = uint8_t;
+using KeyType = uint8_t;
+#endif
+"""
 
 [parse]
 parse_deps = true

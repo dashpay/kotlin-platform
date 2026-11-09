@@ -284,6 +284,7 @@
 DEFINE_RESULT(Identity, String, Result_ok_dpp_identity_identity_Identity_err_String, platform_mobile_identity_Identity_clone);
 DEFINE_OPTIONAL_RESULT(Identity, String, Result_ok_Option_dpp_identity_identity_Identity_err_String, platform_mobile_identity_Identity_clone);
 DEFINE_RESULT(Document, String, Result_ok_dpp_document_Document_err_String, clone);
+DEFINE_OPTIONAL_RESULT(Identifier, String, Result_ok_Option_platform_value_types_identifier_Identifier_err_String, platform_mobile_identity_Identifier_clone);
 DEFINE_RESULT(DataContract, String, Result_ok_platform_mobile_data_contracts_DataContractFFI_err_String, clone);
 DEFINE_OPTIONAL_RESULT(DataContract, String, Result_ok_Option_platform_mobile_data_contracts_DataContractFFI_err_String, clone);
 
@@ -294,5 +295,7 @@ DEFINE_LIST_RESULT(Document, String, Result_ok_Vec_dpp_document_Document_err_Str
 
 DEFINE_RESULT(VotePollsGroupedByTimeStamp, String, Result_ok_drive_proof_verifier_types_VotePollsGroupedByTimestamp_err_String, clone);
 DEFINE_RESULT(ResourceVotesByIdentity, String, Result_ok_drive_proof_verifier_types_ResourceVotesByIdentity_err_String, clone);
+DEFINE_RESULT(IdentityKeyRemainingBudget, String, Result_ok_platform_mobile_fetch_identity_IdentityKeyRemainingBudget_err_String, clone);
+DEFINE_LIST_RESULT(IdentityKeyRemainingBudget, String, Result_ok_Vec_platform_mobile_fetch_identity_IdentityKeyRemainingBudget_err_String, platform_mobile_fetch_identity_IdentityKeyRemainingBudget);
 // primitive types
 DEFINE_PRIMITIVE_RESULT(Long, String, Result_ok_u64_err_String);

@@ -10,6 +10,7 @@
 #include <ctime>
 #include "wrapper.h"
 #include "clone.h"
+#include "identity_public_key_v1.h"
 #include <vector>
 #include <iosfwd>
 MemoryFactory * MemoryFactory::instance = new MemoryFactory();
@@ -42,9 +43,11 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 
 // Platform Related Structures
 %include "sdk.i"
+%include "app_connect.i"
 %include "i128.i"
 %include "binary_data.i"
 %include "contract_bounds.i"
+%include "credits.i"
 %include "drive.i"
 %include "data_contract.i"
 %include "document.i"
@@ -55,6 +58,7 @@ MemoryFactory & memoryFactory = *MemoryFactory::getInstance();
 %include "identity_public_key.i"
 %include "identity_public_key_enums.i"
 %include "keyid.i"
+%include "key_wallet.i"
 %include "revision.i"
 %include "uint8_array.i"
 %include "uint8_array_20.i"

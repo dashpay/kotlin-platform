@@ -30,7 +30,10 @@ import org.dashj.platform.sdk.client.ClientAppDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class Platform(val params: NetworkParameters) {
+class Platform @JvmOverloads constructor(
+    val params: NetworkParameters,
+    val networkConfiguration: org.dashj.platform.sdk.client.NetworkConfiguration? = null
+) {
 
     companion object {
         private val log: Logger = LoggerFactory.getLogger(Platform::class.java)
@@ -91,7 +94,10 @@ class Platform(val params: NetworkParameters) {
             }
         }
         System.loadLibrary("sdklib")
-        client = DapiClient(params.defaultHPMasternodeList.toList(), dpp, true, isTestNet())
+        client = if (networkConfiguration != null) {
+            DapiClient(networkConfiguration.addressProvider(DapiClient.DEFAULT_BASE_BAN_TIME), dpp,
+                true, isTestNet(), networkConfiguration = networkConfiguration)
+        } else DapiClient(params.defaultHPMasternodeList.toList(), dpp, true, isTestNet())
     }
 
     fun getAppList(): List<Identifier> {

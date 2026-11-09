@@ -9,6 +9,8 @@ struct platform_mobile_MyValue;
 struct platform_mobile_MyValueMap;
 struct platform_value_Value;
 struct platform_value_ValueMap;
+// Generated definitions may place Value before the map it points to.
+struct platform_value_value_map_ValueMap;
 struct Vec_platform_value_Value;
 extern JavaVM* javaVM;
 

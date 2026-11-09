@@ -93,6 +93,10 @@ sourceSets {
     }
 }
 
+tasks.named('compileKotlin').configure {
+    dependsOn tasks.named('generateProto')
+}
+
 test {
     useJUnitPlatform()
     systemProperty "java.library.path", "../dash-sdk-java/build/cmake"
@@ -199,7 +203,9 @@ jreleaser {
 
 signing {
     required { gradle.taskGraph.hasTask("publish") }
-    sign publishing.publications.mavenJava
+    if (!project.hasProperty('skipSigning')) {
+        sign publishing.publications.mavenJava
+    }
 }
 
 tasks.withType(Copy) {

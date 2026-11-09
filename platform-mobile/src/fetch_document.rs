@@ -21,7 +21,7 @@ use rs_dapi_client::transport::BoxFuture;
 use dpp::version::LATEST_PLATFORM_VERSION;
 use dpp::data_contract::accessors::v0::DataContractV0Getters;
 use dpp::document::serialization_traits::DocumentPlatformConversionMethodsV0;
-use crate::provider::Cache;
+use crate::provider::DataContractCache;
 use dash_sdk::query_types::IndexMap;
 #[ferment_macro::export]
 pub fn document_to_string(document: Document)-> String {
@@ -45,7 +45,7 @@ impl Into<Start> for StartPoint {
 
 fn fetch_documents_with_retry(
     sdk: Arc<Sdk>,  // No need for a reference; pass the Arc by value
-    data_contract_cache: Arc<Cache<Identifier, DataContract>>,
+    data_contract_cache: Arc<DataContractCache>,
     query: DocumentQuery,
     request_settings: RequestSettings,
     retries_left: usize,

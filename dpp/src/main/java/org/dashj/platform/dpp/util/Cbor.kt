@@ -175,7 +175,7 @@ object Cbor {
             is String -> mapBuilder.put(key, value)
             is Boolean -> mapBuilder.put(key, value)
             is Int -> mapBuilder.put(key, value.toLong())
-            is BigInteger -> mapBuilder.put(key, value.toLong())
+            is BigInteger -> mapBuilder.put(UnicodeString(key), integerItem(value))
             is Float -> mapBuilder.put(key, value)
             is Long -> mapBuilder.put(key, value)
             is Double -> mapBuilder.put(key, value)
@@ -192,7 +192,7 @@ object Cbor {
             is String -> arrayBuilder.add(value)
             is Boolean -> arrayBuilder.add(value)
             is Int -> arrayBuilder.add(value.toLong())
-            is BigInteger -> arrayBuilder.add(value.toLong())
+            is BigInteger -> arrayBuilder.add(integerItem(value))
             is Float -> arrayBuilder.add(value)
             is Long -> arrayBuilder.add(value)
             is Double -> arrayBuilder.add(value)
@@ -237,25 +237,22 @@ object Cbor {
         return resultList
     }
 
+    private fun integerItem(value: BigInteger): DataItem =
+        if (value.signum() < 0) NegativeInteger(value) else UnsignedInteger(value)
+
+    private fun integerValue(value: BigInteger): Number = when {
+        value.bitLength() <= 31 -> value.toInt()
+        value.bitLength() <= 63 -> value.toLong()
+        else -> value
+    }
+
     private fun addValueFromCborMap(map: HashMap<String, Any?>, key: String, value: DataItem) {
         when (value) {
             is UnicodeString -> {
                 map[key] = value.string
             }
-            is NegativeInteger -> {
-                if (value.value.toLong() >= Int.MIN_VALUE) {
-                    map[key] = value.value.toInt()
-                } else {
-                    map[key] = value.value.toLong()
-                }
-            }
-            is UnsignedInteger -> {
-                if (value.value.toLong() <= Int.MAX_VALUE) {
-                    map[key] = value.value.toInt()
-                } else {
-                    map[key] = value.value.toLong()
-                }
-            }
+            is NegativeInteger -> map[key] = integerValue(value.value)
+            is UnsignedInteger -> map[key] = integerValue(value.value)
             is HalfPrecisionFloat -> map[key] = value.value
             is DoublePrecisionFloat -> map[key] = value.value
             is ByteString -> map[key] = value.bytes
@@ -275,20 +272,8 @@ object Cbor {
     private fun addValueFromCborArray(value: DataItem, array: ArrayList<Any?>) {
         when (value) {
             is UnicodeString -> array.add(value.string)
-            is NegativeInteger -> {
-                if (value.value.toLong() >= Int.MIN_VALUE) {
-                    array.add(value.value.toLong().toInt())
-                } else {
-                    array.add(value.value.toLong())
-                }
-            }
-            is UnsignedInteger -> {
-                if (value.value.toLong() <= Int.MAX_VALUE) {
-                    array.add(value.value.toLong().toInt())
-                } else {
-                    array.add(value.value.toLong())
-                }
-            }
+            is NegativeInteger -> array.add(integerValue(value.value))
+            is UnsignedInteger -> array.add(integerValue(value.value))
             is HalfPrecisionFloat -> array.add(value.value)
             is DoublePrecisionFloat -> array.add(value.value)
             is ByteString -> array.add(value.bytes)

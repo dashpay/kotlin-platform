@@ -53,6 +53,9 @@ START_CLASS(DocumentV0, dpp_document_v0_DocumentV0);
         clone(created_at_core_block_height),
         clone(updated_at_core_block_height),
         clone(transferred_at_core_block_height),
+        nullptr,
+        nullptr,
+        nullptr,
         nullptr
     );
   }
@@ -67,6 +70,9 @@ START_CLASS(DocumentV0, dpp_document_v0_DocumentV0);
             clone(owner_id),
             clone(properties),
             clone(revision),
+            nullptr,
+            nullptr,
+            nullptr,
             nullptr,
             nullptr,
             nullptr,

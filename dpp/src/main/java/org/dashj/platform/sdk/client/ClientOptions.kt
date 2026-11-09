@@ -19,8 +19,20 @@ class ClientOptions(
     val dapiAddresses: List<String> = listOf(),
     val timeout: Long = DapiClient.DEFAULT_TIMEOUT,
     val retries: Int = DapiClient.DEFAULT_RETRY_COUNT,
-    val banBaseTime: Int = DapiClient.DEFAULT_BASE_BAN_TIME
+    val banBaseTime: Int = DapiClient.DEFAULT_BASE_BAN_TIME,
+    val networkConfiguration: NetworkConfiguration? = null,
+    val networkParameters: org.bitcoinj.core.NetworkParameters? = null
 ) {
+    init {
+        networkConfiguration?.let {
+            require(network == it.network) { "Conflicting network configuration" }
+            require(networkParameters != null) { "Explicit network configuration requires Core network parameters" }
+            it.validate(networkParameters)
+            require(dapiAddressListProvider == null && dapiAddresses.isEmpty()) {
+                "Specify endpoints in NetworkConfiguration, not in two separate node lists"
+            }
+        }
+    }
     constructor(network: String) : this(mapOf(), null, 0, network = network)
 
     data class Builder(
@@ -33,7 +45,9 @@ class ClientOptions(
         private val dapiAddresses: ArrayList<String> = arrayListOf(),
         private var timeout: Long = DapiClient.DEFAULT_TIMEOUT,
         private var retries: Int = DapiClient.DEFAULT_RETRY_COUNT,
-        private var banBaseTime: Int = DapiClient.DEFAULT_BASE_BAN_TIME
+        private var banBaseTime: Int = DapiClient.DEFAULT_BASE_BAN_TIME,
+        private var networkConfiguration: NetworkConfiguration? = null,
+        private var networkParameters: org.bitcoinj.core.NetworkParameters? = null
     ) {
         fun app(name: String, definition: ClientAppDefinition) = apply {
             apps[name] = definition
@@ -52,6 +66,15 @@ class ClientOptions(
         }
         fun network(network: String) = apply {
             this.network = network
+            networkConfiguration = null
+            networkParameters = null
+        }
+        /** Use network-specific Core parameters without guessing devnet spork or quorum settings. */
+        fun network(configuration: NetworkConfiguration, params: org.bitcoinj.core.NetworkParameters) = apply {
+            configuration.validate(params)
+            network = configuration.network
+            networkConfiguration = configuration
+            networkParameters = params
         }
         fun seed(seed: String) = apply {
             this.seeds.add(seed)
@@ -78,7 +101,7 @@ class ClientOptions(
             this.banBaseTime = banBaseTime
         }
         fun build(): ClientOptions {
-            return ClientOptions(apps, walletOptions, walletAccountIndex, network, seeds, dapiAddressListProvider, dapiAddresses, timeout, retries, banBaseTime)
+            return ClientOptions(apps, walletOptions, walletAccountIndex, network, seeds, dapiAddressListProvider, dapiAddresses, timeout, retries, banBaseTime, networkConfiguration, networkParameters)
         }
     }
     companion object {

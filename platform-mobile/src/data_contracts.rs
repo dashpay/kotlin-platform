@@ -3,6 +3,7 @@ use std::sync::Arc;
 use dash_sdk::platform::{DocumentQuery, Fetch};
 use dash_sdk::{Error, Sdk};
 use dpp::data_contract::accessors::v0::DataContractV0Getters;
+use dpp::data_contract::config::v0::DataContractConfigGettersV0;
 use dpp::data_contract::DataContract;
 use dpp::document::Document;
 use drive_proof_verifier::types::Documents;
@@ -13,7 +14,6 @@ use rs_dapi_client::transport::BoxFuture;
 use tokio::runtime::Builder;
 use crate::config::{Config, EntryPoint};
 use crate::logs::setup_logs;
-use crate::provider::Cache;
 use crate::sdk::{
     create_dash_sdk_using_core_mainnet,
     create_dash_sdk_using_core_testnet,
@@ -27,7 +27,9 @@ pub struct DataContractFFI {
     pub id: Identifier,
     pub owner_id: Identifier,
     pub doc_types: Vec<String>,
-    pub version: u32
+    pub version: u32,
+    pub requires_identity_encryption_bounded_key: bool,
+    pub requires_identity_decryption_bounded_key: bool,
 }
 
 #[allow(non_snake_case)]
@@ -38,24 +40,13 @@ pub fn DataContractFFI_clone(value: DataContractFFI) -> DataContractFFI {
 
 impl Into<DataContractFFI> for DataContract {
     fn into(self) -> DataContractFFI {
-        match self {
-            DataContract::V0(contract) => {
-                DataContractFFI {
-                    id: contract.id(),
-                    owner_id: contract.owner_id(),
-                    doc_types: contract.document_types.keys().cloned().collect(),
-                    version: contract.version()
-                }
-            }
-            DataContract::V1(contract) => {
-                DataContractFFI {
-                    id: contract.id(),
-                    owner_id: contract.owner_id(),
-                    doc_types: contract.document_types.keys().cloned().collect(),
-                    version: contract.version()
-                }
-            }
-            _ => panic!("unknown version of DataContract")
+        DataContractFFI {
+            id: self.id(),
+            owner_id: self.owner_id(),
+            doc_types: self.document_types().keys().cloned().collect(),
+            version: self.version(),
+            requires_identity_encryption_bounded_key: self.config().requires_identity_encryption_bounded_key().is_some(),
+            requires_identity_decryption_bounded_key: self.config().requires_identity_decryption_bounded_key().is_some(),
         }
     }
 }
@@ -212,8 +203,35 @@ fn get_missing_data_contract_test() {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use data_contracts::SystemDataContract;
+    use dpp::data_contract::accessors::v0::DataContractV0Setters;
+    use dpp::data_contract::config::v0::DataContractConfigSettersV0;
+    use dpp::data_contract::storage_requirements::keys_for_document_type::StorageKeyRequirements;
+    use dpp::system_data_contracts::load_system_data_contract;
+    use platform_version::version::PlatformVersion;
     use rand::Rng;
     use platform_value::string_encoding::{encode, Encoding};
+
+    #[test]
+    fn app_connect_contract_conversion_preserves_owner_version_and_key_opt_ins() {
+        let mut contract = load_system_data_contract(
+            SystemDataContract::AppConnect, PlatformVersion::latest(),
+        ).unwrap();
+        let owner = Identifier::from([42; 32]);
+        contract.set_owner_id(owner);
+        contract.set_version(7);
+        contract.config_mut().set_requires_identity_encryption_bounded_key(
+            Some(StorageKeyRequirements::Unique),
+        );
+        contract.config_mut().set_requires_identity_decryption_bounded_key(None);
+        let ffi: DataContractFFI = contract.into();
+        assert_eq!(ffi.owner_id, owner);
+        assert_ne!(ffi.owner_id, ffi.id);
+        assert_eq!(ffi.version, 7);
+        assert!(ffi.requires_identity_encryption_bounded_key);
+        assert!(!ffi.requires_identity_decryption_bounded_key);
+    }
 
     #[test]
     fn generate_random_32_byte_vector() {

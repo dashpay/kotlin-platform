@@ -6,6 +6,14 @@ tab_width = 4
 documentation_style = "c"
 style = "tag"
 include_guard = "rs_sdk_bindings"
+after_includes = """
+#ifndef SWIG
+using KeyID = uint32_t;
+using Purpose = uint8_t;
+using SecurityLevel = uint8_t;
+using KeyType = uint8_t;
+#endif
+"""
 
 [parse]
 parse_deps = true
