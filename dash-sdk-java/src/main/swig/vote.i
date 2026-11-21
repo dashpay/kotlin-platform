@@ -149,12 +149,22 @@ END_CLASS();
 
 %rename (TupleContestedDocumentVotePollWinnerInfoBlockInfo) Tuple_dpp_voting_vote_info_storage_contested_document_vote_poll_winner_info_ContestedDocumentVotePollWinnerInfo_dpp_block_block_info_BlockInfo;
 
+%rename (ResourceVoteWithCount) drive_proof_verifier_types_ResourceVoteWithCount;
+
+%{
+inline drive_proof_verifier_types_ResourceVoteWithCount * clone(drive_proof_verifier_types_ResourceVoteWithCount * object) {
+    return object != nullptr
+        ? drive_proof_verifier_types_ResourceVoteWithCount_ctor(clone(object->resource_vote), object->vote_count)
+        : nullptr;
+}
+%}
+
 MAP_STRUCT_TYPEMAP(
-    std_collections_Map_keys_platform_value_types_identifier_Identifier_values_Option_dpp_voting_votes_resource_vote_ResourceVote,
+    std_collections_Map_keys_platform_value_types_identifier_Identifier_values_Option_drive_proof_verifier_types_ResourceVoteWithCount,
     platform_value_types_identifier_Identifier,
     Identifier,
-    dpp_voting_votes_resource_vote_ResourceVote,
-    ResourceVote
+    drive_proof_verifier_types_ResourceVoteWithCount,
+    ResourceVoteWithCount
 );
 
 MAP_STRUCT_TYPEMAP(

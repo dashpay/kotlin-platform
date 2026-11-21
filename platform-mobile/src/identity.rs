@@ -1,7 +1,5 @@
 use std::collections::BTreeMap;
-use dpp::dashcore::secp256k1::rand;
-//use dpp::dashcore::secp256k1::rand::rngs::StdRng;
-use dpp::dashcore::secp256k1::rand::SeedableRng;
+use rand::{rngs::StdRng, SeedableRng};
 use dpp::identity::identity_public_key::v0::IdentityPublicKeyV0;
 use dpp::identity::identity::Identity;
 use dpp::identity::identity_public_key::IdentityPublicKey;
@@ -30,7 +28,7 @@ pub fn get_identity2(identifier: Identifier) -> Identity {
     let id = Identifier::from_bytes(&identifier.as_slice()).expect("parse identity id");
 
     let mut keys: BTreeMap<KeyID, IdentityPublicKey> = BTreeMap::new();
-    let mut rng = rand::rngs::StdRng::from_entropy();
+    let mut rng = StdRng::from_entropy();
 
     let key: IdentityPublicKey = IdentityPublicKey::V0(
         IdentityPublicKeyV0::random_ecdsa_master_authentication_key_with_rng(
@@ -69,7 +67,7 @@ pub fn get_identity_contract_bounds(identifier: Identifier, contract_identifier:
     let id = Identifier::from_bytes(&identifier.as_slice()).expect("parse identity id");
 
     let mut keys: BTreeMap<KeyID, IdentityPublicKey> = BTreeMap::new();
-    let mut rng = rand::rngs::StdRng::from_entropy();
+    let mut rng = StdRng::from_entropy();
 
     let ipk1 = IdentityPublicKeyV0::random_ecdsa_master_authentication_key_with_rng(
         1,

@@ -1,5 +1,4 @@
 use dashcore::hashes::Hash;
-use dashcore::secp256k1::ThirtyTwoByteHash;
 
 #[allow(non_camel_case_types)]
 #[repr(C)]
@@ -18,7 +17,7 @@ impl ferment::FFIConversionFrom<dashcore::blockdata::transaction::OutPoint> for 
 impl ferment::FFIConversionTo<dashcore::blockdata::transaction::OutPoint> for OutPoint {
 
         unsafe fn ffi_to_const(obj: dashcore::blockdata::transaction::OutPoint) -> *const Self {
-        ferment::boxed(OutPoint { txid: ferment::boxed(obj.txid.to_raw_hash().into()), vout: obj.vout })
+        ferment::boxed(OutPoint { txid: ferment::boxed(obj.txid.to_raw_hash().to_byte_array()), vout: obj.vout })
     }
 }
 

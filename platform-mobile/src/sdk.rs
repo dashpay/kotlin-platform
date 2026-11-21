@@ -36,6 +36,7 @@ pub fn create_dash_sdk_with_network(
         connect_timeout: Some(Duration::from_secs(connect_timeout as u64)),
         timeout: Some(Duration::from_secs(timeout as u64)),
         retries: Some(retries), ban_failed_address: Some(true),
+        ban_busy_address: None,
         max_decoding_message_size: Some(16 * 1024 * 1024),
     };
     let sdk = runtime.block_on(async {
@@ -213,6 +214,7 @@ pub fn create_dash_sdk_with_context(
                 timeout: Some(Duration::from_secs(timeout as u64)),
                 retries: Some(retries),
                 ban_failed_address: Some(true),
+                ban_busy_address: None,
                 max_decoding_message_size: Some(16 * 1024 * 1024),
             }
         }
@@ -261,6 +263,7 @@ pub fn create_dash_sdk_using_single_evonode(
                 timeout: Some(Duration::from_secs(10)),
                 retries: Some(0),
                 ban_failed_address: Some(false),
+                ban_busy_address: None,
                 max_decoding_message_size: Some(16 * 1024 * 1024),
             }
         }

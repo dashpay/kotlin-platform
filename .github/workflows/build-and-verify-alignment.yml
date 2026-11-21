@@ -47,7 +47,7 @@ jobs:
 
     - name: clone platform repo
       run: |
-        git clone --branch ferment-5.0.1 https://github.com/HashEngineering/platform.git ../platform
+        git clone --branch ferment-5.1.0-dev.2 https://github.com/HashEngineering/platform.git ../platform
         git -C ../platform checkout --detach "$(cat platform-revision.txt)"
 
     - name: clone rs-x11-hash repo

@@ -46,7 +46,7 @@ fn get_salted_domain_hash(
     baos.write_all(pre_order_salt_raw).expect("Writing to buffer failed");
     baos.write_all(full_name.as_bytes()).expect("Writing to buffer failed");
 
-    sha256d::Hash::hash(&baos.as_slice()).into()
+    sha256d::Hash::hash(&baos.as_slice()).to_byte_array()
 }
 
 
@@ -200,6 +200,7 @@ fn test_put_documents_for_username() {
                 timeout: None,
                 retries: Some(2),
                 ban_failed_address: Some(true),
+                ban_busy_address: None,
                 max_decoding_message_size: None,
             },
             identity_nonce_stale_time_s: None,
@@ -329,6 +330,7 @@ fn test_put_txmetadata_contract() {
                 timeout: None,
                 retries: Some(2),
                 ban_failed_address: Some(true),
+                ban_busy_address: None,
                 max_decoding_message_size: None,
             },
             identity_nonce_stale_time_s: None,

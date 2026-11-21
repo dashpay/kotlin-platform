@@ -14,8 +14,7 @@ use dash_sdk::platform::transition::put_settings::PutSettings;
 use dash_sdk::platform::transition::TxId;
 use dash_sdk::platform::transition::waitable::wait_for_document_and_owner_balance;
 use dashcore::hashes::{Hash, sha256};
-use dashcore::key::Secp256k1;
-use dashcore::secp256k1::{Message, SecretKey};
+use dpp::secp256k1::{Message, Secp256k1, SecretKey};
 use dashcore::signer::sign;
 use dpp::bincode::{Decode, Encode};
 use dpp::dashcore::{InstantLock, Network, PrivateKey, Transaction, Txid};
@@ -203,7 +202,7 @@ mod index_only_snapshot_tests {
     #[tokio::test]
     async fn accepts_id_from_real_connect_creation_transition() {
         use dpp::data_contract::config::DataContractConfig;
-        use dpp::dashcore::secp256k1::{PublicKey, Secp256k1, SecretKey};
+        use dpp::secp256k1::{PublicKey, Secp256k1, SecretKey};
         use dpp::state_transition::batch_transition::BatchTransition;
         use dpp::state_transition::batch_transition::methods::v0::DocumentsBatchTransitionMethodsV0;
         use platform_version::version::PlatformVersion;

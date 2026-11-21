@@ -12,6 +12,9 @@ struct platform_value_ValueMap;
 // Generated definitions may place Value before the map it points to.
 struct platform_value_value_map_ValueMap;
 struct Vec_platform_value_Value;
+// Platform 5.1 vote variants are opaque pointers in the generated C header.
+struct YesNoVotePoll;
+struct YesNoVote;
 extern JavaVM* javaVM;
 
 #ifdef __ANDROID__

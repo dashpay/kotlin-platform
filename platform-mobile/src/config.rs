@@ -408,6 +408,7 @@ impl Config {
                         timeout: Some(Duration::from_secs(timeout as u64)),
                         retries: Some(retries),
                         ban_failed_address: Some(true),
+                        ban_busy_address: None,
                         max_decoding_message_size: Some(16 * 1024 * 1024)
                     }
                 )
