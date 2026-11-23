@@ -559,7 +559,7 @@ object PlatformExplorer {
                             "domain",
                             Identifier(dpnsContractId),
                             100,
-                            contestedResources._0.lastOrNull()?._0,
+                            contestedResources._0.lastOrNull()?.value,
                             false
                         )
                         contestedResources = result2.unwrap()
