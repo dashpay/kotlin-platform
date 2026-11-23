@@ -149,7 +149,7 @@ checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 
 [[package]]
 name = "app-connect-contract"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -909,7 +909,7 @@ dependencies = [
 
 [[package]]
 name = "dapi-grpc"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "dash-platform-macros",
  "futures-core",
@@ -963,7 +963,7 @@ dependencies = [
 
 [[package]]
 name = "dash-async"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "futures",
  "thiserror 2.0.18",
@@ -974,7 +974,7 @@ dependencies = [
 
 [[package]]
 name = "dash-context-provider"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "arc-swap",
  "dash-async",
@@ -1058,7 +1058,7 @@ dependencies = [
 
 [[package]]
 name = "dash-platform-macros"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "heck 0.5.0",
  "quote",
@@ -1067,7 +1067,7 @@ dependencies = [
 
 [[package]]
 name = "dash-platform-queries"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "dapi-grpc",
  "dash-context-provider",
@@ -1084,7 +1084,7 @@ dependencies = [
 
 [[package]]
 name = "dash-sdk"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "arc-swap",
  "async-trait",
@@ -1124,7 +1124,7 @@ dependencies = [
 
 [[package]]
 name = "dash-sdk-bindings"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "cbindgen 0.26.0",
  "dash-sdk",
@@ -1257,7 +1257,7 @@ dependencies = [
 
 [[package]]
 name = "dashpay-contract"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1267,7 +1267,7 @@ dependencies = [
 
 [[package]]
 name = "data-contracts"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "app-connect-contract",
  "dashpay-contract",
@@ -1289,7 +1289,7 @@ dependencies = [
 
 [[package]]
 name = "decision-proposals-contract"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1405,7 +1405,7 @@ dependencies = [
 
 [[package]]
 name = "document-history-contract"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1421,7 +1421,7 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "dpns-contract"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -1431,7 +1431,7 @@ dependencies = [
 
 [[package]]
 name = "dpp"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1493,7 +1493,7 @@ dependencies = [
 
 [[package]]
 name = "dpp-json-convertible-derive"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1502,7 +1502,7 @@ dependencies = [
 
 [[package]]
 name = "drive"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "byteorder",
  "derive_more 1.0.0",
@@ -1530,7 +1530,7 @@ dependencies = [
 
 [[package]]
 name = "drive-proof-verifier"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "dapi-grpc",
  "dash-context-provider",
@@ -2735,7 +2735,7 @@ dependencies = [
 
 [[package]]
 name = "json-schema-compatibility-validator"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "json-patch",
  "once_cell",
@@ -2802,7 +2802,7 @@ dependencies = [
 
 [[package]]
 name = "keyword-search-contract"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2887,7 +2887,7 @@ dependencies = [
 
 [[package]]
 name = "masternode-reward-shares-contract"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -2933,7 +2933,7 @@ dependencies = [
 
 [[package]]
 name = "moderation-charters-contract"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -3324,7 +3324,7 @@ dependencies = [
 
 [[package]]
 name = "platform-encryption"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "aes 0.8.4",
  "cbc",
@@ -3337,7 +3337,7 @@ dependencies = [
 
 [[package]]
 name = "platform-mobile"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "async-trait",
  "base64 0.13.1",
@@ -3383,7 +3383,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "grovedb-bincode",
  "platform-version",
@@ -3391,7 +3391,7 @@ dependencies = [
 
 [[package]]
 name = "platform-serialization-derive"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3401,7 +3401,7 @@ dependencies = [
 
 [[package]]
 name = "platform-value"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "base64 0.22.1",
  "bs58",
@@ -3422,7 +3422,7 @@ dependencies = [
 
 [[package]]
 name = "platform-version"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "ferment-macro",
  "grovedb-bincode",
@@ -3434,7 +3434,7 @@ dependencies = [
 
 [[package]]
 name = "platform-versioning"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3772,7 +3772,7 @@ dependencies = [
 
 [[package]]
 name = "rs-dapi-client"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "backon",
  "chrono",
@@ -4129,7 +4129,7 @@ checksum = "e320a6c5ad31d271ad523dcf3ad13e2767ad8b1cb8f047f75a8aeaf8da139da2"
 
 [[package]]
 name = "simple-signer"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -4490,7 +4490,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "token-history-contract"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -4500,7 +4500,7 @@ dependencies = [
 
 [[package]]
 name = "token-market-contract"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -5080,7 +5080,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-utils-contract"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "platform-value",
  "platform-version",
@@ -5490,7 +5490,7 @@ checksum = "d7249219f66ced02969388cf2bb044a09756a083d0fab1e566056b04d9fbcaa5"
 
 [[package]]
 name = "withdrawals-contract"
-version = "5.1.0-dev.2"
+version = "5.1.0-dev.3"
 dependencies = [
  "num_enum 0.5.11",
  "platform-value",

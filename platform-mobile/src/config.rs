@@ -366,7 +366,8 @@ impl Config {
         };
         // not ideal because context provider has a clone of the sdk
         context_provider.set_sdk(Some(Arc::new(sdk.clone())));
-        sdk.set_context_provider(context_provider);
+        sdk.set_context_provider(context_provider)
+            .expect("cannot set context provider");
         sdk.into()
     }
 
@@ -417,7 +418,8 @@ impl Config {
         };
         // not ideal because context provider has a clone of the sdk
         context_provider.set_sdk(Some(Arc::new(sdk.clone())));
-        sdk.set_context_provider(context_provider);
+        sdk.set_context_provider(context_provider)
+            .expect("cannot set context provider");
         sdk.into()
     }
 
@@ -445,7 +447,8 @@ impl Config {
         };
         // not ideal because context provider has a clone of the sdk
         context_provider.set_sdk(Some(Arc::new(sdk.clone())));
-        sdk.set_context_provider(context_provider);
+        sdk.set_context_provider(context_provider)
+            .expect("cannot set context provider");
         sdk.into()
     }
 

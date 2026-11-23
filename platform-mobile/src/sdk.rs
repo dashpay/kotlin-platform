@@ -51,7 +51,7 @@ pub fn create_dash_sdk_with_network(
             .with_context_provider(bootstrap_provider)
             .build().map_err(|e| e.to_string())?;
         provider.set_sdk(Some(Arc::new(sdk.clone())));
-        sdk.set_context_provider(provider);
+        sdk.set_context_provider(provider).map_err(|e| e.to_string())?;
         Ok::<_, String>(sdk)
     })?;
     Ok(DashSdk { config: Arc::new(config), runtime, sdk: Arc::new(sdk),
