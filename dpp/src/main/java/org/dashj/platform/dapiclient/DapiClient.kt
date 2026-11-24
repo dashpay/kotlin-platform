@@ -73,6 +73,13 @@ internal fun decodeDataContractResult(
     result: org.dashj.platform.sdk.base.Result<java.util.Optional<org.dashj.platform.sdk.DataContract>, String>
 ): DataContract? = result.unwrap().map { DataContract.from(it) }.orElse(null)
 
+/**
+ * Converts a [DapiClient] timeout (milliseconds) to the whole seconds platform-mobile's
+ * `RequestSettings` expects. Rounds up, and never returns 0, which would time out every request.
+ */
+internal fun millisToSdkSeconds(millis: Long): Long =
+    ((millis.coerceAtLeast(0) + 999) / 1000).coerceAtLeast(1)
+
 class DapiClient @JvmOverloads constructor(
     var dapiAddressListProvider: DAPIAddressListProvider,
     val dpp: DashPlatformProtocol,
@@ -189,19 +196,22 @@ class DapiClient @JvmOverloads constructor(
             false
         }
 
+        // platform-mobile takes these in seconds (Duration::from_secs); timeOut is in milliseconds.
+        val connectTimeoutSeconds = millisToSdkSeconds(timeOut * 2)
+        val timeoutSeconds = millisToSdkSeconds(timeOut)
         rustSdk = if (networkConfiguration != null) {
             dashsdk.platformMobileSdkCreateDashSdkWithNetwork(
                 contextProviderContext, BigInteger.valueOf(contextProviderFunction), BigInteger.ZERO,
                 networkConfiguration.network, networkConfiguration.endpoints,
-                timeOut * 2, timeOut, retries.toLong()
+                connectTimeoutSeconds, timeoutSeconds, retries.toLong()
             )
         } else dashsdk.platformMobileSdkCreateDashSdkWithContext(
             contextProviderContext,
             BigInteger.valueOf(contextProviderFunction),
             BigInteger.ZERO,
             isTestnet,
-            timeOut * 2,
-            timeOut,
+            connectTimeoutSeconds,
+            timeoutSeconds,
             retries.toLong()
         )
     }
