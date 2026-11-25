@@ -16,8 +16,8 @@ Refresh both lists before a release, or whenever many nodes fail in the field.
 
 ## Prerequisites
 
-- A local Dash Core (Dash-Qt or dashd) for the network, **fully synced**, with the RPC server on
-  (`server=1`). The tests fetch quorum public keys from it to verify proofs, so with Core missing
+- A local Dash Core 23 or later (Dash-Qt or dashd) for the network, **fully synced**, with the RPC
+  server on (`server=1`). The tests fetch quorum public keys from it to verify proofs, so with Core missing
   or behind every node fails. `scripts/evonodes.sh` reads Core's `.cookie` or `dash.conf` from the
   OS default data directory; set `DASHCORE_DIR` if yours is elsewhere.
 - RPC credentials in `platform-mobile/mainnet.env` (or `testnet.env`): `RS_SDK_CORE_USER`,
@@ -45,7 +45,8 @@ Refresh both lists before a release, or whenever many nodes fail in the field.
    ```
 
    `list` reads `protx list valid true`, keeps `type == "Evo"` with `PoSeBanHeight == -1`, and
-   takes the IP of each `platform_https` address on port 443.
+   takes the IP of each `platform_https` address on port 443. It exits with an error, rather than
+   printing nothing, if Core can't be reached; `write` also refuses an empty or malformed IP file.
 
 3. **Write the candidate list.** Do not pre-filter it: unreachable nodes are what the test is
    for.
