@@ -1,6 +1,7 @@
-#!/bin/zsh
+#!/usr/bin/env bash
 # Helpers for refreshing the Evo node lists in platform-mobile/src.
 # See docs/updating-evonode-lists.md for the full procedure.
+# Reads Dash Core's data dir from DASHCORE_DIR, else the OS default (macOS or ~/.dashcore).
 #
 #   scripts/evonodes.sh status [mainnet|testnet]       sync state of the local Dash Core
 #   scripts/evonodes.sh list   [mainnet|testnet]       valid, non-banned Evo node IPs (Platform HTTPS on :443)
@@ -11,7 +12,9 @@
 set -e
 
 NET="${2:-mainnet}"
-D="$HOME/Library/Application Support/DashCore"
+if [[ -n "$DASHCORE_DIR" ]]; then D="$DASHCORE_DIR"
+elif [[ "$(uname)" == Darwin ]]; then D="$HOME/Library/Application Support/DashCore"
+else D="$HOME/.dashcore"; fi
 if [[ "$NET" == testnet ]]; then DATA="$D/testnet3"; PORT=19998; else DATA="$D"; PORT=9998; fi
 
 rpc() {
@@ -64,5 +67,5 @@ print(f"{rust_file}: {name} now has {len(ips)} entries")
 EOF
     ;;
   *)
-    sed -n '2,12p' "$0" >&2; exit 2 ;;
+    sed -n '2,11p' "$0" >&2; exit 2 ;;
 esac

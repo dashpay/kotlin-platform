@@ -479,6 +479,7 @@ pub const ADDRESS_LIST: [&str; 29] = [
     "68.67.122.29"
 ];
 
+// Refreshed 2026-11-24 from a synced mainnet Dash Core: all 362 valid Evo nodes with Platform HTTPS on :443. See docs/updating-evonode-lists.md.
 const MAINNET_ADDRESS_LIST: [&str; 362] = [
     "2.31.109.195",
     "2.59.156.192",

@@ -60,6 +60,7 @@ pub const TESTNET_ADDRESS_LIST: [&str; 29] = [
 ];
 
 
+// Refreshed 2026-11-24 from a synced mainnet Dash Core: the 350 of 362 valid Evo nodes that passed check_all_nodes_mainnet_test. See docs/updating-evonode-lists.md.
 pub const MAINNET_ADDRESS_LIST: [&str; 350] = [
     "2.31.109.195",
     "2.59.156.192",

@@ -18,11 +18,12 @@ Refresh both lists before a release, or whenever many nodes fail in the field.
 
 - A local Dash Core (Dash-Qt or dashd) for the network, **fully synced**, with the RPC server on
   (`server=1`). The tests fetch quorum public keys from it to verify proofs, so with Core missing
-  or behind every node fails.
+  or behind every node fails. `scripts/evonodes.sh` reads Core's `.cookie` or `dash.conf` from the
+  OS default data directory; set `DASHCORE_DIR` if yours is elsewhere.
 - RPC credentials in `platform-mobile/mainnet.env` (or `testnet.env`): `RS_SDK_CORE_USER`,
   `RS_SDK_CORE_PASSWORD`, `RS_SDK_CORE_PORT` (9998 mainnet, 19998 testnet). They must match
   `rpcuser`/`rpcpassword` in Core's `dash.conf`.
-- `jq`, `curl`, `python3`, and about 80 GB free disk if `target/` is cold. A full disk can crash
+- `bash`, `jq`, `curl`, `python3`, and about 80 GB free disk if `target/` is cold. A full disk can crash
   Core and force a multi-hour `-reindex`.
 
 ## Steps (mainnet; for testnet add `testnet` to the `status`/`list` calls and use the testnet names)
@@ -75,6 +76,7 @@ Refresh both lists before a release, or whenever many nodes fail in the field.
    If a large share failed with the same error (for example quorum or proof errors), suspect the
    local Core rather than the nodes. Fix it and rerun step 4 before writing `config.rs`.
 
-6. **Review and commit.** `git diff --stat` should show only the two list files. In the PR, give
+6. **Review and commit.** Update the `// Refreshed …` comment above each list with the date and
+   counts. `git diff --stat` should show only the two list files. In the PR, give
    the counts: candidates, passing, and how many were added and removed versus the old
    `config.rs` list.
