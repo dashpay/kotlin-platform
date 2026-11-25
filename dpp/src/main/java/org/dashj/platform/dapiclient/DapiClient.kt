@@ -124,7 +124,7 @@ class DapiClient @JvmOverloads constructor(
 
         const val DEFAULT_RETRY_COUNT = 10
         const val USE_DEFAULT_RETRY_COUNT = -1
-        const val DEFAULT_TIMEOUT = 5000L // normally a timeout is 5 seconds longer than this
+        const val DEFAULT_TIMEOUT = 5000L // milliseconds; converted with millisToSdkSeconds for platform-mobile
         const val DEFAULT_BROADCAST_TIMEOUT = 80000L
         const val DEFAULT_WAIT_FOR_NODES = 5
         const val DEFAULT_HTTP_TIMEOUT = 10L
@@ -1107,8 +1107,8 @@ class DapiClient @JvmOverloads constructor(
 //                BigInteger.ZERO,
 //                evoNodeList,
 //                isTestnet,
-//                timeOut,
-//                timeOut,
+//                millisToSdkSeconds(timeOut * 2),
+//                millisToSdkSeconds(timeOut),
 //                retries.toLong()
 //            )
 //        }
