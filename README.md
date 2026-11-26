@@ -63,7 +63,7 @@ Build the android libraries to publish to Maven Central:
 ```
 ### Use in other projects
 ```groovy
-dppVersion = "4.0.1"
+dppVersion = "5.0.2"
 dependencies {
     implementation "org.dashj.platform:dash-sdk-java:$dppVersion"
     implementation "org.dashj.platform:dash-sdk-kotlin:$dppVersion" // dpp
