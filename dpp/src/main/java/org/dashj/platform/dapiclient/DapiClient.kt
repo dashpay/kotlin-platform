@@ -73,6 +73,13 @@ internal fun decodeDataContractResult(
     result: org.dashj.platform.sdk.base.Result<java.util.Optional<org.dashj.platform.sdk.DataContract>, String>
 ): DataContract? = result.unwrap().map { DataContract.from(it) }.orElse(null)
 
+/**
+ * Converts a [DapiClient] timeout (milliseconds) to the whole seconds platform-mobile's
+ * `RequestSettings` expects. Rounds up, and never returns 0, which would time out every request.
+ */
+internal fun millisToSdkSeconds(millis: Long): Long =
+    ((millis.coerceAtLeast(0) + 999) / 1000).coerceAtLeast(1)
+
 class DapiClient @JvmOverloads constructor(
     var dapiAddressListProvider: DAPIAddressListProvider,
     val dpp: DashPlatformProtocol,
@@ -117,7 +124,7 @@ class DapiClient @JvmOverloads constructor(
 
         const val DEFAULT_RETRY_COUNT = 10
         const val USE_DEFAULT_RETRY_COUNT = -1
-        const val DEFAULT_TIMEOUT = 5000L // normally a timeout is 5 seconds longer than this
+        const val DEFAULT_TIMEOUT = 5000L // milliseconds; converted with millisToSdkSeconds for platform-mobile
         const val DEFAULT_BROADCAST_TIMEOUT = 80000L
         const val DEFAULT_WAIT_FOR_NODES = 5
         const val DEFAULT_HTTP_TIMEOUT = 10L
@@ -189,19 +196,22 @@ class DapiClient @JvmOverloads constructor(
             false
         }
 
+        // platform-mobile takes these in seconds (Duration::from_secs); timeOut is in milliseconds.
+        val connectTimeoutSeconds = millisToSdkSeconds(timeOut * 2)
+        val timeoutSeconds = millisToSdkSeconds(timeOut)
         rustSdk = if (networkConfiguration != null) {
             dashsdk.platformMobileSdkCreateDashSdkWithNetwork(
                 contextProviderContext, BigInteger.valueOf(contextProviderFunction), BigInteger.ZERO,
                 networkConfiguration.network, networkConfiguration.endpoints,
-                timeOut * 2, timeOut, retries.toLong()
+                connectTimeoutSeconds, timeoutSeconds, retries.toLong()
             )
         } else dashsdk.platformMobileSdkCreateDashSdkWithContext(
             contextProviderContext,
             BigInteger.valueOf(contextProviderFunction),
             BigInteger.ZERO,
             isTestnet,
-            timeOut * 2,
-            timeOut,
+            connectTimeoutSeconds,
+            timeoutSeconds,
             retries.toLong()
         )
     }
@@ -1097,8 +1107,8 @@ class DapiClient @JvmOverloads constructor(
 //                BigInteger.ZERO,
 //                evoNodeList,
 //                isTestnet,
-//                timeOut,
-//                timeOut,
+//                millisToSdkSeconds(timeOut * 2),
+//                millisToSdkSeconds(timeOut),
 //                retries.toLong()
 //            )
 //        }

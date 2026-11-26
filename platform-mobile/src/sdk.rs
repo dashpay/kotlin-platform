@@ -13,6 +13,8 @@ use crate::logs::setup_logs;
 use crate::provider::{CallbackContextProvider, DataContractCache};
 
 /// Creates a client with explicit endpoints; invalid configuration is returned across FFI.
+///
+/// `connect_timeout` and `timeout` are in **seconds** (they become `Duration::from_secs`).
 #[ferment_macro::export]
 pub fn create_dash_sdk_with_network(
     context_provider_context: usize,
@@ -153,6 +155,7 @@ pub fn create_dash_sdk(
     )
 }
 
+/// `connect_timeout` and `timeout` are in **seconds** (they become `Duration::from_secs`).
 #[ferment_macro::export]
 pub fn create_dash_sdk_with_context(
     context_provider_context: usize,

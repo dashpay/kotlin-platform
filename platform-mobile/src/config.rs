@@ -370,6 +370,7 @@ impl Config {
         sdk.into()
     }
 
+    /// `connect_timeout` and `timeout` are in seconds.
     pub(crate) async fn setup_api_with_callbacks_cache(
         &self,
         context_provider_context: * const c_void,
