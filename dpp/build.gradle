@@ -180,7 +180,7 @@ jreleaser {
         maven {
             mavenCentral {
                 sonatype {
-                    active = 'ALWAYS'
+                    active = 'RELEASE'
                     url = 'https://central.sonatype.com/api/v1/publisher'
                     stagingRepository("$buildDir/staging-deploy")
                 }

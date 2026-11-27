@@ -1,6 +1,6 @@
 [package]
 name = "dash-sdk-bindings"
-version = "5.0.2"
+version = "5.1.0-dev.4"
 edition = "2021"
 
 [dependencies]
@@ -17,11 +17,10 @@ dpp = { path = "../../../../../platform/packages/rs-dpp" }
 #rs-dapi-client = { path = "../../../../../platform/packages/rs-dapi-client" }
 #platform-version = { path = "../../../../../platform/packages/rs-platform-version" }
 dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
-    "secp-recovery",
     "rand",
     "signer",
     "serde",
-], default-features = false, rev = "d631aaca3632cc713143476e363c9a9aca038d2e" }
+], default-features = false, rev = "f6bb90cbbcae3d401bb3c9ebc4a9a26873a41404" }
 drive = { path = "../../../../../platform/packages/rs-drive", default-features = false, features = [
     "verify",
     "serde",

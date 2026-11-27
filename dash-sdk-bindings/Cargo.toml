@@ -1,6 +1,6 @@
 [package]
 name = "dash-sdk-bindings"
-version = "5.0.2"
+version = "5.1.0-dev.4"
 edition = "2021"
 
 [dependencies]
@@ -22,11 +22,10 @@ drive = { path = "../../platform/packages/rs-drive", default-features = false, f
 #tokio = { version = "1.34", features = ["full"] }
 #tokio-util = "0.7.11"
 dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
-    "secp-recovery",
     "rand",
     "signer",
     "serde",
-], default-features = false, rev = "d631aaca3632cc713143476e363c9a9aca038d2e" }
+], default-features = false, rev = "f6bb90cbbcae3d401bb3c9ebc4a9a26873a41404" }
 [build-dependencies]
 cbindgen = "0.26.0"
 #ferment-sys = { git = "https://github.com/dashpay/ferment", tag = "v0.2.3", package = "ferment-sys", features = ["cbindgen_only"] }

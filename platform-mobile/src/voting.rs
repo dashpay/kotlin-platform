@@ -27,7 +27,7 @@ use drive::query::contested_resource_votes_given_by_identity_query::ContestedRes
 use drive::query::vote_poll_vote_state_query::{ContestedDocumentVotePollDriveQuery, ContestedDocumentVotePollDriveQueryResultType};
 use drive::query::vote_polls_by_document_type_query::VotePollsByDocumentTypeQuery;
 use drive::query::VotePollsByEndDateDriveQuery;
-use drive_proof_verifier::types::{Contenders, ContestedResource, ContestedResources, ResourceVotesByIdentity, VotePollsGroupedByTimestamp};
+use drive_proof_verifier::types::{Contenders, ContestedResource, ContestedResources, ResourceVoteWithCount, ResourceVotesByIdentity, VotePollsGroupedByTimestamp};
 use platform_value::types::identifier::Identifier;
 use platform_value::{IdentifierBytes32, Value};
 use platform_value::string_encoding::Encoding;
@@ -547,7 +547,7 @@ pub fn get_last_vote_from_masternode(
             }.unique_id().unwrap(),
         };
 
-        match ResourceVote::fetch_many(&sdk, query.clone()).await {
+        match ResourceVoteWithCount::fetch_many(&sdk, query.clone()).await {
             Ok(votes) => Ok(votes),
             Err(e) => Err(e.to_string())
         }

@@ -59,7 +59,7 @@ pub fn application_session_authentication_private_key_from_seed(
         application_session_authentication_derivation_path(is_testnet, identity_id, request_id);
     let result = path
         .derive_priv_ecdsa_for_master_seed(&seed, network)
-        .map(|key| key.private_key.secret_bytes().to_vec())
+        .map(|key| key.private_key.to_bytes().to_vec())
         .map_err(|e| e.to_string());
     seed.fill(0);
     result
@@ -134,7 +134,7 @@ fn derive_private_key(
 ) -> Result<Vec<u8>, String> {
     let result = derivation.and_then(|(network, path)| {
         path.derive_priv_ecdsa_for_master_seed(seed, network)
-            .map(|key| key.private_key.secret_bytes().to_vec())
+            .map(|key| key.private_key.to_bytes().to_vec())
             .map_err(|e| e.to_string())
     });
     seed.fill(0);

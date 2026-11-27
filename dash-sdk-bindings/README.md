@@ -9,7 +9,8 @@ mkdir dashpay
 cd dashpay
 
 git clone https://github.com/dashpay/kotlin-platform.git
-git clone --branch ferment-2.0 https://github.com/hashengineering/platform.git
+git clone --branch ferment-5.1.0-dev.4 https://github.com/HashEngineering/platform.git
+git -C platform checkout --detach "$(cat kotlin-platform/platform-revision.txt)"
 ```
 
 ### Build

@@ -10,6 +10,21 @@ import static org.junit.Assert.assertEquals;
 public class VoteObjectTest extends BaseTest {
 
     @Test
+    public void contestedResourceValueOutlivesParent() {
+        String name = "owned-contested-name";
+        PlatformValue input = new PlatformValue(name);
+        ContestedResource parent = new ContestedResource(input);
+        input.delete();
+
+        PlatformValue value = parent.getValue();
+        assertEquals(name, value.getText());
+
+        parent.delete();
+        assertEquals(name, value.getText());
+        value.delete();
+    }
+
+    @Test
     public void createAndDestroyVoteTest() {
         ArrayList<PlatformValue> indexes = new ArrayList<>();
         String name = "rev1ew000";

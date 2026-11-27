@@ -1,6 +1,6 @@
 [package]
 name = "platform-mobile"
-version = "5.0.2"
+version = "5.1.0-dev.4"
 edition = "2021"
 
 [dependencies]
@@ -42,15 +42,14 @@ syn = "2.0.53"
 serde_json = "1.0.115"
 sha2 = "0.10.8"
 dashcore = { git = "https://github.com/dashpay/rust-dashcore", features = [
-    "secp-recovery",
     "rand",
     "signer",
     "serde",
-], default-features = false, rev = "d631aaca3632cc713143476e363c9a9aca038d2e" }
-key-wallet = { git = "https://github.com/dashpay/rust-dashcore", rev = "d631aaca3632cc713143476e363c9a9aca038d2e" }
-dashcore_hashes = { git = "https://github.com/dashpay/rust-dashcore", rev = "d631aaca3632cc713143476e363c9a9aca038d2e" }
+], default-features = false, rev = "f6bb90cbbcae3d401bb3c9ebc4a9a26873a41404" }
+key-wallet = { git = "https://github.com/dashpay/rust-dashcore", rev = "f6bb90cbbcae3d401bb3c9ebc4a9a26873a41404" }
+dashcore_hashes = { git = "https://github.com/dashpay/rust-dashcore", rev = "f6bb90cbbcae3d401bb3c9ebc4a9a26873a41404" }
 # dashcore-rpc is only needed for core rpc; TODO remove once we have correct core rpc impl
-dashcore-rpc = { git = "https://github.com/dashpay/rust-dashcore", rev = "d631aaca3632cc713143476e363c9a9aca038d2e" }
+dashcore-rpc = { git = "https://github.com/dashpay/rust-dashcore", rev = "f6bb90cbbcae3d401bb3c9ebc4a9a26873a41404" }
 rand = "0.8.5"
 base64 = "0.13"
 tonic = { version = "0.11", features = [

@@ -14,13 +14,13 @@ kotlin-platform is the library that supports Platform functionality for the Java
 
 ## Build Instructions
 The sibling `../platform` checkout must use `HashEngineering/platform`, branch
-`ferment-5.0.1`, at the commit in `platform-revision.txt`. This includes upstream
-Platform `v5.0.1` and the Ferment/JNI compatibility patches. CI uses the same
+`ferment-5.1.0-dev.4`, at the commit in `platform-revision.txt`. This includes upstream
+Platform `v5.1.0-dev.4` and the Ferment/JNI compatibility patches. CI uses the same
 revision; the Platform commit must be pushed before running CI for an updated pin.
 Desktop Rust uses `1.98.1`; Android uses `nightly-2026-09-24` with `rust-src`.
 
 ```bash
-git clone --branch ferment-5.0.1 https://github.com/HashEngineering/platform.git ../platform
+git clone --branch ferment-5.1.0-dev.4 https://github.com/HashEngineering/platform.git ../platform
 git -C ../platform checkout --detach "$(cat platform-revision.txt)"
 ```
 
@@ -40,7 +40,7 @@ Build the android libraries for the local machine (only works on Mac)
 ```bash
 ./gradlew publishToMavenLocal
 ```
-Build the android libraries to publish to Maven Central:
+Build and publish the `-SNAPSHOT` artifacts to Sonatype snapshots:
 1) Verify release & deploy configuration
 ```bash
 ./gradlew jreleaserConfig
@@ -63,7 +63,7 @@ Build the android libraries to publish to Maven Central:
 ```
 ### Use in other projects
 ```groovy
-dppVersion = "5.0.2"
+dppVersion = "5.1.0-dev.4-SNAPSHOT"
 dependencies {
     implementation "org.dashj.platform:dash-sdk-java:$dppVersion"
     implementation "org.dashj.platform:dash-sdk-kotlin:$dppVersion" // dpp

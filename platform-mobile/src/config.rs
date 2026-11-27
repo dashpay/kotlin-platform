@@ -716,7 +716,8 @@ impl Config {
         };
         // not ideal because context provider has a clone of the sdk
         context_provider.set_sdk(Some(Arc::new(sdk.clone())));
-        sdk.set_context_provider(context_provider);
+        sdk.set_context_provider(context_provider)
+            .expect("cannot set context provider");
         sdk.into()
     }
 
@@ -759,6 +760,7 @@ impl Config {
                         timeout: Some(Duration::from_secs(timeout as u64)),
                         retries: Some(retries),
                         ban_failed_address: Some(true),
+                        ban_busy_address: None,
                         max_decoding_message_size: Some(16 * 1024 * 1024)
                     }
                 )
@@ -767,7 +769,8 @@ impl Config {
         };
         // not ideal because context provider has a clone of the sdk
         context_provider.set_sdk(Some(Arc::new(sdk.clone())));
-        sdk.set_context_provider(context_provider);
+        sdk.set_context_provider(context_provider)
+            .expect("cannot set context provider");
         sdk.into()
     }
 
@@ -795,7 +798,8 @@ impl Config {
         };
         // not ideal because context provider has a clone of the sdk
         context_provider.set_sdk(Some(Arc::new(sdk.clone())));
-        sdk.set_context_provider(context_provider);
+        sdk.set_context_provider(context_provider)
+            .expect("cannot set context provider");
         sdk.into()
     }
 
