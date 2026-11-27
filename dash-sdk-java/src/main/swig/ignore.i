@@ -134,7 +134,7 @@
 %ignore drive_proof_verifier_types_ResourceVoteWithCount_destroy(drive_proof_verifier_types_ResourceVoteWithCount *ffi);
 %ignore drive_proof_verifier_types_Voter_ctor(platform_value_types_identifier_Identifier *o_0);
 %ignore drive_proof_verifier_types_Voter_destroy(drive_proof_verifier_types_Voter *ffi);
-%ignore drive_proof_verifier_types_ContestedResource_ctor(Value *o_0);
+%ignore drive_proof_verifier_types_ContestedResource_ctor(platform_value_Value *o_0);
 %ignore drive_proof_verifier_types_ContestedResource_destroy(drive_proof_verifier_types_ContestedResource *ffi);
 %ignore drive_proof_verifier_types_Voters_ctor(std_collections_BTreeSet_drive_proof_verifier_types_Voter *o_0);
 %ignore drive_proof_verifier_types_Voters_destroy(drive_proof_verifier_types_Voters *ffi);

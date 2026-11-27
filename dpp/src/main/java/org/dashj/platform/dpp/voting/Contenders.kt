@@ -92,8 +92,15 @@ class ContestedResource(val value: PlatformValue) {
     )
 }
 
-class ContestedResources(val list: List<ContestedResource>) {
-    constructor(contestedResources: RustContestedResources): this (
-        contestedResources._0.map { ContestedResource(it) }
+class ContestedResources private constructor(
+    val list: List<ContestedResource>,
+    // Keep the native list alive while its borrowed children are converted.
+    @Suppress("unused") private val nativeOwner: RustContestedResources?
+) {
+    constructor(list: List<ContestedResource>): this(list, null)
+
+    constructor(contestedResources: RustContestedResources): this(
+        contestedResources._0.map { ContestedResource(it) },
+        contestedResources
     )
 }

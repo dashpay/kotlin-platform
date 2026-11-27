@@ -1646,6 +1646,7 @@ dependencies = [
  "indexmap 2.14.0",
  "platform-serialization",
  "platform-serialization-derive",
+ "platform-value",
  "serde",
  "sha2 0.10.8",
  "tenderdash-abci",

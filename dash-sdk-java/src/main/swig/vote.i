@@ -112,9 +112,13 @@ END_CLASS();
 
 %rename (ContestedResource) drive_proof_verifier_types_ContestedResource;
 %ignore drive_proof_verifier_types_ContestedResource::value;
+%newobject drive_proof_verifier_types_ContestedResource::getValue;
 START_CLASS(ContestedResource, drive_proof_verifier_types_ContestedResource);
+    drive_proof_verifier_types_ContestedResource(platform_value_Value * value) {
+        return drive_proof_verifier_types_ContestedResource_ctor(clone(value));
+    }
     platform_value_Value * getValue() {
-        return $self->_0;
+        return clone($self->_0);
     }
 END_CLASS();
 
